@@ -69,4 +69,18 @@ router.get("/api/exportar-comparativo",
     frequenciaController.exportarComparativo
 );
 
+/**
+ * GET /api/comparativo-frequencia-valor
+ * Retorna dados comparativos monetários entre valores executados e autorizados por gerente
+ * 
+ * Middlewares: requireHEAuth, requireAnyHEDiretoria
+ * Query params: mes (obrigatório), gerente (opcional)
+ * Filtro: Por diretoria do usuário
+ */
+router.get("/api/comparativo-frequencia-valor", 
+    heAuth.requireHEAuth, 
+    heDiretoriaAuth.requireAnyHEDiretoria, 
+    frequenciaController.getComparativoFrequenciaValor
+);
+
 module.exports = router;
