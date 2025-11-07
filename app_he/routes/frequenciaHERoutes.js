@@ -41,33 +41,7 @@ router.get("/api/comparativo-frequencia",
     frequenciaController.getComparativoFrequencia
 );
 
-/**
- * GET /api/comparativo-colaborador
- * Retorna dados comparativos detalhados por colaborador
- * 
- * Middlewares: requireHEAuth, requireAnyHEDiretoria
- * Query params: mes (obrigatório), gerente (opcional), colaborador (opcional)
- * Filtro: Por diretoria do usuário
- */
-router.get("/api/comparativo-colaborador", 
-    heAuth.requireHEAuth, 
-    heDiretoriaAuth.requireAnyHEDiretoria, 
-    frequenciaController.getComparativoPorColaborador
-);
 
-/**
- * GET /api/exportar-comparativo
- * Exporta dados comparativos em formato CSV
- * 
- * Middlewares: requireHEAuth, requireAnyHEDiretoria
- * Query params: mes (obrigatório), gerente (opcional)
- * Retorna: Arquivo CSV para download
- */
-router.get("/api/exportar-comparativo", 
-    heAuth.requireHEAuth, 
-    heDiretoriaAuth.requireAnyHEDiretoria, 
-    frequenciaController.exportarComparativo
-);
 
 /**
  * GET /api/comparativo-frequencia-valor

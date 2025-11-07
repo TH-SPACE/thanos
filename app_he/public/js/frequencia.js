@@ -134,54 +134,6 @@ function carregarComparativoFrequenciaValor(mes, gerente = "") {
     });
 }
 
-/**
- * Carrega e exibe o comparativo detalhado por colaborador
- *
- * @param {string} mes - Mês para filtrar (obrigatório)
- * @param {string} gerente - Nome do gerente para filtrar (opcional)
- * @param {string} colaborador - Nome do colaborador para filtrar (opcional)
- */
-function carregarComparativoPorColaborador(
-  mes,
-  gerente = "",
-  colaborador = ""
-) {
-  const container = document.getElementById("tabelaComparativoColaborador");
-  container.innerHTML =
-    '<p class="text-center text-muted">Carregando comparativo detalhado...</p>';
-
-  const params = new URLSearchParams();
-  params.append("mes", mes);
-  if (gerente) params.append("gerente", gerente);
-  if (colaborador) params.append("colaborador", colaborador);
-
-  const url = `/planejamento-he/api/comparativo-colaborador?${params.toString()}`;
-
-  fetch(url)
-    .then((response) => {
-      if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
-      return response.json();
-    })
-    .then((dados) => {
-      if (dados.erro) {
-        container.innerHTML = `<div class="alert alert-danger">${dados.erro}</div>`;
-        return;
-      }
-
-      if (!Array.isArray(dados) || dados.length === 0) {
-        container.innerHTML =
-          '<p class="text-center text-muted">Nenhum dado encontrado para o filtro selecionado.</p>';
-        return;
-      }
-
-      container.innerHTML = criarTabelaComparativoColaborador(dados);
-    })
-    .catch((erro) => {
-      console.error("Erro ao carregar comparativo por colaborador:", erro);
-      container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados. Tente novamente.</div>`;
-    });
-}
-
 // ================================================================================
 // 📋 Criação de Tabelas
 // ================================================================================
@@ -580,117 +532,6 @@ function formatarMoeda(valor) {
   });
 }
 
-/**
- * Cria a tabela HTML do comparativo detalhado por colaborador
- *
- * @param {Array} dados - Array de objetos com os dados comparativos por colaborador
- * @returns {string} HTML da tabela
- */
-function criarTabelaComparativoColaborador(dados) {
-  let html = `
-    <div class="table-responsive table-responsive-sm table-responsive-md">
-      <table class="table table-bordered table-hover table-sm">
-        <thead class="thead-light">
-          <tr>
-            <th class="text-left">Colaborador</th>
-            <th class="text-left">Cargo</th>
-            <th class="text-left">Gerente</th>
-            <th class="text-center">Executado 50%</th>
-            <th class="text-center">Executado 100%</th>
-            <th class="text-center">Autorizado 50%</th>
-            <th class="text-center">Autorizado 100%</th>
-            <th class="text-center">Não Autorizado 50%</th>
-            <th class="text-center">Não Autorizado 100%</th>
-            <th class="text-center">Total Executado</th>
-            <th class="text-center">Total Autorizado</th>
-            <th class="text-center">Total Não Autorizado</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  dados.forEach((item) => {
-    const naoAut50 = Math.max(
-      0,
-      (item.executado_50 || 0) - (item.autorizado_50 || 0)
-    );
-    const naoAut100 = Math.max(
-      0,
-      (item.executado_100 || 0) - (item.autorizado_100 || 0)
-    );
-
-    html += `
-      <tr>
-        <td class="text-left"><strong>${item.colaborador || "-"}</strong></td>
-        <td class="text-left">${item.cargo || "-"}</td>
-        <td class="text-left">${item.gerente || "-"}</td>
-        <td class="text-center">${(item.executado_50 || 0).toFixed(2)}</td>
-        <td class="text-center">${(item.executado_100 || 0).toFixed(2)}</td>
-        <td class="text-center">${(item.autorizado_50 || 0).toFixed(2)}</td>
-        <td class="text-center">${(item.autorizado_100 || 0).toFixed(2)}</td>
-        <td class="text-center">${naoAut50.toFixed(2)}</td>
-        <td class="text-center">${naoAut100.toFixed(2)}</td>
-        <td class="text-center">${(item.total_executado || 0).toFixed(2)}</td>
-        <td class="text-center">${(item.total_autorizado || 0).toFixed(2)}</td>
-        <td class="text-center">${(item.total_nao_autorizado || 0).toFixed(
-          2
-        )}</td>
-      </tr>
-    `;
-  });
-
-  html += `
-        </tbody>
-      </table>
-    </div>
-  `;
-
-  return html;
-}
-
-// ================================================================================
-// 📥 Exportação de Dados
-// ================================================================================
-
-/**
- * Exporta os dados comparativos para CSV
- */
-async function exportarDadosComparativo() {
-  const mes = document.getElementById("filtroMesComparativo").value;
-  const gerente = document.getElementById("filtroGerenteComparativo").value;
-
-  try {
-    const params = new URLSearchParams({ mes });
-    if (gerente) params.append("gerente", gerente);
-
-    const response = await fetch(
-      `/planejamento-he/api/exportar-comparativo?${params.toString()}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Erro na requisição: ${response.statusText}`);
-    }
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.style.display = "none";
-    a.href = url;
-    a.download = `comparativo_he_${mes.toLowerCase()}_${new Date()
-      .toISOString()
-      .slice(0, 10)}.csv`;
-
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  } catch (error) {
-    console.error("Erro ao exportar dados comparativos:", error);
-    alert(
-      "Falha ao exportar os dados. Verifique o console para mais detalhes."
-    );
-  }
-}
 
 // ================================================================================
 // 🎬 Inicialização do Painel
@@ -745,7 +586,6 @@ function inicializarPainelFrequencia() {
   
   // Carrega os dados iniciais
   carregarComparativoFrequencia(getMesAtualPortugues());
-  carregarComparativoPorColaborador(getMesAtualPortugues());
 
   // Configura event listeners
   document
@@ -755,7 +595,6 @@ function inicializarPainelFrequencia() {
       const gerente = document.getElementById("filtroGerenteComparativo").value;
       carregarComparativoFrequencia(mes, gerente);
       carregarComparativoFrequenciaValor(mes, gerente);
-      carregarComparativoPorColaborador(mes, gerente);
     });
 
   document
@@ -765,12 +604,9 @@ function inicializarPainelFrequencia() {
       const gerente = this.value;
       carregarComparativoFrequencia(mes, gerente);
       carregarComparativoFrequenciaValor(mes, gerente);
-      carregarComparativoPorColaborador(mes, gerente);
     });
 
-  document
-    .getElementById("btnExportarComparativo")
-    .addEventListener("click", exportarDadosComparativo);
+
 
   // Botão para limpar filtros
   document
@@ -781,7 +617,6 @@ function inicializarPainelFrequencia() {
         getMesAtualPortugues();
       carregarComparativoFrequencia(getMesAtualPortugues());
       carregarComparativoFrequenciaValor(getMesAtualPortugues());
-      carregarComparativoPorColaborador(getMesAtualPortugues());
     });
 }
 
