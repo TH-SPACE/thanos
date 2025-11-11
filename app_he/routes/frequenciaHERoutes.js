@@ -57,4 +57,17 @@ router.get("/api/comparativo-frequencia-valor",
     frequenciaController.getComparativoFrequenciaValor
 );
 
+/**
+ * GET /api/frequencia/meses-disponiveis
+ * Retorna uma lista de meses/anos únicos que possuem registros na tabela FREQUENCIA.
+ * Usado para popular dinamicamente os filtros de mês no frontend.
+ * 
+ * Middlewares: requireHEAuth, requireAnyHEDiretoria
+ */
+router.get("/api/frequencia/meses-disponiveis",
+    heAuth.requireHEAuth,
+    heDiretoriaAuth.requireAnyHEDiretoria,
+    frequenciaController.getMesesDisponiveisFrequencia
+);
+
 module.exports = router;

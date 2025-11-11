@@ -84,7 +84,7 @@ function carregarComparativoFrequencia(mes, gerente = "") {
       }
 
       container.innerHTML = criarTabelaComparativo(dados);
-      
+
       // Carregar também a tabela de valores monetários
       carregarComparativoFrequenciaValor(mes, gerente);
     })
@@ -228,32 +228,32 @@ function criarTabelaComparativo(dados) {
       <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
         <td class="text-left"><i class="fa-solid fa-users"></i> <strong>${divisao}</strong></td>
         <td class="text-center executado-col" style="display: none;"><strong>${dadosDivisao.total_executado_50.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
         <td class="text-center executado-col" style="display: none;"><strong>${dadosDivisao.total_executado_100.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
         <td class="text-center autorizado-col" style="display: none;"><strong>${dadosDivisao.total_autorizado_50.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
         <td class="text-center autorizado-col" style="display: none;"><strong>${dadosDivisao.total_autorizado_100.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
         <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosDivisao.total_nao_autorizado_50.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
         <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosDivisao.total_nao_autorizado_100.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
         <td class="text-center"><strong>${dadosDivisao.total_executado.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
         <td class="text-center"><strong>${dadosDivisao.total_autorizado.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
         <td class="text-center"><strong>${dadosDivisao.total_nao_autorizado.toFixed(
-          2
-        )}</strong></td>
+        2
+      )}</strong></td>
       </tr>
     `;
 
@@ -320,32 +320,32 @@ function criarTabelaComparativo(dados) {
           <tr>
             <td class="text-left">TOTAL GERAL</td>
             <td class="text-center executado-col" style="display: none;">${totalExecutado50.toFixed(
-              2
-            )}</td>
+    2
+  )}</td>
             <td class="text-center executado-col" style="display: none;">${totalExecutado100.toFixed(
-              2
-            )}</td>
+    2
+  )}</td>
             <td class="text-center autorizado-col" style="display: none;">${totalAutorizado50.toFixed(
-              2
-            )}</td>
+    2
+  )}</td>
             <td class="text-center autorizado-col" style="display: none;">${totalAutorizado100.toFixed(
-              2
-            )}</td>
+    2
+  )}</td>
             <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado50.toFixed(
-              2
-            )}</td>
+    2
+  )}</td>
             <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado100.toFixed(
-              2
-            )}</td>
+    2
+  )}</td>
             <td class="text-center">${(
-              totalExecutado50 + totalExecutado100
-            ).toFixed(2)}</td>
+      totalExecutado50 + totalExecutado100
+    ).toFixed(2)}</td>
             <td class="text-center">${(
-              totalAutorizado50 + totalAutorizado100
-            ).toFixed(2)}</td>
+      totalAutorizado50 + totalAutorizado100
+    ).toFixed(2)}</td>
             <td class="text-center">${(
-              totalNaoAutorizado50 + totalNaoAutorizado100
-            ).toFixed(2)}</td>
+      totalNaoAutorizado50 + totalNaoAutorizado100
+    ).toFixed(2)}</td>
           </tr>
         </tfoot>
       </table>
@@ -541,32 +541,47 @@ function formatarMoeda(valor) {
  * Inicializa o painel de frequência vs planejamento
  */
 function inicializarPainelFrequencia() {
-  // Preenche o seletor de meses
-  const meses = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
   const mesSelect = document.getElementById("filtroMesComparativo");
-  mesSelect.innerHTML = meses
-    .map((m) => `<option value="${m}">${m}</option>`)
-    .join("");
-  mesSelect.value = getMesAtualPortugues();
+  const gerenteSelect = document.getElementById("filtroGerenteComparativo");
 
-  // Carrega a lista de gerentes
+  // Busca os meses disponíveis na tabela de frequência
+  fetch("/planejamento-he/api/frequencia/meses-disponiveis")
+    .then(res => res.json())
+    .then(mesesDisponiveis => {
+      // Limpa o select antes de popular
+      mesSelect.innerHTML = '';
+
+      if (mesesDisponiveis && mesesDisponiveis.length > 0) {
+        // Popula o select com os meses retornados pela API
+        mesSelect.innerHTML = mesesDisponiveis.map(m => `<option value="${m.nome}">${m.nome}</option>`).join('');
+
+        // Lógica para definir o mês padrão
+        const mesAtual = getMesAtualPortugues();
+        const anoAtual = new Date().getFullYear();
+
+        // Verifica se o mês/ano atual existe na lista de meses disponíveis
+        const mesAtualDisponivel = mesesDisponiveis.find(m => m.nome === mesAtual && m.ano === anoAtual);
+
+        if (mesAtualDisponivel) {
+          // Se o mês atual existe, define ele como padrão
+          mesSelect.value = mesAtual;
+        } else {
+          // Se não, define o mais recente da lista (que é o primeiro) como padrão
+          mesSelect.value = mesesDisponiveis[0].nome;
+        }
+      } else {
+        mesSelect.innerHTML = '<option value="" disabled>Nenhum mês com dados</option>';
+      }
+      // Carrega os dados iniciais com o mês padrão
+      carregarComparativoFrequencia(mesSelect.value);
+    }).catch(err => {
+      console.error("Erro ao buscar meses disponíveis:", err);
+      mesSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+    });
+
   fetch("/planejamento-he/api/gerentes")
     .then((r) => r.json())
     .then((data) => {
-      const gerenteSelect = document.getElementById("filtroGerenteComparativo");
       gerenteSelect.innerHTML = '<option value="">Todos os Gerentes</option>';
       if (data.gerentes) {
         data.gerentes.forEach((g) => {
@@ -583,9 +598,6 @@ function inicializarPainelFrequencia() {
   if (containerValor) {
     containerValor.innerHTML = '<p class="text-center text-muted">Aguardando dados monetários...</p>';
   }
-  
-  // Carrega os dados iniciais
-  carregarComparativoFrequencia(getMesAtualPortugues());
 
   // Configura event listeners
   document
@@ -612,11 +624,15 @@ function inicializarPainelFrequencia() {
   document
     .getElementById("btnLimparFiltrosComparativo")
     .addEventListener("click", function () {
+      const mesSelect = document.getElementById("filtroMesComparativo");
+      // Pega o primeiro <option> que é o mês mais recente disponível
+      const mesPadrao = mesSelect.options.length > 0 ? mesSelect.options[0].value : "";
+
       document.getElementById("filtroGerenteComparativo").value = "";
-      document.getElementById("filtroMesComparativo").value =
-        getMesAtualPortugues();
-      carregarComparativoFrequencia(getMesAtualPortugues());
-      carregarComparativoFrequenciaValor(getMesAtualPortugues());
+      // Define o valor para o mês padrão (o mais recente da lista)
+      mesSelect.value = mesPadrao;
+      carregarComparativoFrequencia(mesPadrao);
+      carregarComparativoFrequenciaValor(mesPadrao);
     });
 }
 
@@ -729,7 +745,7 @@ function alternarColunasExecucaoValor() {
 
 document.addEventListener("DOMContentLoaded", () => {
   // Adiciona ouvinte de evento para quando a página for carregada
-  document.addEventListener("page-load:painelFrequencia", function () {
+  document.addEventListener("page-load:painelFrequencia", function () { // Nome do evento personalizado
     inicializarPainelFrequencia();
   });
 });

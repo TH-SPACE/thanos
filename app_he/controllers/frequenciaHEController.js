@@ -616,6 +616,67 @@ exports.getComparativoFrequenciaValor = async (req, res) => {
   }
 };
 
+/**
+ * Retorna uma lista de meses únicos que possuem registros na tabela FREQUENCIA.
+ *
+ * Busca na tabela de frequência e retorna os meses no formato "NomeMês/Ano"
+ * para popular os filtros do frontend, garantindo que o usuário só possa
+ * selecionar períodos com dados existentes.
+ *
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ * @returns {Array} JSON array com os meses disponíveis. Ex: ["Outubro/2023", "Novembro/2023"]
+ */
+exports.getMesesDisponiveisFrequencia = async (req, res) => {
+  const user = req.session.usuario;
+  const ip = req.ip;
+
+  try {
+    const conexao = db.mysqlPool;
+    const nomeTabela = configFrequencia.tabela_frequencia.nome;
+    const colunaData = configFrequencia.tabela_frequencia.colunas_obrigatorias[5]; // 'DATA'
+
+    // Valida se a tabela FREQUENCIA existe antes de prosseguir
+    const tabelaValida = await exports.validarTabelaFrequencia(conexao);
+    if (!tabelaValida) {
+      return res.status(400).json({
+        erro: "Tabela FREQUENCIA não encontrada ou com estrutura incorreta.",
+      });
+    }
+
+    // Query para buscar ano e mês distintos, ordenando pelo mais recente primeiro
+    const query = `
+      SELECT DISTINCT 
+        YEAR(${colunaData}) as ano, 
+        MONTH(${colunaData}) as mes
+      FROM ${nomeTabela}
+      ORDER BY ano DESC, mes DESC
+    `;
+
+    const [rows] = await conexao.query(query);
+
+    const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+    // Formata o resultado para "NomeMês/Ano"
+    const mesesDisponiveis = rows.map(row => {
+      const nomeMes = mesesNomes[row.mes - 1];
+      // O mês do MySQL é 1-12, o índice do array é 0-11
+      return {
+        nome: nomeMes,
+        ano: row.ano,
+        completo: `${nomeMes}/${row.ano}`
+      };
+    });
+
+    res.json(mesesDisponiveis);
+
+  } catch (error) {
+    console.error(`[ERRO] Usuário: ${user?.nome}, IP: ${ip}, Ação: Erro ao buscar meses disponíveis da frequência.`, error);
+    res.status(500).json({ erro: "Erro interno ao buscar meses disponíveis." });
+  }
+};
+
+
 // As funções já foram definidas como exports.functionName,
 // então não precisamos fazer uma nova exportação com module.exports.
 // A função validarTabelaFrequencia também já foi adicionada ao exports.
