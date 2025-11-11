@@ -574,9 +574,6 @@ exports.getComparativoFrequenciaValor = async (req, res) => {
       // Somamos ao total do gerente
       mapaTotalPorGerente[nomeGerente].executado_50 += exec.executado_50;
       mapaTotalPorGerente[nomeGerente].executado_100 += exec.executado_100;
-      // CORREÇÃO: Adicionando também os valores autorizados ao total!
-      mapaTotalPorGerente[nomeGerente].autorizado_50 += aut.autorizado_50;
-      mapaTotalPorGerente[nomeGerente].autorizado_100 += aut.autorizado_100;
       // Para os totais não autorizados, usamos os valores calculados individualmente
       mapaTotalPorGerente[nomeGerente].nao_autorizado_50 += nao_aut_50;
       mapaTotalPorGerente[nomeGerente].nao_autorizado_100 += nao_aut_100;
@@ -586,16 +583,21 @@ exports.getComparativoFrequenciaValor = async (req, res) => {
     const resultado = Object.keys(mapaTotalPorGerente).map((nomeGerente) => {
       const dados = mapaTotalPorGerente[nomeGerente];
 
+      // Lógica corrigida: O valor autorizado é a parte do executado que foi coberta.
+      // Valor Autorizado = Valor Executado - Valor Não Autorizado
+      const autorizado_50 = dados.executado_50 - dados.nao_autorizado_50;
+      const autorizado_100 = dados.executado_100 - dados.nao_autorizado_100;
+
       return {
         gerente: nomeGerente,
         executado_50: dados.executado_50,
         executado_100: dados.executado_100,
-        autorizado_50: dados.autorizado_50,
-        autorizado_100: dados.autorizado_100,
+        autorizado_50: Math.max(0, autorizado_50), // Garante que não seja negativo
+        autorizado_100: Math.max(0, autorizado_100), // Garante que não seja negativo
         nao_autorizado_50: dados.nao_autorizado_50,
         nao_autorizado_100: dados.nao_autorizado_100,
         total_executado: dados.executado_50 + dados.executado_100,
-        total_autorizado: dados.autorizado_50 + dados.autorizado_100,
+        total_autorizado: Math.max(0, autorizado_50) + Math.max(0, autorizado_100),
         total_nao_autorizado:
           dados.nao_autorizado_50 + dados.nao_autorizado_100,
         gerente_divisao: dados.gerente_divisao,
