@@ -15,8 +15,8 @@
     <!-- Select2 -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 
-    <!-- CSS Personalizado para Frequência -->
-    <link rel="stylesheet" href="../public/css/frequencia-custom.css">
+    <!-- CSS Personalizado para Gasto vs Previsto -->
+    <link rel="stylesheet" href="../public/css/gastoPrev-custom.css">
 
     <!-- CSS Personalizado para Planejamento HE -->
     <link rel="stylesheet" href="../public/css/planejamento-he-custom.css">
@@ -84,7 +84,7 @@
             <a href="#" class="menu-item" data-page="minhasSolicitacoes"><i class="fas fa-list"></i> Minhas
                 Solicitações</a>
             <a href="#" class="menu-item" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            <a href="#" class="menu-item" data-page="painelFrequencia" id="menuFrequencia"><i
+            <a href="#" class="menu-item" data-page="painelGastoPrev" id="menuGastoPrev"><i
                     class="fas fa-chart-bar"></i> Gasto vs Previsto</a>
 
             <!-- Separador para menu especial -->
@@ -405,8 +405,8 @@
                     </div>
                 </div>
 
-                <!-- Tela: Painel de Frequência vs Planejamento -->
-                <div id="painelFrequencia" class="card" style="display: none;">
+                <!-- Tela: Painel de Gasto vs Previsto -->
+                <div id="painelGastoPrev" class="card" style="display: none;">
                     <h2 class="card-title"><i class="fas fa-chart-bar"></i> Gasto vs Previsto</h2>
 
                     <!-- Filtros -->
@@ -640,7 +640,7 @@
     <script src="/public/js/dashboard_he.js"></script>
     <script src="/public/js/aprovacao.js"></script>
     <script src="/public/js/colaboradores.js"></script>
-    <script src="/public/js/frequencia.js"></script>
+    <script src="/public/js/gastoPrev.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -652,7 +652,7 @@
                 'selecaoGerencia': document.getElementById('selecaoGerencia'),
                 'aprovacoes': document.getElementById('aprovacoes'),
                 'gerenciarColaboradores': document.getElementById('gerenciarColaboradores'),
-                'painelFrequencia': document.getElementById('painelFrequencia')
+                'painelGastoPrev': document.getElementById('painelGastoPrev')
             };
 
             // Função para trocar de página
@@ -853,7 +853,7 @@
                             menuAprovacoes.style.display = 'flex';
                             menuColaboradores.style.display = 'flex';
                             menuGerencia.style.display = 'flex';
-                            menuFrequencia.style.display = 'flex'; // Mostra o menu de frequência para aprovadores
+                            menuGastoPrev.style.display = 'flex'; // Mostra o menu de Gasto vs Previsto para aprovadores
 
                             // Inicializa o mês antes de mostrar a tela
                             inicializarMesAtual();
@@ -882,9 +882,9 @@
             });
 
             // Evento para carregar o painel de frequência quando acessado
-            document.addEventListener('page-load:painelFrequencia', function () {
-                if (typeof inicializarPainelFrequencia === 'function') {
-                    inicializarPainelFrequencia();
+            document.addEventListener('page-load:painelGastoPrev', function () {
+                if (typeof inicializarPainelGastoPrev === 'function') {
+                    inicializarPainelGastoPrev();
                 }
             });
 
