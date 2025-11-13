@@ -134,7 +134,9 @@ h6, .h6 { font-size: var(--font-size-base); }
 #painelFrequencia .table td { font-size: var(--font-size-sm); }
 
 #tabelaComparativoFrequencia .table th,
-#tabelaComparativoFrequencia .table td { font-size: var(--font-size-xs); }
+#tabelaComparativoFrequencia .table td { 
+  font-size: var(--font-size-xs); 
+}
 
  #tabelaComparativoFrequenciaValor .table th,
 #tabelaComparativoFrequenciaValor .table td {
