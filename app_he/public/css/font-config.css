@@ -134,10 +134,12 @@ h6, .h6 { font-size: var(--font-size-base); }
 #painelFrequencia .table td { font-size: var(--font-size-sm); }
 
 #tabelaComparativoFrequencia .table th,
-#tabelaComparativoFrequencia .table td { font-size: var(--font-size-sm); }
+#tabelaComparativoFrequencia .table td { font-size: var(--font-size-xs); }
 
-#tabelaComparativoColaborador .table th,
-#tabelaComparativoColaborador .table td { font-size: var(--font-size-sm); }
+ #tabelaComparativoFrequenciaValor .table th,
+#tabelaComparativoFrequenciaValor .table td {
+      font-size: var(--font-size-xs);
+   }
 
 /* 
  * Media queries para diferentes tamanhos de tela

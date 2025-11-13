@@ -167,16 +167,6 @@ h6, .h6 { font-size: 1rem; }
     font-size: 0.8rem;
 }
 
-#tabelaComparativoFrequencia .table th,
-#tabelaComparativoFrequencia .table td {
-    font-size: 0.8rem;
-}
-
-#tabelaComparativoColaborador .table th,
-#tabelaComparativoColaborador .table td {
-    font-size: 0.8rem;
-}
-
 /* Elementos dos cards de KPI */
 .summary-card .title {
     font-size: 0.7rem;

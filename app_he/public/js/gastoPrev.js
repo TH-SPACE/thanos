@@ -15,34 +15,37 @@
  * @returns {string} Nome do mês (ex: "Janeiro", "Fevereiro", etc)
  */
 function getMesAtualPortugues() {
-    const meses = [
-        "Janeiro",
-        "Fevereiro",
-        "Março",
-        "Abril",
-        "Maio",
-        "Junho",
-        "Julho",
-        "Agosto",
-        "Setembro",
-        "Outubro",
-        "Novembro",
-        "Dezembro",
-    ];
-    return meses[new Date().getMonth()];
+  const meses = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+  return meses[new Date().getMonth()];
 }
 
 /**
  * Formata um valor numérico como moeda brasileira (R$)
- * 
+ *
  * @param {number} valor - Valor a ser formatado
  * @returns {string} Valor formatado como moeda (ex: R$ 1.234,56)
  */
 function formatarMoeda(valor) {
-    return 'R$ ' + parseFloat(valor || 0).toLocaleString('pt-BR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
+  return (
+    "R$ " +
+    parseFloat(valor || 0).toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
 }
 
 // ================================================================================
@@ -56,82 +59,84 @@ function formatarMoeda(valor) {
  * @param {string} gerente - Nome do gerente para filtrar (opcional)
  */
 function carregarComparativoGastoPrev(mes, gerente = "") {
-    const container = document.getElementById("tabelaComparativoFrequencia");
-    container.innerHTML =
-        '<p class="text-center text-muted">Carregando comparativo...</p>';
+  const container = document.getElementById("tabelaComparativoFrequencia");
+  container.innerHTML =
+    '<p class="text-center text-muted">Carregando comparativo...</p>';
 
-    const params = new URLSearchParams();
-    params.append("mes", mes);
-    if (gerente) params.append("gerente", gerente);
+  const params = new URLSearchParams();
+  params.append("mes", mes);
+  if (gerente) params.append("gerente", gerente);
 
-    const url = `/planejamento-he/api/comparativo-gasto-prev?${params.toString()}`;
+  const url = `/planejamento-he/api/comparativo-gasto-prev?${params.toString()}`;
 
-    fetch(url)
-        .then((response) => {
-            if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
-            return response.json();
-        })
-        .then((dados) => {
-            if (dados.erro) {
-                container.innerHTML = `<div class="alert alert-danger">${dados.erro}</div>`;
-                return;
-            }
+  fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
+      return response.json();
+    })
+    .then((dados) => {
+      if (dados.erro) {
+        container.innerHTML = `<div class="alert alert-danger">${dados.erro}</div>`;
+        return;
+      }
 
-            if (!Array.isArray(dados) || dados.length === 0) {
-                container.innerHTML =
-                    '<p class="text-center text-muted">Nenhum dado encontrado para o filtro selecionado.</p>';
-                return;
-            }
+      if (!Array.isArray(dados) || dados.length === 0) {
+        container.innerHTML =
+          '<p class="text-center text-muted">Nenhum dado encontrado para o filtro selecionado.</p>';
+        return;
+      }
 
-            container.innerHTML = criarTabelaComparativo(dados);
+      container.innerHTML = criarTabelaComparativo(dados);
 
-            // Carregar também a tabela de valores monetários
-            carregarComparativoGastoPrevValor(mes, gerente);
-        })
-        .catch((erro) => {
-            console.error("Erro ao carregar comparativo de Gasto vs Previsto:", erro);
-            container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados. Tente novamente.</div>`;
-        });
+      // Carregar também a tabela de valores monetários
+      carregarComparativoGastoPrevValor(mes, gerente);
+    })
+    .catch((erro) => {
+      console.error("Erro ao carregar comparativo de Gasto vs Previsto:", erro);
+      container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados. Tente novamente.</div>`;
+    });
 }
 
 /**
  * Carrega e exibe o comparativo de valores monetários executados vs autorizados por gerente
- * 
+ *
  * @param {string} mes - Mês para filtrar (obrigatório)
  * @param {string} gerente - Nome do gerente para filtrar (opcional)
  */
 function carregarComparativoGastoPrevValor(mes, gerente = "") {
-    const container = document.getElementById("tabelaComparativoFrequenciaValor");
-    container.innerHTML = '<p class="text-center text-muted">Carregando comparativo monetário...</p>';
+  const container = document.getElementById("tabelaComparativoFrequenciaValor");
+  container.innerHTML =
+    '<p class="text-center text-muted">Carregando comparativo monetário...</p>';
 
-    const params = new URLSearchParams();
-    params.append("mes", mes);
-    if (gerente) params.append("gerente", gerente);
+  const params = new URLSearchParams();
+  params.append("mes", mes);
+  if (gerente) params.append("gerente", gerente);
 
-    const url = `/planejamento-he/api/comparativo-gasto-prev-valor?${params.toString()}`;
+  const url = `/planejamento-he/api/comparativo-gasto-prev-valor?${params.toString()}`;
 
-    fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
-            return response.json();
-        })
-        .then(dados => {
-            if (dados.erro) {
-                container.innerHTML = `<div class="alert alert-danger">${dados.erro}</div>`;
-                return;
-            }
+  fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
+      return response.json();
+    })
+    .then((dados) => {
+      if (dados.erro) {
+        container.innerHTML = `<div class="alert alert-danger">${dados.erro}</div>`;
+        return;
+      }
 
-            if (!Array.isArray(dados) || dados.length === 0) {
-                container.innerHTML = '<p class="text-center text-muted">Nenhum dado monetário encontrado para o filtro selecionado.</p>';
-                return;
-            }
+      if (!Array.isArray(dados) || dados.length === 0) {
+        container.innerHTML =
+          '<p class="text-center text-muted">Nenhum dado monetário encontrado para o filtro selecionado.</p>';
+        return;
+      }
 
-            container.innerHTML = criarTabelaComparativoValor(dados);
-        })
-        .catch(erro => {
-            console.error('Erro ao carregar comparativo monetário:', erro);
-            container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados monetários. Tente novamente.</div>`;
-        });
+      container.innerHTML = criarTabelaComparativoValor(dados);
+    })
+    .catch((erro) => {
+      console.error("Erro ao carregar comparativo monetário:", erro);
+      container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados monetários. Tente novamente.</div>`;
+    });
 }
 
 // ================================================================================
@@ -145,52 +150,52 @@ function carregarComparativoGastoPrevValor(mes, gerente = "") {
  * @returns {string} HTML da tabela
  */
 function criarTabelaComparativo(dados) {
-    let totalExecutado50 = 0;
-    let totalExecutado100 = 0;
-    let totalAutorizado50 = 0;
-    let totalAutorizado100 = 0;
-    let totalNaoAutorizado50 = 0;
-    let totalNaoAutorizado100 = 0;
+  let totalExecutado50 = 0;
+  let totalExecutado100 = 0;
+  let totalAutorizado50 = 0;
+  let totalAutorizado100 = 0;
+  let totalNaoAutorizado50 = 0;
+  let totalNaoAutorizado100 = 0;
 
-    // Agrupa os dados por gerente de divisão para cálculo de totais
-    const dadosAgrupados = {};
-    dados.forEach((item) => {
-        const divisao = item.gerente_divisao || "Sem Divisão";
-        if (!dadosAgrupados[divisao]) {
-            dadosAgrupados[divisao] = {
-                total_executado_50: 0,
-                total_executado_100: 0,
-                total_autorizado_50: 0,
-                total_autorizado_100: 0,
-                total_nao_autorizado_50: 0,
-                total_nao_autorizado_100: 0,
-                total_executado: 0,
-                total_autorizado: 0,
-                total_nao_autorizado: 0,
-                gerentes: [],
-            };
-        }
+  // Agrupa os dados por gerente de divisão para cálculo de totais
+  const dadosAgrupados = {};
+  dados.forEach((item) => {
+    const divisao = item.gerente_divisao || "Sem Divisão";
+    if (!dadosAgrupados[divisao]) {
+      dadosAgrupados[divisao] = {
+        total_executado_50: 0,
+        total_executado_100: 0,
+        total_autorizado_50: 0,
+        total_autorizado_100: 0,
+        total_nao_autorizado_50: 0,
+        total_nao_autorizado_100: 0,
+        total_executado: 0,
+        total_autorizado: 0,
+        total_nao_autorizado: 0,
+        gerentes: [],
+      };
+    }
 
-        dadosAgrupados[divisao].total_executado_50 += item.executado_50 || 0;
-        dadosAgrupados[divisao].total_executado_100 += item.executado_100 || 0;
-        dadosAgrupados[divisao].total_autorizado_50 += item.autorizado_50 || 0;
-        dadosAgrupados[divisao].total_autorizado_100 += item.autorizado_100 || 0;
-        dadosAgrupados[divisao].total_nao_autorizado_50 += Math.max(
-            0,
-            (item.executado_50 || 0) - (item.autorizado_50 || 0)
-        );
-        dadosAgrupados[divisao].total_nao_autorizado_100 += Math.max(
-            0,
-            (item.executado_100 || 0) - (item.autorizado_100 || 0)
-        );
-        dadosAgrupados[divisao].total_executado += item.total_executado || 0;
-        dadosAgrupados[divisao].total_autorizado += item.total_autorizado || 0;
-        dadosAgrupados[divisao].total_nao_autorizado +=
-            item.total_nao_autorizado || 0;
-        dadosAgrupados[divisao].gerentes.push(item);
-    });
+    dadosAgrupados[divisao].total_executado_50 += item.executado_50 || 0;
+    dadosAgrupados[divisao].total_executado_100 += item.executado_100 || 0;
+    dadosAgrupados[divisao].total_autorizado_50 += item.autorizado_50 || 0;
+    dadosAgrupados[divisao].total_autorizado_100 += item.autorizado_100 || 0;
+    dadosAgrupados[divisao].total_nao_autorizado_50 += Math.max(
+      0,
+      (item.executado_50 || 0) - (item.autorizado_50 || 0)
+    );
+    dadosAgrupados[divisao].total_nao_autorizado_100 += Math.max(
+      0,
+      (item.executado_100 || 0) - (item.autorizado_100 || 0)
+    );
+    dadosAgrupados[divisao].total_executado += item.total_executado || 0;
+    dadosAgrupados[divisao].total_autorizado += item.total_autorizado || 0;
+    dadosAgrupados[divisao].total_nao_autorizado +=
+      item.total_nao_autorizado || 0;
+    dadosAgrupados[divisao].gerentes.push(item);
+  });
 
-    let html = `
+  let html = `
     <div class="d-flex justify-content-between align-items-center mb-2">
       <button id="btnAlternarExecucao" class="btn btn-sm btn-outline-primary" onclick="alternarColunasExecucao()">
         <i class="fas fa-chevron-down" id="iconeExecucao"></i> 
@@ -216,197 +221,198 @@ function criarTabelaComparativo(dados) {
         <tbody>
   `;
 
-    // Ordena as divisões e adiciona os dados à tabela
-    Object.keys(dadosAgrupados)
-        .sort()
-        .forEach((divisao) => {
-            const dadosDivisao = dadosAgrupados[divisao];
-            const gerentes = dadosDivisao.gerentes;
+  // Ordena as divisões e adiciona os dados à tabela
+  Object.keys(dadosAgrupados)
+    .sort()
+    .forEach((divisao) => {
+      const dadosDivisao = dadosAgrupados[divisao];
+      const gerentes = dadosDivisao.gerentes;
 
-            // Adiciona uma linha para o gerente de divisão com os totais consolidados nas colunas
-            html += `
+      // Adiciona uma linha para o gerente de divisão com os totais consolidados nas colunas
+      html += `
       <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
         <td class="text-left"><i class="fa-solid fa-users"></i> <strong>${divisao}</strong></td>
         <td class="text-center executado-col" style="display: none;"><strong>${dadosDivisao.total_executado_50.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
         <td class="text-center executado-col" style="display: none;"><strong>${dadosDivisao.total_executado_100.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
         <td class="text-center autorizado-col" style="display: none;"><strong>${dadosDivisao.total_autorizado_50.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
         <td class="text-center autorizado-col" style="display: none;"><strong>${dadosDivisao.total_autorizado_100.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
         <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosDivisao.total_nao_autorizado_50.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
         <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosDivisao.total_nao_autorizado_100.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
         <td class="text-center"><strong>${dadosDivisao.total_executado.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
         <td class="text-center"><strong>${dadosDivisao.total_autorizado.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
         <td class="text-center"><strong>${dadosDivisao.total_nao_autorizado.toFixed(
-                2
-            )}</strong></td>
+          2
+        )}</strong></td>
       </tr>
     `;
 
-            // Adiciona linha para cada gerente sob a divisão
-            gerentes.forEach((item) => {
-                const naoAut50 = Math.max(
-                    0,
-                    (item.executado_50 || 0) - (item.autorizado_50 || 0)
-                );
-                const naoAut100 = Math.max(
-                    0,
-                    (item.executado_100 || 0) - (item.autorizado_100 || 0)
-                );
+      // Adiciona linha para cada gerente sob a divisão
+      gerentes.forEach((item) => {
+        const naoAut50 = Math.max(
+          0,
+          (item.executado_50 || 0) - (item.autorizado_50 || 0)
+        );
+        const naoAut100 = Math.max(
+          0,
+          (item.executado_100 || 0) - (item.autorizado_100 || 0)
+        );
 
-                // Extrai o primeiro nome e nome completo do gerente
-                const primeiroNome = item.gerente ? item.gerente.split(" ")[0] : "-";
-                const nomeCompleto = item.gerente || "-";
+        // Extrai o primeiro nome e nome completo do gerente
+        const primeiroNome = item.gerente ? item.gerente.split(" ")[0] : "-";
+        const nomeCompleto = item.gerente || "-";
 
-                html += `
+        html += `
         <tr>
           <td class="text-left"><strong class="nome-completo">${nomeCompleto}</strong><strong class="primeiro-nome" style="display: none;">${primeiroNome}</strong></td>
           <td class="text-center executado-col" style="display: none;">${(
-                        item.executado_50 || 0
-                    ).toFixed(2)}</td>
+            item.executado_50 || 0
+          ).toFixed(2)}</td>
           <td class="text-center executado-col" style="display: none;">${(
-                        item.executado_100 || 0
-                    ).toFixed(2)}</td>
+            item.executado_100 || 0
+          ).toFixed(2)}</td>
           <td class="text-center autorizado-col" style="display: none;">${(
-                        item.autorizado_50 || 0
-                    ).toFixed(2)}</td>
+            item.autorizado_50 || 0
+          ).toFixed(2)}</td>
           <td class="text-center autorizado-col" style="display: none;">${(
-                        item.autorizado_100 || 0
-                    ).toFixed(2)}</td>
+            item.autorizado_100 || 0
+          ).toFixed(2)}</td>
           <td class="text-center nao-autorizado-col" style="display: none;">${naoAut50.toFixed(
-                        2
-                    )}</td>
+            2
+          )}</td>
           <td class="text-center nao-autorizado-col" style="display: none;">${naoAut100.toFixed(
-                        2
-                    )}</td>
+            2
+          )}</td>
           <td class="text-center">${(item.total_executado || 0).toFixed(2)}</td>
           <td class="text-center">${(item.total_autorizado || 0).toFixed(
-                        2
-                    )}</td>
+            2
+          )}</td>
           <td class="text-center">${(item.total_nao_autorizado || 0).toFixed(
-                        2
-                    )}</td>
+            2
+          )}</td>
         </tr>
       `;
 
-                // Acumula totais
-                totalExecutado50 += item.executado_50 || 0;
-                totalExecutado100 += item.executado_100 || 0;
-                totalAutorizado50 += item.autorizado_50 || 0;
-                totalAutorizado100 += item.autorizado_100 || 0;
-                totalNaoAutorizado50 += naoAut50;
-                totalNaoAutorizado100 += naoAut100;
-            });
-        });
+        // Acumula totais
+        totalExecutado50 += item.executado_50 || 0;
+        totalExecutado100 += item.executado_100 || 0;
+        totalAutorizado50 += item.autorizado_50 || 0;
+        totalAutorizado100 += item.autorizado_100 || 0;
+        totalNaoAutorizado50 += naoAut50;
+        totalNaoAutorizado100 += naoAut100;
+      });
+    });
 
-    // Adiciona linha de total geral
-    html += `
+  // Adiciona linha de total geral
+  html += `
         </tbody>
         <tfoot class="font-weight-bold" style="background-color: #f8f9fa;">
           <tr>
             <td class="text-left">TOTAL GERAL</td>
             <td class="text-center executado-col" style="display: none;">${totalExecutado50.toFixed(
-        2
-    )}</td>
+              2
+            )}</td>
             <td class="text-center executado-col" style="display: none;">${totalExecutado100.toFixed(
-        2
-    )}</td>
+              2
+            )}</td>
             <td class="text-center autorizado-col" style="display: none;">${totalAutorizado50.toFixed(
-        2
-    )}</td>
+              2
+            )}</td>
             <td class="text-center autorizado-col" style="display: none;">${totalAutorizado100.toFixed(
-        2
-    )}</td>
+              2
+            )}</td>
             <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado50.toFixed(
-        2
-    )}</td>
+              2
+            )}</td>
             <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado100.toFixed(
-        2
-    )}</td>
+              2
+            )}</td>
             <td class="text-center">${(
-            totalExecutado50 + totalExecutado100
-        ).toFixed(2)}</td>
+              totalExecutado50 + totalExecutado100
+            ).toFixed(2)}</td>
             <td class="text-center">${(
-            totalAutorizado50 + totalAutorizado100
-        ).toFixed(2)}</td>
+              totalAutorizado50 + totalAutorizado100
+            ).toFixed(2)}</td>
             <td class="text-center">${(
-            totalNaoAutorizado50 + totalNaoAutorizado100
-        ).toFixed(2)}</td>
+              totalNaoAutorizado50 + totalNaoAutorizado100
+            ).toFixed(2)}</td>
           </tr>
         </tfoot>
       </table>
     </div>
   `;
 
-    return html;
+  return html;
 }
 
 /**
  * Cria a tabela HTML do comparativo por gerente em valores monetários (R$)
- * 
+ *
  * @param {Array} dados - Array de objetos com os dados comparativos em valores monetários
  * @returns {string} HTML da tabela
  */
 function criarTabelaComparativoValor(dados) {
-    let totalExecutado50 = 0;
-    let totalExecutado100 = 0;
-    let totalAutorizado50 = 0;
-    let totalAutorizado100 = 0;
-    let totalNaoAutorizado50 = 0;
-    let totalNaoAutorizado100 = 0;
+  let totalExecutado50 = 0;
+  let totalExecutado100 = 0;
+  let totalAutorizado50 = 0;
+  let totalAutorizado100 = 0;
+  let totalNaoAutorizado50 = 0;
+  let totalNaoAutorizado100 = 0;
 
-    // Agrupa os dados por gerente de divisão para cálculo de totais
-    const dadosAgrupados = {};
-    dados.forEach((item) => {
-        const divisao = item.gerente_divisao || "Sem Divisão";
-        if (!dadosAgrupados[divisao]) {
-            dadosAgrupados[divisao] = {
-                total_executado_50: 0,
-                total_executado_100: 0,
-                total_autorizado_50: 0,
-                total_autorizado_100: 0,
-                total_nao_autorizado_50: 0,
-                total_nao_autorizado_100: 0,
-                total_executado: 0,
-                total_autorizado: 0,
-                total_nao_autorizado: 0,
-                gerentes: [],
-            };
-        }
+  // Agrupa os dados por gerente de divisão para cálculo de totais
+  const dadosAgrupados = {};
+  dados.forEach((item) => {
+    const divisao = item.gerente_divisao || "Sem Divisão";
+    if (!dadosAgrupados[divisao]) {
+      dadosAgrupados[divisao] = {
+        total_executado_50: 0,
+        total_executado_100: 0,
+        total_autorizado_50: 0,
+        total_autorizado_100: 0,
+        total_nao_autorizado_50: 0,
+        total_nao_autorizado_100: 0,
+        total_executado: 0,
+        total_autorizado: 0,
+        total_nao_autorizado: 0,
+        gerentes: [],
+      };
+    }
 
-        dadosAgrupados[divisao].total_executado_50 += item.executado_50 || 0;
-        dadosAgrupados[divisao].total_executado_100 += item.executado_100 || 0;
-        dadosAgrupados[divisao].total_autorizado_50 += item.autorizado_50 || 0;
-        dadosAgrupados[divisao].total_autorizado_100 += item.autorizado_100 || 0;
-        dadosAgrupados[divisao].total_nao_autorizado_50 += Math.max(
-            0,
-            (item.executado_50 || 0) - (item.autorizado_50 || 0)
-        );
-        dadosAgrupados[divisao].total_nao_autorizado_100 += Math.max(
-            0,
-            (item.executado_100 || 0) - (item.autorizado_100 || 0)
-        );
-        dadosAgrupados[divisao].total_executado += item.total_executado || 0;
-        dadosAgrupados[divisao].total_autorizado += item.total_autorizado || 0;
-        dadosAgrupados[divisao].total_nao_autorizado += item.total_nao_autorizado || 0;
-        dadosAgrupados[divisao].gerentes.push(item);
-    });
+    dadosAgrupados[divisao].total_executado_50 += item.executado_50 || 0;
+    dadosAgrupados[divisao].total_executado_100 += item.executado_100 || 0;
+    dadosAgrupados[divisao].total_autorizado_50 += item.autorizado_50 || 0;
+    dadosAgrupados[divisao].total_autorizado_100 += item.autorizado_100 || 0;
+    dadosAgrupados[divisao].total_nao_autorizado_50 += Math.max(
+      0,
+      (item.executado_50 || 0) - (item.autorizado_50 || 0)
+    );
+    dadosAgrupados[divisao].total_nao_autorizado_100 += Math.max(
+      0,
+      (item.executado_100 || 0) - (item.autorizado_100 || 0)
+    );
+    dadosAgrupados[divisao].total_executado += item.total_executado || 0;
+    dadosAgrupados[divisao].total_autorizado += item.total_autorizado || 0;
+    dadosAgrupados[divisao].total_nao_autorizado +=
+      item.total_nao_autorizado || 0;
+    dadosAgrupados[divisao].gerentes.push(item);
+  });
 
-    let html = `
+  let html = `
     <div class="d-flex justify-content-between align-items-center mb-2">
         <button id="btnAlternarExecucaoValor" class="btn btn-sm btn-outline-primary" onclick="alternarColunasExecucaoValor()">
         <i class="fas fa-chevron-down" id="iconeExecucaoValor"></i> 
@@ -415,9 +421,9 @@ function criarTabelaComparativoValor(dados) {
     </div>
     <div class="table-responsive-sm table-responsive-md table-responsive-lg">
       <table class="table table-bordered table-hover table-sm w-100">
-        <thead class="thead-light">
+        <thead class="thead" style="background-color: #8700d4ff; text-color: white; color: white;">
           <tr>
-            <th class="text-left">Gerente</th>
+            <th class="text-left">Gerência SR</th>
             <th class="text-center executado-col" style="display: none;">Executado 50% (R$)</th>
             <th class="text-center executado-col" style="display: none;">Executado 100% (R$)</th>
             <th class="text-center autorizado-col" style="display: none;">Autorizado 50% (R$)</th>
@@ -432,106 +438,162 @@ function criarTabelaComparativoValor(dados) {
         <tbody>
   `;
 
-    // Ordena as divisões e adiciona os dados à tabela
-    Object.keys(dadosAgrupados)
-        .sort()
-        .forEach((divisao) => {
-            const dadosDivisao = dadosAgrupados[divisao];
-            const gerentes = dadosDivisao.gerentes;
+  // Ordena as divisões e adiciona os dados à tabela
+  Object.keys(dadosAgrupados)
+    .sort()
+    .forEach((divisao) => {
+      const dadosDivisao = dadosAgrupados[divisao];
+      const gerentes = dadosDivisao.gerentes;
 
-            // Adiciona uma linha para o gerente de divisão com os totais consolidados nas colunas
-            html += `
+      // Adiciona uma linha para o gerente de divisão com os totais consolidados nas colunas
+      html += `
       <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
         <td class="text-left"><i class="fa-solid fa-users"></i> <strong>${divisao}</strong></td>
-        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_executado_50)}</strong></td>
-        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_executado_100)}</strong></td>
-        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_autorizado_50)}</strong></td>
-        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_autorizado_100)}</strong></td>
-        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_nao_autorizado_50)}</strong></td>
-        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_nao_autorizado_100)}</strong></td>
-        <td class="text-center"><strong>${formatarMoeda(dadosDivisao.total_executado)}</strong></td>
-        <td class="text-center"><strong>${formatarMoeda(dadosDivisao.total_autorizado)}</strong></td>
-        <td class="text-center"><strong>${formatarMoeda(dadosDivisao.total_nao_autorizado)}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosDivisao.total_executado_50
+        )}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosDivisao.total_executado_100
+        )}</strong></td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosDivisao.total_autorizado_50
+        )}</strong></td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosDivisao.total_autorizado_100
+        )}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosDivisao.total_nao_autorizado_50
+        )}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosDivisao.total_nao_autorizado_100
+        )}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(
+          dadosDivisao.total_executado
+        )}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(
+          dadosDivisao.total_autorizado
+        )}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(
+          dadosDivisao.total_nao_autorizado
+        )}</strong></td>
       </tr>
     `;
 
-            // Adiciona linha para cada gerente sob a divisão
-            gerentes.forEach((item) => {
-                const naoAut50 = Math.max(
-                    0,
-                    (item.executado_50 || 0) - (item.autorizado_50 || 0)
-                );
-                const naoAut100 = Math.max(
-                    0,
-                    (item.executado_100 || 0) - (item.autorizado_100 || 0)
-                );
+      // Adiciona linha para cada gerente sob a divisão
+      gerentes.forEach((item) => {
+        const naoAut50 = Math.max(
+          0,
+          (item.executado_50 || 0) - (item.autorizado_50 || 0)
+        );
+        const naoAut100 = Math.max(
+          0,
+          (item.executado_100 || 0) - (item.autorizado_100 || 0)
+        );
 
-                // Extrai o primeiro nome e nome completo do gerente
-                const primeiroNome = item.gerente ? item.gerente.split(" ")[0] : "-";
-                const nomeCompleto = item.gerente || "-";
+        // Extrai o primeiro nome e nome completo do gerente
+        const primeiroNome = item.gerente ? item.gerente.split(" ")[0] : "-";
+        const nomeCompleto = item.gerente || "-";
 
-                html += `
+        html += `
         <tr>
           <td class="text-left"><strong class="nome-completo">${nomeCompleto}</strong><strong class="primeiro-nome" style="display: none;">${primeiroNome}</strong></td>
-          <td class="text-center executado-col" style="display: none;">${formatarMoeda(item.executado_50 || 0)}</td>
-          <td class="text-center executado-col" style="display: none;">${formatarMoeda(item.executado_100 || 0)}</td>
-          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(item.autorizado_50 || 0)}</td>
-          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(item.autorizado_100 || 0)}</td>
-          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(naoAut50)}</td>
-          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(naoAut100)}</td>
-          <td class="text-center">${formatarMoeda(item.total_executado || 0)}</td>
-          <td class="text-center">${formatarMoeda(item.total_autorizado || 0)}</td>
-          <td class="text-center">${formatarMoeda(item.total_nao_autorizado || 0)}</td>
+          <td class="text-center executado-col" style="display: none;">${formatarMoeda(
+            item.executado_50 || 0
+          )}</td>
+          <td class="text-center executado-col" style="display: none;">${formatarMoeda(
+            item.executado_100 || 0
+          )}</td>
+          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
+            item.autorizado_50 || 0
+          )}</td>
+          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
+            item.autorizado_100 || 0
+          )}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
+            naoAut50
+          )}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
+            naoAut100
+          )}</td>
+          <td class="text-center">${formatarMoeda(
+            item.total_executado || 0
+          )}</td>
+          <td class="text-center">${formatarMoeda(
+            item.total_autorizado || 0
+          )}</td>
+          <td class="text-center">${formatarMoeda(
+            item.total_nao_autorizado || 0
+          )}</td>
         </tr>
       `;
 
-                // Acumula totais
-                totalExecutado50 += item.executado_50 || 0;
-                totalExecutado100 += item.executado_100 || 0;
-                totalAutorizado50 += item.autorizado_50 || 0;
-                totalAutorizado100 += item.autorizado_100 || 0;
-                totalNaoAutorizado50 += naoAut50;
-                totalNaoAutorizado100 += naoAut100;
-            });
-        });
+        // Acumula totais
+        totalExecutado50 += item.executado_50 || 0;
+        totalExecutado100 += item.executado_100 || 0;
+        totalAutorizado50 += item.autorizado_50 || 0;
+        totalAutorizado100 += item.autorizado_100 || 0;
+        totalNaoAutorizado50 += naoAut50;
+        totalNaoAutorizado100 += naoAut100;
+      });
+    });
 
-    // Adiciona linha de total geral
-    html += `
+  // Adiciona linha de total geral
+  html += `
         </tbody>
         <tfoot class="font-weight-bold" style="background-color: #f8f9fa;">
           <tr>
             <td class="text-left">TOTAL GERAL</td>
-            <td class="text-center executado-col" style="display: none;">${formatarMoeda(totalExecutado50)}</td>
-            <td class="text-center executado-col" style="display: none;">${formatarMoeda(totalExecutado100)}</td>
-            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(totalAutorizado50)}</td>
-            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(totalAutorizado100)}</td>
-            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(totalNaoAutorizado50)}</td>
-            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(totalNaoAutorizado100)}</td>
-            <td class="text-center">${formatarMoeda(totalExecutado50 + totalExecutado100)}</td>
-            <td class="text-center">${formatarMoeda(totalAutorizado50 + totalAutorizado100)}</td>
-            <td class="text-center">${formatarMoeda(totalNaoAutorizado50 + totalNaoAutorizado100)}</td>
+            <td class="text-center executado-col" style="display: none;">${formatarMoeda(
+              totalExecutado50
+            )}</td>
+            <td class="text-center executado-col" style="display: none;">${formatarMoeda(
+              totalExecutado100
+            )}</td>
+            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
+              totalAutorizado50
+            )}</td>
+            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
+              totalAutorizado100
+            )}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
+              totalNaoAutorizado50
+            )}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
+              totalNaoAutorizado100
+            )}</td>
+            <td class="text-center">${formatarMoeda(
+              totalExecutado50 + totalExecutado100
+            )}</td>
+            <td class="text-center">${formatarMoeda(
+              totalAutorizado50 + totalAutorizado100
+            )}</td>
+            <td class="text-center">${formatarMoeda(
+              totalNaoAutorizado50 + totalNaoAutorizado100
+            )}</td>
           </tr>
         </tfoot>
       </table>
     </div>
   `;
 
-    return html;
+  return html;
 }
 
 /**
  * Formata um valor numérico como moeda brasileira (R$)
- * 
+ *
  * @param {number} valor - Valor a ser formatado
  * @returns {string} Valor formatado como moeda (ex: R$ 1.234,56)
  */
 function formatarMoeda(valor) {
-    return 'R$ ' + parseFloat(valor || 0).toLocaleString('pt-BR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
+  return (
+    "R$ " +
+    parseFloat(valor || 0).toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
 }
-
 
 // ================================================================================
 // 🎬 Inicialização do Painel
@@ -541,99 +603,107 @@ function formatarMoeda(valor) {
  * Inicializa o painel de frequência vs planejamento
  */
 function inicializarPainelGastoPrev() {
-    const mesSelect = document.getElementById("filtroMesComparativo");
-    const gerenteSelect = document.getElementById("filtroGerenteComparativo");
+  const mesSelect = document.getElementById("filtroMesComparativo");
+  const gerenteSelect = document.getElementById("filtroGerenteComparativo");
 
-    // Busca os meses disponíveis na tabela de frequência
-    fetch("/planejamento-he/api/gasto-prev/meses-disponiveis")
-        .then(res => res.json())
-        .then(mesesDisponiveis => {
-            // Limpa o select antes de popular
-            mesSelect.innerHTML = '';
+  // Busca os meses disponíveis na tabela de frequência
+  fetch("/planejamento-he/api/gasto-prev/meses-disponiveis")
+    .then((res) => res.json())
+    .then((mesesDisponiveis) => {
+      // Limpa o select antes de popular
+      mesSelect.innerHTML = "";
 
-            if (mesesDisponiveis && mesesDisponiveis.length > 0) {
-                // Popula o select com os meses retornados pela API
-                mesSelect.innerHTML = mesesDisponiveis.map(m => `<option value="${m.nome}">${m.nome}</option>`).join('');
+      if (mesesDisponiveis && mesesDisponiveis.length > 0) {
+        // Popula o select com os meses retornados pela API
+        mesSelect.innerHTML = mesesDisponiveis
+          .map((m) => `<option value="${m.nome}">${m.nome}</option>`)
+          .join("");
 
-                // Lógica para definir o mês padrão
-                const mesAtual = getMesAtualPortugues();
-                const anoAtual = new Date().getFullYear();
+        // Lógica para definir o mês padrão
+        const mesAtual = getMesAtualPortugues();
+        const anoAtual = new Date().getFullYear();
 
-                // Verifica se o mês/ano atual existe na lista de meses disponíveis
-                const mesAtualDisponivel = mesesDisponiveis.find(m => m.nome === mesAtual && m.ano === anoAtual);
+        // Verifica se o mês/ano atual existe na lista de meses disponíveis
+        const mesAtualDisponivel = mesesDisponiveis.find(
+          (m) => m.nome === mesAtual && m.ano === anoAtual
+        );
 
-                if (mesAtualDisponivel) {
-                    // Se o mês atual existe, define ele como padrão
-                    mesSelect.value = mesAtual;
-                } else {
-                    // Se não, define o mais recente da lista (que é o primeiro) como padrão
-                    mesSelect.value = mesesDisponiveis[0].nome;
-                }
-            } else {
-                mesSelect.innerHTML = '<option value="" disabled>Nenhum mês com dados</option>';
-            }
-            // Carrega os dados iniciais com o mês padrão
-            carregarComparativoGastoPrev(mesSelect.value);
-        }).catch(err => {
-            console.error("Erro ao buscar meses disponíveis:", err);
-            mesSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+        if (mesAtualDisponivel) {
+          // Se o mês atual existe, define ele como padrão
+          mesSelect.value = mesAtual;
+        } else {
+          // Se não, define o mais recente da lista (que é o primeiro) como padrão
+          mesSelect.value = mesesDisponiveis[0].nome;
+        }
+      } else {
+        mesSelect.innerHTML =
+          '<option value="" disabled>Nenhum mês com dados</option>';
+      }
+      // Carrega os dados iniciais com o mês padrão
+      carregarComparativoGastoPrev(mesSelect.value);
+    })
+    .catch((err) => {
+      console.error("Erro ao buscar meses disponíveis:", err);
+      mesSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+    });
+
+  fetch("/planejamento-he/api/gerentes")
+    .then((r) => r.json())
+    .then((data) => {
+      gerenteSelect.innerHTML = '<option value="">Todos os Gerentes</option>';
+      if (data.gerentes) {
+        data.gerentes.forEach((g) => {
+          const opt = document.createElement("option");
+          opt.value = g;
+          opt.textContent = g;
+          gerenteSelect.appendChild(opt);
         });
+      }
+    });
 
-    fetch("/planejamento-he/api/gerentes")
-        .then((r) => r.json())
-        .then((data) => {
-            gerenteSelect.innerHTML = '<option value="">Todos os Gerentes</option>';
-            if (data.gerentes) {
-                data.gerentes.forEach((g) => {
-                    const opt = document.createElement("option");
-                    opt.value = g;
-                    opt.textContent = g;
-                    gerenteSelect.appendChild(opt);
-                });
-            }
-        });
+  // Inicializa o container da nova tabela de valores
+  const containerValor = document.getElementById(
+    "tabelaComparativoFrequenciaValor"
+  );
+  if (containerValor) {
+    containerValor.innerHTML =
+      '<p class="text-center text-muted">Aguardando dados monetários...</p>';
+  }
 
-    // Inicializa o container da nova tabela de valores
-    const containerValor = document.getElementById("tabelaComparativoFrequenciaValor");
-    if (containerValor) {
-        containerValor.innerHTML = '<p class="text-center text-muted">Aguardando dados monetários...</p>';
-    }
+  // Configura event listeners
+  document
+    .getElementById("filtroMesComparativo")
+    .addEventListener("change", function () {
+      const mes = this.value;
+      const gerente = document.getElementById("filtroGerenteComparativo").value;
+      carregarComparativoGastoPrev(mes, gerente);
+      carregarComparativoGastoPrevValor(mes, gerente);
+    });
 
-    // Configura event listeners
-    document
-        .getElementById("filtroMesComparativo")
-        .addEventListener("change", function () {
-            const mes = this.value;
-            const gerente = document.getElementById("filtroGerenteComparativo").value;
-            carregarComparativoGastoPrev(mes, gerente);
-            carregarComparativoGastoPrevValor(mes, gerente);
-        });
+  document
+    .getElementById("filtroGerenteComparativo")
+    .addEventListener("change", function () {
+      const mes = document.getElementById("filtroMesComparativo").value;
+      const gerente = this.value;
+      carregarComparativoGastoPrev(mes, gerente);
+      carregarComparativoGastoPrevValor(mes, gerente);
+    });
 
-    document
-        .getElementById("filtroGerenteComparativo")
-        .addEventListener("change", function () {
-            const mes = document.getElementById("filtroMesComparativo").value;
-            const gerente = this.value;
-            carregarComparativoGastoPrev(mes, gerente);
-            carregarComparativoGastoPrevValor(mes, gerente);
-        });
+  // Botão para limpar filtros
+  document
+    .getElementById("btnLimparFiltrosComparativo")
+    .addEventListener("click", function () {
+      const mesSelect = document.getElementById("filtroMesComparativo");
+      // Pega o primeiro <option> que é o mês mais recente disponível
+      const mesPadrao =
+        mesSelect.options.length > 0 ? mesSelect.options[0].value : "";
 
-
-
-    // Botão para limpar filtros
-    document
-        .getElementById("btnLimparFiltrosComparativo")
-        .addEventListener("click", function () {
-            const mesSelect = document.getElementById("filtroMesComparativo");
-            // Pega o primeiro <option> que é o mês mais recente disponível
-            const mesPadrao = mesSelect.options.length > 0 ? mesSelect.options[0].value : "";
-
-            document.getElementById("filtroGerenteComparativo").value = "";
-            // Define o valor para o mês padrão (o mais recente da lista)
-            mesSelect.value = mesPadrao;
-            carregarComparativoGastoPrev(mesPadrao);
-            carregarComparativoGastoPrevValor(mesPadrao);
-        });
+      document.getElementById("filtroGerenteComparativo").value = "";
+      // Define o valor para o mês padrão (o mais recente da lista)
+      mesSelect.value = mesPadrao;
+      carregarComparativoGastoPrev(mesPadrao);
+      carregarComparativoGastoPrevValor(mesPadrao);
+    });
 }
 
 // ================================================================================
@@ -646,52 +716,52 @@ let colunasExecucaoExpandidas = false;
  * Alterna a visibilidade das colunas de execução (50% e 100%)
  */
 function alternarColunasExecucao() {
-    const iconesExecucao = document.querySelectorAll(
-        "#iconeExecucao, .execucao-resumo i"
-    );
-    const textoBtn = document.getElementById("textoBtnExecucao");
-    const colunasExecutado = document.querySelectorAll(".executado-col");
-    const colunasAutorizado = document.querySelectorAll(".autorizado-col");
-    const colunasNaoAutorizado = document.querySelectorAll(".nao-autorizado-col");
-    const nomesCompletos = document.querySelectorAll(".nome-completo");
-    const primeiroNomes = document.querySelectorAll(".primeiro-nome");
+  const iconesExecucao = document.querySelectorAll(
+    "#iconeExecucao, .execucao-resumo i"
+  );
+  const textoBtn = document.getElementById("textoBtnExecucao");
+  const colunasExecutado = document.querySelectorAll(".executado-col");
+  const colunasAutorizado = document.querySelectorAll(".autorizado-col");
+  const colunasNaoAutorizado = document.querySelectorAll(".nao-autorizado-col");
+  const nomesCompletos = document.querySelectorAll(".nome-completo");
+  const primeiroNomes = document.querySelectorAll(".primeiro-nome");
 
-    colunasExecucaoExpandidas = !colunasExecucaoExpandidas;
+  colunasExecucaoExpandidas = !colunasExecucaoExpandidas;
 
-    // Atualiza o ícone e o texto do botão
-    iconesExecucao.forEach((icone) => {
-        icone.className = colunasExecucaoExpandidas
-            ? "fas fa-chevron-up"
-            : "fas fa-chevron-down";
-    });
+  // Atualiza o ícone e o texto do botão
+  iconesExecucao.forEach((icone) => {
+    icone.className = colunasExecucaoExpandidas
+      ? "fas fa-chevron-up"
+      : "fas fa-chevron-down";
+  });
 
-    textoBtn.textContent = colunasExecucaoExpandidas
-        ? "Recolher Detalhes"
-        : "Expandir Detalhes";
+  textoBtn.textContent = colunasExecucaoExpandidas
+    ? "Recolher Detalhes"
+    : "Expandir Detalhes";
 
-    // Alterna a visibilidade das colunas
-    colunasExecutado.forEach((coluna) => {
-        coluna.style.display = colunasExecucaoExpandidas ? "table-cell" : "none";
-    });
+  // Alterna a visibilidade das colunas
+  colunasExecutado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoExpandidas ? "table-cell" : "none";
+  });
 
-    colunasAutorizado.forEach((coluna) => {
-        coluna.style.display = colunasExecucaoExpandidas ? "table-cell" : "none";
-    });
+  colunasAutorizado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoExpandidas ? "table-cell" : "none";
+  });
 
-    colunasNaoAutorizado.forEach((coluna) => {
-        coluna.style.display = colunasExecucaoExpandidas ? "table-cell" : "none";
-    });
+  colunasNaoAutorizado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoExpandidas ? "table-cell" : "none";
+  });
 
-    // Alterna entre nome completo e primeiro nome
-    // Quando recolhido (estado inicial), mostra nome completo
-    // Quando expandido, mostra primeiro nome
-    nomesCompletos.forEach((nome) => {
-        nome.style.display = colunasExecucaoExpandidas ? "none" : "inline";
-    });
+  // Alterna entre nome completo e primeiro nome
+  // Quando recolhido (estado inicial), mostra nome completo
+  // Quando expandido, mostra primeiro nome
+  nomesCompletos.forEach((nome) => {
+    nome.style.display = colunasExecucaoExpandidas ? "none" : "inline";
+  });
 
-    primeiroNomes.forEach((nome) => {
-        nome.style.display = colunasExecucaoExpandidas ? "inline" : "none";
-    });
+  primeiroNomes.forEach((nome) => {
+    nome.style.display = colunasExecucaoExpandidas ? "inline" : "none";
+  });
 }
 
 // ================================================================================
@@ -704,39 +774,45 @@ let colunasExecucaoValorExpandidas = false;
  * Alterna a visibilidade das colunas de execução (50% e 100%) na tabela de valores
  */
 function alternarColunasExecucaoValor() {
-    const iconesExecucao = document.querySelectorAll(
-        "#iconeExecucaoValor, .execucao-resumo i"
-    );
-    const textoBtn = document.getElementById("textoBtnExecucaoValor");
-    const colunasExecutado = document.querySelectorAll(".executado-col");
-    const colunasAutorizado = document.querySelectorAll(".autorizado-col");
-    const colunasNaoAutorizado = document.querySelectorAll(".nao-autorizado-col");
+  const iconesExecucao = document.querySelectorAll(
+    "#iconeExecucaoValor, .execucao-resumo i"
+  );
+  const textoBtn = document.getElementById("textoBtnExecucaoValor");
+  const colunasExecutado = document.querySelectorAll(".executado-col");
+  const colunasAutorizado = document.querySelectorAll(".autorizado-col");
+  const colunasNaoAutorizado = document.querySelectorAll(".nao-autorizado-col");
 
-    colunasExecucaoValorExpandidas = !colunasExecucaoValorExpandidas;
+  colunasExecucaoValorExpandidas = !colunasExecucaoValorExpandidas;
 
-    // Atualiza o ícone e o texto do botão
-    iconesExecucao.forEach((icone) => {
-        icone.className = colunasExecucaoValorExpandidas
-            ? "fas fa-chevron-up"
-            : "fas fa-chevron-down";
-    });
+  // Atualiza o ícone e o texto do botão
+  iconesExecucao.forEach((icone) => {
+    icone.className = colunasExecucaoValorExpandidas
+      ? "fas fa-chevron-up"
+      : "fas fa-chevron-down";
+  });
 
-    textoBtn.textContent = colunasExecucaoValorExpandidas
-        ? "Recolher Detalhes"
-        : "Expandir Detalhes";
+  textoBtn.textContent = colunasExecucaoValorExpandidas
+    ? "Recolher Detalhes"
+    : "Expandir Detalhes";
 
-    // Alterna a visibilidade das colunas
-    colunasExecutado.forEach((coluna) => {
-        coluna.style.display = colunasExecucaoValorExpandidas ? "table-cell" : "none";
-    });
+  // Alterna a visibilidade das colunas
+  colunasExecutado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoValorExpandidas
+      ? "table-cell"
+      : "none";
+  });
 
-    colunasAutorizado.forEach((coluna) => {
-        coluna.style.display = colunasExecucaoValorExpandidas ? "table-cell" : "none";
-    });
+  colunasAutorizado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoValorExpandidas
+      ? "table-cell"
+      : "none";
+  });
 
-    colunasNaoAutorizado.forEach((coluna) => {
-        coluna.style.display = colunasExecucaoValorExpandidas ? "table-cell" : "none";
-    });
+  colunasNaoAutorizado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoValorExpandidas
+      ? "table-cell"
+      : "none";
+  });
 }
 
 // ================================================================================
@@ -744,8 +820,9 @@ function alternarColunasExecucaoValor() {
 // ================================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Adiciona ouvinte de evento para quando a página for carregada
-    document.addEventListener("page-load:painelGastoPrev", function () { // Nome do evento personalizado
-        inicializarPainelGastoPrev();
-    });
+  // Adiciona ouvinte de evento para quando a página for carregada
+  document.addEventListener("page-load:painelGastoPrev", function () {
+    // Nome do evento personalizado
+    inicializarPainelGastoPrev();
+  });
 });
