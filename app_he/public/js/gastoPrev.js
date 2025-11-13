@@ -232,33 +232,15 @@ function criarTabelaComparativo(dados) {
       html += `
       <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
         <td class="text-left"><i class="fa-solid fa-users"></i> <strong>${divisao}</strong></td>
-        <td class="text-center executado-col" style="display: none;"><strong>${dadosDivisao.total_executado_50.toFixed(
-          2
-        )}</strong></td>
-        <td class="text-center executado-col" style="display: none;"><strong>${dadosDivisao.total_executado_100.toFixed(
-          2
-        )}</strong></td>
-        <td class="text-center autorizado-col" style="display: none;"><strong>${dadosDivisao.total_autorizado_50.toFixed(
-          2
-        )}</strong></td>
-        <td class="text-center autorizado-col" style="display: none;"><strong>${dadosDivisao.total_autorizado_100.toFixed(
-          2
-        )}</strong></td>
-        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosDivisao.total_nao_autorizado_50.toFixed(
-          2
-        )}</strong></td>
-        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosDivisao.total_nao_autorizado_100.toFixed(
-          2
-        )}</strong></td>
-        <td class="text-center"><strong>${dadosDivisao.total_executado.toFixed(
-          2
-        )}</strong></td>
-        <td class="text-center"><strong>${dadosDivisao.total_autorizado.toFixed(
-          2
-        )}</strong></td>
-        <td class="text-center"><strong>${dadosDivisao.total_nao_autorizado.toFixed(
-          2
-        )}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${dadosDivisao.total_executado_50.toFixed(2)}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${dadosDivisao.total_executado_100.toFixed(2)}</strong></td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${dadosDivisao.total_autorizado_50.toFixed(2)}</strong></td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${dadosDivisao.total_autorizado_100.toFixed(2)}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosDivisao.total_nao_autorizado_50.toFixed(2)}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosDivisao.total_nao_autorizado_100.toFixed(2)}</strong></td>
+        <td class="text-center"><strong>${dadosDivisao.total_executado.toFixed(2)}</strong></td>
+        <td class="text-center"><strong>${dadosDivisao.total_autorizado.toFixed(2)}</strong></td>
+        <td class="text-center"><strong>${dadosDivisao.total_nao_autorizado.toFixed(2)}</strong></td>
       </tr>
     `;
 
@@ -280,31 +262,15 @@ function criarTabelaComparativo(dados) {
         html += `
         <tr>
           <td class="text-left"><strong class="nome-completo">${nomeCompleto}</strong><strong class="primeiro-nome" style="display: none;">${primeiroNome}</strong></td>
-          <td class="text-center executado-col" style="display: none;">${(
-            item.executado_50 || 0
-          ).toFixed(2)}</td>
-          <td class="text-center executado-col" style="display: none;">${(
-            item.executado_100 || 0
-          ).toFixed(2)}</td>
-          <td class="text-center autorizado-col" style="display: none;">${(
-            item.autorizado_50 || 0
-          ).toFixed(2)}</td>
-          <td class="text-center autorizado-col" style="display: none;">${(
-            item.autorizado_100 || 0
-          ).toFixed(2)}</td>
-          <td class="text-center nao-autorizado-col" style="display: none;">${naoAut50.toFixed(
-            2
-          )}</td>
-          <td class="text-center nao-autorizado-col" style="display: none;">${naoAut100.toFixed(
-            2
-          )}</td>
+          <td class="text-center executado-col" style="display: none;">${(item.executado_50 || 0).toFixed(2)}</td>
+          <td class="text-center executado-col" style="display: none;">${(item.executado_100 || 0).toFixed(2)}</td>
+          <td class="text-center autorizado-col" style="display: none;">${(item.autorizado_50 || 0).toFixed(2)}</td>
+          <td class="text-center autorizado-col" style="display: none;">${(item.autorizado_100 || 0).toFixed(2)}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${naoAut50.toFixed(2)}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${naoAut100.toFixed(2)}</td>
           <td class="text-center">${(item.total_executado || 0).toFixed(2)}</td>
-          <td class="text-center">${(item.total_autorizado || 0).toFixed(
-            2
-          )}</td>
-          <td class="text-center">${(item.total_nao_autorizado || 0).toFixed(
-            2
-          )}</td>
+          <td class="text-center">${(item.total_autorizado || 0).toFixed(2)}</td>
+          <td class="text-center">${(item.total_nao_autorizado || 0).toFixed(2)}</td>
         </tr>
       `;
 
@@ -324,33 +290,15 @@ function criarTabelaComparativo(dados) {
         <tfoot class="font-weight-bold" style="background-color: #f8f9fa;">
           <tr>
             <td class="text-left">TOTAL GERAL</td>
-            <td class="text-center executado-col" style="display: none;">${totalExecutado50.toFixed(
-              2
-            )}</td>
-            <td class="text-center executado-col" style="display: none;">${totalExecutado100.toFixed(
-              2
-            )}</td>
-            <td class="text-center autorizado-col" style="display: none;">${totalAutorizado50.toFixed(
-              2
-            )}</td>
-            <td class="text-center autorizado-col" style="display: none;">${totalAutorizado100.toFixed(
-              2
-            )}</td>
-            <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado50.toFixed(
-              2
-            )}</td>
-            <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado100.toFixed(
-              2
-            )}</td>
-            <td class="text-center">${(
-              totalExecutado50 + totalExecutado100
-            ).toFixed(2)}</td>
-            <td class="text-center">${(
-              totalAutorizado50 + totalAutorizado100
-            ).toFixed(2)}</td>
-            <td class="text-center">${(
-              totalNaoAutorizado50 + totalNaoAutorizado100
-            ).toFixed(2)}</td>
+            <td class="text-center executado-col" style="display: none;">${totalExecutado50.toFixed(2)}</td>
+            <td class="text-center executado-col" style="display: none;">${totalExecutado100.toFixed(2)}</td>
+            <td class="text-center autorizado-col" style="display: none;">${totalAutorizado50.toFixed(2)}</td>
+            <td class="text-center autorizado-col" style="display: none;">${totalAutorizado100.toFixed(2)}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado50.toFixed(2)}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado100.toFixed(2)}</td>
+            <td class="text-center">${(totalExecutado50 + totalExecutado100).toFixed(2)}</td>
+            <td class="text-center">${(totalAutorizado50 + totalAutorizado100).toFixed(2)}</td>
+            <td class="text-center">${(totalNaoAutorizado50 + totalNaoAutorizado100).toFixed(2)}</td>
           </tr>
         </tfoot>
       </table>
@@ -449,33 +397,15 @@ function criarTabelaComparativoValor(dados) {
       html += `
       <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
         <td class="text-left"><i class="fa-solid fa-users"></i> <strong>${divisao}</strong></td>
-        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(
-          dadosDivisao.total_executado_50
-        )}</strong></td>
-        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(
-          dadosDivisao.total_executado_100
-        )}</strong></td>
-        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(
-          dadosDivisao.total_autorizado_50
-        )}</strong></td>
-        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(
-          dadosDivisao.total_autorizado_100
-        )}</strong></td>
-        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(
-          dadosDivisao.total_nao_autorizado_50
-        )}</strong></td>
-        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(
-          dadosDivisao.total_nao_autorizado_100
-        )}</strong></td>
-        <td class="text-center"><strong>${formatarMoeda(
-          dadosDivisao.total_executado
-        )}</strong></td>
-        <td class="text-center"><strong>${formatarMoeda(
-          dadosDivisao.total_autorizado
-        )}</strong></td>
-        <td class="text-center"><strong>${formatarMoeda(
-          dadosDivisao.total_nao_autorizado
-        )}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_executado_50)}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_executado_100)}</strong></td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_autorizado_50)}</strong></td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_autorizado_100)}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_nao_autorizado_50)}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(dadosDivisao.total_nao_autorizado_100)}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(dadosDivisao.total_executado)}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(dadosDivisao.total_autorizado)}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(dadosDivisao.total_nao_autorizado)}</strong></td>
       </tr>
     `;
 
@@ -497,33 +427,15 @@ function criarTabelaComparativoValor(dados) {
         html += `
         <tr>
           <td class="text-left"><strong class="nome-completo">${nomeCompleto}</strong><strong class="primeiro-nome" style="display: none;">${primeiroNome}</strong></td>
-          <td class="text-center executado-col" style="display: none;">${formatarMoeda(
-            item.executado_50 || 0
-          )}</td>
-          <td class="text-center executado-col" style="display: none;">${formatarMoeda(
-            item.executado_100 || 0
-          )}</td>
-          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
-            item.autorizado_50 || 0
-          )}</td>
-          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
-            item.autorizado_100 || 0
-          )}</td>
-          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
-            naoAut50
-          )}</td>
-          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
-            naoAut100
-          )}</td>
-          <td class="text-center">${formatarMoeda(
-            item.total_executado || 0
-          )}</td>
-          <td class="text-center">${formatarMoeda(
-            item.total_autorizado || 0
-          )}</td>
-          <td class="text-center">${formatarMoeda(
-            item.total_nao_autorizado || 0
-          )}</td>
+          <td class="text-center executado-col" style="display: none;">${formatarMoeda(item.executado_50 || 0)}</td>
+          <td class="text-center executado-col" style="display: none;">${formatarMoeda(item.executado_100 || 0)}</td>
+          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(item.autorizado_50 || 0)}</td>
+          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(item.autorizado_100 || 0)}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(naoAut50)}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(naoAut100)}</td>
+          <td class="text-center">${formatarMoeda(item.total_executado || 0)}</td>
+          <td class="text-center">${formatarMoeda(item.total_autorizado || 0)}</td>
+          <td class="text-center">${formatarMoeda(item.total_nao_autorizado || 0)}</td>
         </tr>
       `;
 
@@ -543,33 +455,15 @@ function criarTabelaComparativoValor(dados) {
         <tfoot class="font-weight-bold" style="background-color: #f8f9fa;">
           <tr>
             <td class="text-left">TOTAL GERAL</td>
-            <td class="text-center executado-col" style="display: none;">${formatarMoeda(
-              totalExecutado50
-            )}</td>
-            <td class="text-center executado-col" style="display: none;">${formatarMoeda(
-              totalExecutado100
-            )}</td>
-            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
-              totalAutorizado50
-            )}</td>
-            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
-              totalAutorizado100
-            )}</td>
-            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
-              totalNaoAutorizado50
-            )}</td>
-            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
-              totalNaoAutorizado100
-            )}</td>
-            <td class="text-center">${formatarMoeda(
-              totalExecutado50 + totalExecutado100
-            )}</td>
-            <td class="text-center">${formatarMoeda(
-              totalAutorizado50 + totalAutorizado100
-            )}</td>
-            <td class="text-center">${formatarMoeda(
-              totalNaoAutorizado50 + totalNaoAutorizado100
-            )}</td>
+            <td class="text-center executado-col" style="display: none;">${formatarMoeda(totalExecutado50)}</td>
+            <td class="text-center executado-col" style="display: none;">${formatarMoeda(totalExecutado100)}</td>
+            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(totalAutorizado50)}</td>
+            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(totalAutorizado100)}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(totalNaoAutorizado50)}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(totalNaoAutorizado100)}</td>
+            <td class="text-center">${formatarMoeda(totalExecutado50 + totalExecutado100)}</td>
+            <td class="text-center">${formatarMoeda(totalAutorizado50 + totalAutorizado100)}</td>
+            <td class="text-center">${formatarMoeda(totalNaoAutorizado50 + totalNaoAutorizado100)}</td>
           </tr>
         </tfoot>
       </table>
@@ -577,22 +471,6 @@ function criarTabelaComparativoValor(dados) {
   `;
 
   return html;
-}
-
-/**
- * Formata um valor numérico como moeda brasileira (R$)
- *
- * @param {number} valor - Valor a ser formatado
- * @returns {string} Valor formatado como moeda (ex: R$ 1.234,56)
- */
-function formatarMoeda(valor) {
-  return (
-    "R$ " +
-    parseFloat(valor || 0).toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  );
 }
 
 // ================================================================================
@@ -813,6 +691,49 @@ function alternarColunasExecucaoValor() {
       ? "table-cell"
       : "none";
   });
+}
+
+// ================================================================================
+// 🔘 Função para alternar visualização entre Horas e Valores
+// ================================================================================
+
+/**
+ * Alterna a visualização entre as tabelas de horas e valores
+ * @param {string} tipo - 'horas' ou 'valores'
+ */
+function alterarVisualizacao(tipo) {
+  const tabelaHoras = document.getElementById("tabelaComparativoFrequencia");
+  const tabelaValores = document.getElementById("tabelaComparativoFrequenciaValor");
+  const titulo = document.getElementById("tituloTabelaComparativo");
+  const btnHoras = document.getElementById("btnVisualizacaoHoras");
+  const btnValores = document.getElementById("btnVisualizacaoValores");
+  
+  // Atualiza o título da tabela
+  if (tipo === 'horas') {
+    titulo.innerHTML = '<i class="fas fa-users"></i> <span>Visão por Gerência (Horas)</span>';
+    tabelaHoras.style.display = 'block';
+    tabelaValores.style.display = 'none';
+    
+    // Atualiza os botões para refletir o estado ativo
+    btnHoras.classList.add('active');
+    btnHoras.classList.remove('btn-outline-success');
+    btnHoras.classList.add('btn-outline-primary');
+    btnValores.classList.remove('active');
+    btnValores.classList.remove('btn-outline-primary');
+    btnValores.classList.add('btn-outline-success');
+  } else if (tipo === 'valores') {
+    titulo.innerHTML = '<i class="fas fa-dollar-sign"></i> <span>Visão por Gerência (Valores em R$)</span>';
+    tabelaHoras.style.display = 'none';
+    tabelaValores.style.display = 'block';
+    
+    // Atualiza os botões para refletir o estado ativo
+    btnValores.classList.add('active');
+    btnValores.classList.remove('btn-outline-primary');
+    btnValores.classList.add('btn-outline-success');
+    btnHoras.classList.remove('active');
+    btnHoras.classList.remove('btn-outline-success');
+    btnHoras.classList.add('btn-outline-primary');
+  }
 }
 
 // ================================================================================

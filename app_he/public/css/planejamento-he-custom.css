@@ -837,6 +837,12 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
     font-size: 0.8rem;
 }
 
+#tabelaComparativoFrequenciaValor .table th,
+#tabelaComparativoFrequenciaValor .table td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8rem;
+}
+
 #tabelaComparativoColaborador .table th,
 #tabelaComparativoColaborador .table td {
     padding: 0.4rem 0.5rem;
