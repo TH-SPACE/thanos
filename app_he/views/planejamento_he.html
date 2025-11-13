@@ -427,10 +427,18 @@
 
                     <!-- Visão Geral por Gerente -->
                     <div class="card mb-4">
-                        <div class="d-flex flex-column align-items-start mb-3">
+                        <div class="mb-3">
                             <h5 class="mb-0" id="tituloTabelaComparativo"><i class="fas fa-users"></i> <span>Visão por Gerência (Horas)</span></h5>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <button id="btnAlternarExecucao" class="btn btn-sm btn-outline-primary" onclick="alternarColunasExecucao()">
+                                    <i class="fas fa-chevron-down" id="iconeExecucao"></i>
+                                    <span id="textoBtnExecucao">Expandir Detalhes</span>
+                                </button>
+                            </div>
                             <!-- Botões de opção para alternar visualização -->
-                            <div class="btn-group btn-group-toggle mt-2" data-toggle="buttons">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                 <label class="btn btn-outline-primary btn-sm active" id="btnVisualizacaoHoras" onclick="alterarVisualizacao('horas')">
                                     <input type="radio" name="tipoVisualizacao" id="horas" checked>
                                     <i class="fas fa-clock"></i> Horas
