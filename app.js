@@ -65,6 +65,9 @@ app.use("/consulta-ad", require("./consulta_ad/consulta_route"));
 // 🎯 Rotas específicas
 app.use("/planejamento-he", require("./app_he/routes/planejamentoHERoutes"));
 
+// 📋 Rota da todo list
+app.use("/todo_th", require("./todo_th/todo_th"));
+
 // 🚀 Inicialização do servidor
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🔥 THANOS rodando em http://10.243.20.64:${PORT}`);
