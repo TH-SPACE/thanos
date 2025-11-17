@@ -455,6 +455,20 @@ document.addEventListener("DOMContentLoaded", () => {
             // Limpa a tabela de novas solicitações
             document.getElementById("linhasColaboradores").innerHTML = "";
             calcularCustoTotal(); // Recalcula o custo para zerar a estimativa
+            // Atualiza o resumo HE após envio bem-sucedido
+            const gerente = document.getElementById("gerente").value;
+            const mes = document.getElementById("mes").value;
+            if (gerente && mes) {
+              // Adiciona feedback visual de atualização
+              const resumoDiv = document.getElementById("resumoHE");
+              resumoDiv.innerHTML = `
+                <div class="alert alert-info text-center">
+                  <i class="fas fa-sync-alt fa-spin"></i> Atualizando resumo financeiro...
+                </div>
+              `;
+              // Atualiza o resumo após o envio
+              mostrarResumoHE(gerente, mes);
+            }
           });
         } else {
           Swal.fire({
