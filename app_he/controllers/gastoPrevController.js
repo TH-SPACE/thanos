@@ -96,7 +96,7 @@ exports.validarTabelaFrequencia = async function validarTabelaFrequencia(
  * }]
  */
 exports.getComparativoGastoPrev = async (req, res) => {
-    const { mes, gerente } = req.query;
+    const { mes } = req.query;
     const diretoria = req.diretoriaHE;
     const user = req.session.usuario;
     const ip = req.ip;
@@ -147,7 +147,7 @@ exports.getComparativoGastoPrev = async (req, res) => {
         // Agora adicionando também a coluna GERENTE_DIVISAO para agrupamento hierárquico
 
         let queryExecutado = `
-      SELECT 
+      SELECT
         ${colunas[3]} as gerente,
         ${colunas[0]} as colaborador,
         COALESCE(GERENTE_DIVISAO, '') as gerente_divisao,
@@ -158,11 +158,6 @@ exports.getComparativoGastoPrev = async (req, res) => {
     `;
         let paramsExecutado = [mesNumero];
 
-        if (gerente) {
-            queryExecutado += ` AND ${colunas[3]} = ?`; // GERENTE_IMEDIATO
-            paramsExecutado.push(gerente);
-        }
-
         queryExecutado += ` GROUP BY ${colunas[3]}, ${colunas[0]}, GERENTE_DIVISAO
         ORDER BY ${colunas[3]}, ${colunas[0]}`;
 
@@ -170,22 +165,17 @@ exports.getComparativoGastoPrev = async (req, res) => {
 
         // Obtemos todas as horas autorizadas (da tabela PLANEJAMENTO_HE) - agrupadas por colaborador e gerente
         let queryAutorizado = `
-      SELECT 
+      SELECT
         GERENTE as gerente,
         COLABORADOR as colaborador,
         SUM(CASE WHEN TIPO_HE = '50%' THEN HORAS ELSE 0 END) as autorizado_50,
         SUM(CASE WHEN TIPO_HE = '100%' THEN HORAS ELSE 0 END) as autorizado_100
-      FROM PLANEJAMENTO_HE 
+      FROM PLANEJAMENTO_HE
       WHERE MES = ?
         AND STATUS = 'APROVADO'
         AND (DIRETORIA = ? OR DIRETORIA IS NULL)
     `;
         const paramsAutorizado = [mes, diretoria];
-
-        if (gerente) {
-            queryAutorizado += ` AND GERENTE = ?`;
-            paramsAutorizado.push(gerente);
-        }
 
         queryAutorizado += ` GROUP BY GERENTE, COLABORADOR`;
 
@@ -338,7 +328,6 @@ exports.getComparativoGastoPrev = async (req, res) => {
  *
  * @param {Object} req - Request Express
  * @param {string} req.query.mes - Mês para filtrar (obrigatório)
- * @param {string} req.query.gerente - Gerente para filtrar (opcional)
  * @param {string} req.diretoriaHE - Diretoria do usuário (injetada pelo middleware)
  * @param {Object} res - Response Express
  *
@@ -357,7 +346,7 @@ exports.getComparativoGastoPrev = async (req, res) => {
  * }]
  */
 exports.getComparativoGastoPrevValor = async (req, res) => {
-    const { mes, gerente } = req.query;
+    const { mes } = req.query;
     const diretoria = req.diretoriaHE;
     const user = req.session.usuario;
     const ip = req.ip;
@@ -407,7 +396,7 @@ exports.getComparativoGastoPrevValor = async (req, res) => {
         // Obtemos todas as horas executadas (da tabela FREQUENCIA) agrupadas por colaborador e gerente
         // Usando a mesma abordagem da função que funciona corretamente, com distinção exata no SQL
         let queryExecutado = `
-      SELECT 
+      SELECT
         ${colunas[3]} as gerente,
         ${colunas[0]} as colaborador,
         ${colunas[1]} as cargo,
@@ -419,11 +408,6 @@ exports.getComparativoGastoPrevValor = async (req, res) => {
     `;
         let paramsExecutado = [mesNumero];
 
-        if (gerente) {
-            queryExecutado += ` AND ${colunas[3]} = ?`; // GERENTE_IMEDIATO
-            paramsExecutado.push(gerente);
-        }
-
         queryExecutado += ` GROUP BY ${colunas[3]}, ${colunas[0]}, ${colunas[1]}, GERENTE_DIVISAO
         ORDER BY ${colunas[3]}, ${colunas[0]}`;
 
@@ -434,23 +418,18 @@ exports.getComparativoGastoPrevValor = async (req, res) => {
 
         // Obtemos todas as horas autorizadas (da tabela PLANEJAMENTO_HE) - agrupadas por colaborador e gerente
         let queryAutorizado = `
-      SELECT 
+      SELECT
         GERENTE as gerente,
         COLABORADOR as colaborador,
         CARGO,
         SUM(CASE WHEN TIPO_HE = '50%' THEN HORAS ELSE 0 END) as autorizado_50,
         SUM(CASE WHEN TIPO_HE = '100%' THEN HORAS ELSE 0 END) as autorizado_100
-      FROM PLANEJAMENTO_HE 
+      FROM PLANEJAMENTO_HE
       WHERE MES = ?
         AND STATUS = 'APROVADO'
         AND (DIRETORIA = ? OR DIRETORIA IS NULL)
     `;
         const paramsAutorizado = [mes, diretoria];
-
-        if (gerente) {
-            queryAutorizado += ` AND GERENTE = ?`;
-            paramsAutorizado.push(gerente);
-        }
 
         queryAutorizado += ` GROUP BY GERENTE, COLABORADOR, CARGO`;
 
@@ -646,8 +625,8 @@ exports.getMesesDisponiveisGastoPrev = async (req, res) => {
 
         // Query para buscar ano e mês distintos, ordenando pelo mais recente primeiro
         const query = `
-      SELECT DISTINCT 
-        YEAR(${colunaData}) as ano, 
+      SELECT DISTINCT
+        YEAR(${colunaData}) as ano,
         MONTH(${colunaData}) as mes
       FROM ${nomeTabela}
       ORDER BY ano DESC, mes DESC

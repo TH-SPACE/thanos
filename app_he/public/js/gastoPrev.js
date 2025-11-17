@@ -56,16 +56,14 @@ function formatarMoeda(valor) {
  * Carrega e exibe o comparativo de horas executadas vs autorizadas por gerente
  *
  * @param {string} mes - Mês para filtrar (obrigatório)
- * @param {string} gerente - Nome do gerente para filtrar (opcional)
  */
-function carregarComparativoGastoPrev(mes, gerente = "") {
+function carregarComparativoGastoPrev(mes) {
   const container = document.getElementById("tabelaComparativoFrequencia");
   container.innerHTML =
     '<p class="text-center text-muted">Carregando comparativo...</p>';
 
   const params = new URLSearchParams();
   params.append("mes", mes);
-  if (gerente) params.append("gerente", gerente);
 
   const url = `/planejamento-he/api/comparativo-gasto-prev?${params.toString()}`;
 
@@ -89,7 +87,7 @@ function carregarComparativoGastoPrev(mes, gerente = "") {
       container.innerHTML = criarTabelaComparativo(dados);
 
       // Carregar também a tabela de valores monetários
-      carregarComparativoGastoPrevValor(mes, gerente);
+      carregarComparativoGastoPrevValor(mes);
     })
     .catch((erro) => {
       console.error("Erro ao carregar comparativo de Gasto vs Previsto:", erro);
@@ -101,16 +99,14 @@ function carregarComparativoGastoPrev(mes, gerente = "") {
  * Carrega e exibe o comparativo de valores monetários executados vs autorizados por gerente
  *
  * @param {string} mes - Mês para filtrar (obrigatório)
- * @param {string} gerente - Nome do gerente para filtrar (opcional)
  */
-function carregarComparativoGastoPrevValor(mes, gerente = "") {
+function carregarComparativoGastoPrevValor(mes) {
   const container = document.getElementById("tabelaComparativoFrequenciaValor");
   container.innerHTML =
     '<p class="text-center text-muted">Carregando comparativo monetário...</p>';
 
   const params = new URLSearchParams();
   params.append("mes", mes);
-  if (gerente) params.append("gerente", gerente);
 
   const url = `/planejamento-he/api/comparativo-gasto-prev-valor?${params.toString()}`;
 
@@ -407,7 +403,7 @@ function criarTabelaComparativoValor(dados) {
   });
 
   let html = `
-    
+
     <div class="table-responsive-sm table-responsive-md table-responsive-lg">
       <table class="table table-bordered table-hover table-sm w-100">
         <thead class="thead" style="background-color: #8700d4ff; text-color: white; color: white;">
@@ -577,7 +573,6 @@ function criarTabelaComparativoValor(dados) {
  */
 function inicializarPainelGastoPrev() {
   const mesSelect = document.getElementById("filtroMesComparativo");
-  const gerenteSelect = document.getElementById("filtroGerenteComparativo");
 
   // Busca os meses disponíveis na tabela de frequência
   fetch("/planejamento-he/api/gasto-prev/meses-disponiveis")
@@ -620,20 +615,6 @@ function inicializarPainelGastoPrev() {
       mesSelect.innerHTML = '<option value="">Erro ao carregar</option>';
     });
 
-  fetch("/planejamento-he/api/gerentes")
-    .then((r) => r.json())
-    .then((data) => {
-      gerenteSelect.innerHTML = '<option value="">Todos os Gerentes</option>';
-      if (data.gerentes) {
-        data.gerentes.forEach((g) => {
-          const opt = document.createElement("option");
-          opt.value = g;
-          opt.textContent = g;
-          gerenteSelect.appendChild(opt);
-        });
-      }
-    });
-
   // Inicializa o container da nova tabela de valores
   const containerValor = document.getElementById(
     "tabelaComparativoFrequenciaValor"
@@ -648,18 +629,8 @@ function inicializarPainelGastoPrev() {
     .getElementById("filtroMesComparativo")
     .addEventListener("change", function () {
       const mes = this.value;
-      const gerente = document.getElementById("filtroGerenteComparativo").value;
-      carregarComparativoGastoPrev(mes, gerente);
-      carregarComparativoGastoPrevValor(mes, gerente);
-    });
-
-  document
-    .getElementById("filtroGerenteComparativo")
-    .addEventListener("change", function () {
-      const mes = document.getElementById("filtroMesComparativo").value;
-      const gerente = this.value;
-      carregarComparativoGastoPrev(mes, gerente);
-      carregarComparativoGastoPrevValor(mes, gerente);
+      carregarComparativoGastoPrev(mes);
+      carregarComparativoGastoPrevValor(mes);
     });
 
   // Botão para limpar filtros
@@ -671,7 +642,6 @@ function inicializarPainelGastoPrev() {
       const mesPadrao =
         mesSelect.options.length > 0 ? mesSelect.options[0].value : "";
 
-      document.getElementById("filtroGerenteComparativo").value = "";
       // Define o valor para o mês padrão (o mais recente da lista)
       mesSelect.value = mesPadrao;
       carregarComparativoGastoPrev(mesPadrao);

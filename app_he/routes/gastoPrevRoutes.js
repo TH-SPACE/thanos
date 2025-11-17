@@ -30,9 +30,9 @@ const gastoPrevController = require("../controllers/gastoPrevController");
 /**
  * GET /api/comparativo-gasto-prev
  * Retorna dados comparativos entre horas executadas e autorizadas por gerente
- * 
+ *
  * Middlewares: requireHEAuth, requireAnyHEDiretoria
- * Query params: mes (obrigatório), gerente (opcional)
+ * Query params: mes (obrigatório)
  * Filtro: Por diretoria do usuário
  */
 router.get("/api/comparativo-gasto-prev",
@@ -46,9 +46,9 @@ router.get("/api/comparativo-gasto-prev",
 /**
  * GET /api/comparativo-gasto-prev-valor
  * Retorna dados comparativos monetários entre valores executados e autorizados por gerente
- * 
+ *
  * Middlewares: requireHEAuth, requireAnyHEDiretoria
- * Query params: mes (obrigatório), gerente (opcional)
+ * Query params: mes (obrigatório)
  * Filtro: Por diretoria do usuário
  */
 router.get("/api/comparativo-gasto-prev-valor",
@@ -61,7 +61,7 @@ router.get("/api/comparativo-gasto-prev-valor",
  * GET /api/gasto-prev/meses-disponiveis
  * Retorna uma lista de meses/anos únicos que possuem registros na tabela FREQUENCIA.
  * Usado para popular dinamicamente os filtros de mês no frontend.
- * 
+ *
  * Middlewares: requireHEAuth, requireAnyHEDiretoria
  */
 router.get("/api/gasto-prev/meses-disponiveis",
