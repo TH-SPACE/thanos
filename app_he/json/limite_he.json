@@ -9,7 +9,10 @@
   },
   {
     "Responsavel": "SANDER BATISTA GOMES",
-    "Valores": "5300,00"
+    "Valores": "5300,00",
+    "GerentesCompartilhados": [
+      "ROMULO VIEIRA PASSOS"
+    ]
   },
   {
     "Responsavel": "GILSON XAVIER FERREIRA",
@@ -25,7 +28,11 @@
   },
   {
     "Responsavel": "CARLOS AKIRA SANBUICHI",
-    "Valores": "3200,00"
+    "Valores": "3200,00",
+    "GerentesCompartilhados": [
+      "SELMO LIVIO MARTINS",
+      "GABRIEL FERREIRA BORGES"
+    ]
   },
   {
     "Responsavel": "CONSTRUÇAO B2B AVANÇADO",

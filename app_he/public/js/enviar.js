@@ -20,6 +20,7 @@ function carregarDadosUsuario() {
 // - limitesPorGerente: mapeia gerentes aos seus limites financeiros de HE (Horas Extras)
 // - valoresPorCargo: mapeia cargos aos valores/hora por tipo de HE (50%, 100%)
 let limitesPorGerente = {};
+let gerentesCompartilhados = {};
 let valoresPorCargo = {};
 
 // Carrega os limites de HE por gerente a partir de um arquivo JSON estático
@@ -28,11 +29,22 @@ function carregarLimitesHE() {
     .then((r) => r.json())
     .then((data) => {
       limitesPorGerente = {};
+      gerentesCompartilhados = {};
       data.forEach((item) => {
         const valor = parseFloat(
           item.Valores.replace(/\./g, "").replace(",", ".")
         );
+        // Adiciona o gerente responsável
         limitesPorGerente[item.Responsavel] = valor;
+
+        // Se houver gerentes compartilhados, adiciona também com o mesmo limite
+        if (item.GerentesCompartilhados && Array.isArray(item.GerentesCompartilhados)) {
+          item.GerentesCompartilhados.forEach(gerenteCompartilhado => {
+            limitesPorGerente[gerenteCompartilhado] = valor;
+            // Registra qual gerente é o responsável pelo limite compartilhado
+            gerentesCompartilhados[gerenteCompartilhado] = item.Responsavel;
+          });
+        }
       });
     });
 }
@@ -74,8 +86,16 @@ function mostrarResumoHE(gerente, mes) {
       const utilizado = aprovado + pendente;
       const saldo = Math.max(0, limite - utilizado);
 
+      // Verifica se este gerente compartilha limite com outro
+      let avisoCompartilhamento = '';
+      if (gerentesCompartilhados[gerente]) {
+        avisoCompartilhamento = `<div class="badge badge-pill badge-primary mb-2 p-2">
+          <small><strong>VALOR LIMITE GERÊNCIA: ${gerentesCompartilhados[gerente]}</strong></small>
+        </div>`;
+      }
+
       // Renderiza o resumo com formatação em BRL (Real brasileiro)
-      resumoDiv.innerHTML = `
+      resumoDiv.innerHTML = avisoCompartilhamento + `
   <div class="mb-2">
     <strong style="font-size:1rem; color:#000;">Resumo de HE - ${gerente} (${mes})</strong>
   </div>
@@ -84,33 +104,32 @@ function mostrarResumoHE(gerente, mes) {
       <div class="alert alert-primary p-2 mb-0 text-center">
         <div class="font-weight-bold">Limite</div>
         <div>${limite.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })}</div>
+        style: "currency",
+        currency: "BRL",
+      })}</div>
       </div>
     </div>
     <div class="col-md-2 col-6 mb-2">
       <div class="alert alert-info p-2 mb-0 text-center">
         <div class="font-weight-bold">Aprovado</div>
         <div>${aprovado.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })}</div>
+        style: "currency",
+        currency: "BRL",
+      })}</div>
       </div>
     </div>
     <div class="col-md-2 col-6 mb-2">
       <div class="alert alert-warning p-2 mb-0 text-center">
         <div class="font-weight-bold">Pendente</div>
         <div>${pendente.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })}</div>
+        style: "currency",
+        currency: "BRL",
+      })}</div>
       </div>
     </div>
     <div class="col-md-2 col-6 mb-2">
-      <div class="alert ${
-        saldo > 0 ? "alert-success" : "alert-danger"
-      } p-2 mb-0 text-center">
+      <div class="alert ${saldo > 0 ? "alert-success" : "alert-danger"
+        } p-2 mb-0 text-center">
         <div class="font-weight-bold">Saldo</div>
         <div>${saldo.toLocaleString("pt-BR", {
           style: "currency",
@@ -315,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const resumoDiv = document.getElementById("resumoHE");
       resumoDiv.innerHTML = `
       <div class="alert alert-danger py-2 px-3">
-        <i class="fas fa-exclamation-triangle"></i> 
+        <i class="fas fa-exclamation-triangle"></i>
         Selecione um <strong>Gerente</strong> antes de adicionar colaboradores.
       </div>
     `;

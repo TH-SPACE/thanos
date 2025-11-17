@@ -18,6 +18,34 @@ const { getValorHora } = require("../utils/valoresHE");
 const limitesData = require("../json/limite_he.json");
 
 // ================================================================================
+// 🔗 FUNÇÕES AUXILIARES PARA LIMITES COMPARTILHADOS
+// ================================================================================
+
+/**
+ * Obtém as informações de limite para um gerente (direto ou compartilhado)
+ *
+ * @param {string} gerente - Nome do gerente
+ * @returns {Object|null} Objeto com informações de limite ou null se não encontrado
+ */
+function getInfoLimitePorGerente(gerente) {
+  // Primeiro tenta encontrar diretamente no Responsavel
+  let limiteInfo = limitesData.find((l) => l.Responsavel === gerente);
+
+  if (limiteInfo) {
+    return limiteInfo;
+  }
+
+  // Se não encontrar diretamente, procura nos GerentesCompartilhados
+  for (const item of limitesData) {
+    if (item.GerentesCompartilhados && item.GerentesCompartilhados.includes(gerente)) {
+      return item;
+    }
+  }
+
+  return null;
+}
+
+// ================================================================================
 // 👤 API DE PERFIL DO USUÁRIO
 // ================================================================================
 
@@ -103,8 +131,8 @@ exports.getApprovalSummary = async (req, res) => {
     // Calcula o limite financeiro total baseado em limite_he.json
     let limiteTotal = 0;
     if (gerente) {
-      // Para um gerente específico, busca o limite individual
-      const limiteInfo = limitesData.find((l) => l.Responsavel === gerente);
+      // Para um gerente específico, busca o limite individual ou compartilhado
+      const limiteInfo = getInfoLimitePorGerente(gerente);
       limiteTotal = limiteInfo
         ? parseFloat(limiteInfo.Valores.replace(".", "").replace(",", "."))
         : 0;
@@ -274,6 +302,8 @@ exports.enviarSolicitacoesMultiplo = async (req, res) => {
  *
  * Calcula o valor total aprovado e pendente para um gerente específico
  * em um determinado mês, considerando apenas solicitações APROVADAS e PENDENTES.
+ * Para gerentes com limites compartilhados, considera solicitações de todos os
+ * gerentes no mesmo grupo de limite.
  *
  * @param {Object} req - Request Express
  * @param {string} req.query.gerente - Nome do gerente (obrigatório)
@@ -301,11 +331,22 @@ exports.obterResumoHE = async (req, res) => {
 
   try {
     const conexao = db.mysqlPool;
+
+    // Obter o grupo de gerentes que compartilham o limite
+    const limiteInfo = getInfoLimitePorGerente(gerente);
+    let gerentesParaConsulta = [gerente];
+
+    if (limiteInfo && limiteInfo.GerentesCompartilhados) {
+      gerentesParaConsulta = [limiteInfo.Responsavel, ...limiteInfo.GerentesCompartilhados];
+    }
+
+    // Criar placeholders para a consulta IN
+    const placeholders = gerentesParaConsulta.map(() => '?').join(',');
     const [rows] = await conexao.query(
       `SELECT CARGO, HORAS, TIPO_HE, STATUS
        FROM PLANEJAMENTO_HE
-       WHERE GERENTE = ? AND MES = ? AND STATUS IN ('APROVADO', 'PENDENTE') AND (DIRETORIA = ? OR DIRETORIA IS NULL)`,
-      [gerente, mes, diretoria]
+       WHERE GERENTE IN (${placeholders}) AND MES = ? AND STATUS IN ('APROVADO', 'PENDENTE') AND (DIRETORIA = ? OR DIRETORIA IS NULL)`,
+      [...gerentesParaConsulta, mes, diretoria]
     );
 
     let totalAprovado = 0;
@@ -450,7 +491,7 @@ exports.editarEnvio = async (req, res) => {
     }
 
     await conexao.query(
-      `UPDATE PLANEJAMENTO_HE 
+      `UPDATE PLANEJAMENTO_HE
        SET MES = ?, HORAS = ?, TIPO_HE = ?, JUSTIFICATIVA = ?, STATUS = 'PENDENTE'
        WHERE id = ? AND ENVIADO_POR = ?`,
       [mes, horas, tipoHE, justificativa, id, emailUsuario]
@@ -544,6 +585,8 @@ exports.excluirEnvio = async (req, res) => {
  *
  * Agrupa solicitações por gerente e calcula contadores de status
  * (aprovadas, pendentes, recusadas) e soma de horas por status.
+ * Para gerentes com limites compartilhados, os dados são exibidos
+ * separadamente para cada gerente do grupo.
  *
  * @param {Object} req - Request Express
  * @param {string} req.query.mes - Mês para filtrar (obrigatório)
