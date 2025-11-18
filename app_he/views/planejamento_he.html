@@ -106,77 +106,243 @@
             <div class="container-fluid">
                 <!-- Tela: Nova Solicitação -->
                 <div id="novaSolicitacao" class="card">
-                    <h3 class="text-center mb-3" style="color:#6a1b9a; font-weight:bold;">
-                        <i class="fa-solid fa-paper-plane text-primary"></i> Enviar Planejamento de Horas Extras
-                    </h3>
-                    <!-- Seleção fixa -->
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-row mb-4">
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-layer-group"></i> Nova Solicitação de HE - CW</h2>
+
+                    <!-- Abas de navegação -->
+                    <ul class="nav nav-tabs" id="solicitacaoTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="info-gerais-tab" data-toggle="tab" href="#informacoes-gerais" role="tab">Informações Gerais</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" id="colaboradores-tab" data-toggle="tab" href="#colaboradores" role="tab">Colaboradores</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" id="resumo-tab" data-toggle="tab" href="#resumo" role="tab">Resumo</a>
+                        </li>
+                    </ul>
+
+                    <!-- Conteúdo das abas -->
+                    <div class="tab-content p-3">
+                        <!-- Aba 1: Informações Gerais -->
+                        <div class="tab-pane fade show active" id="informacoes-gerais" role="tabpanel">
+                            <div class="row">
                                 <div class="col-md-6">
-                                    <label for="gerente">Gerente</label>
-                                    <select id="gerente" class="form-control" required>
-                                        <option value="">Selecione</option>
-                                    </select>
+                                    <div class="form-group">
+                                        <label for="gerente"><i class="fas fa-user-tie text-primary"></i> Gerente</label>
+                                        <select id="gerente" class="form-control" required>
+                                            <option value="">Selecione um gerente</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="mes">Mês</label>
-                                    <select id="mes" class="form-control" required>
-                                        <option value="Janeiro">Janeiro</option>
-                                        <option value="Fevereiro">Fevereiro</option>
-                                        <option value="Março">Março</option>
-                                        <option value="Abril">Abril</option>
-                                        <option value="Maio">Maio</option>
-                                        <option value="Junho">Junho</option>
-                                        <option value="Julho">Julho</option>
-                                        <option value="Agosto">Agosto</option>
-                                        <option value="Setembro">Setembro</option>
-                                        <option value="Outubro">Outubro</option>
-                                        <option value="Novembro">Novembro</option>
-                                        <option value="Dezembro">Dezembro</option>
-                                    </select>
+                                    <div class="form-group">
+                                        <label for="mes"><i class="fas fa-calendar-alt text-primary"></i> Mês de Referência</label>
+                                        <select id="mes" class="form-control" required>
+                                            <option value="Janeiro">Janeiro</option>
+                                            <option value="Fevereiro">Fevereiro</option>
+                                            <option value="Março">Março</option>
+                                            <option value="Abril">Abril</option>
+                                            <option value="Maio">Maio</option>
+                                            <option value="Junho">Junho</option>
+                                            <option value="Julho">Julho</option>
+                                            <option value="Agosto">Agosto</option>
+                                            <option value="Setembro">Setembro</option>
+                                            <option value="Outubro">Outubro</option>
+                                            <option value="Novembro">Novembro</option>
+                                            <option value="Dezembro">Dezembro</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Resumo de HE -->
+                            <div id="resumoHE" class="resumo-financeiro mb-4">
+                                <div class="row">
+                                    <div class="col-md-3 col-6 mb-2">
+                                        <div class="text-center">
+                                            <div class="h6 mb-1">Limite</div>
+                                            <div class="h5 font-weight-bold" id="limiteValor">R$ 0,00</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6 mb-2">
+                                        <div class="text-center">
+                                            <div class="h6 mb-1">Aprovado</div>
+                                            <div class="h5 font-weight-bold" id="aprovadoValor">R$ 0,00</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6 mb-2">
+                                        <div class="text-center">
+                                            <div class="h6 mb-1">Pendente</div>
+                                            <div class="h5 font-weight-bold" id="pendenteValor">R$ 0,00</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6 mb-2">
+                                        <div class="text-center">
+                                            <div class="h6 mb-1">Saldo</div>
+                                            <div class="h5 font-weight-bold text-success" id="saldoValor">R$ 0,00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-right">
+                                <button type="button" id="btnProximoInfoGerais" class="btn btn-primary">
+                                    Próximo: Colaboradores <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Resumo de HE -->
-                    <div id="resumoHE" class="mb-4"></div>
+                        <!-- Aba 2: Colaboradores -->
+                        <div class="tab-pane fade" id="colaboradores" role="tabpanel">
+                            <div class="card mb-4 p-3">
+                                <h5 class="mb-3 titulo-padrao"><i class="fas fa-user-plus"></i> Adicionar Colaborador</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="novoColaborador">Colaborador</label>
+                                        <select id="novoColaborador" class="form-control">
+                                            <option value="">Selecione o gerente primeiro</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 mb-3" style="display: none;">
+                                        <label for="novoMatricula">Matrícula</label>
+                                        <input type="text" id="novoMatricula" class="form-control" readonly>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label for="novoCargo">Cargo</label>
+                                        <input type="text" id="novoCargo" class="form-control" readonly>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <label for="novoTipoHE">Tipo HE</label>
+                                        <select id="novoTipoHE" class="form-control">
+                                            <option value="">Selecione</option>
+                                            <option value="50%">50%</option>
+                                            <option value="100%">100%</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <label for="novoHoras">Horas</label>
+                                        <input type="number" id="novoHoras" class="form-control" min="0.5" step="0.5" placeholder="0.0">
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <label for="novoJustificativa">Justificativa</label>
+                                        <select id="novoJustificativa" class="form-control">
+                                            <option value="">Selecione</option>
+                                            <option value="B2B Avançado">B2B Avançado</option>
+                                            <option value="BackOffice">BackOffice</option>
+                                            <option value="Célula Agendamento Regional">Célula Agendamento Regional</option>
+                                            <option value="Implantação">Implantação</option>
+                                            <option value="Manutenção de Redes">Manutenção de Redes</option>
+                                            <option value="Móvel">Móvel</option>
+                                            <option value="O&M">O&M</option>
+                                            <option value="Produção">Produção</option>
+                                            <option value="Projetos Especiais">Projetos Especiais</option>
+                                            <option value="Reparo">Reparo</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1 mb-3 d-flex align-items-end">
+                                        <button type="button" id="btnAdicionarColaborador" class="btn btn-success w-100" title="Adicionar colaborador à lista">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <!-- Linhas de colaboradores -->
-                    <div class="table-responsive mb-3">
-                        <table class="table table-sm table-bordered">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Colaborador</th>
-                                    <th style="display: none;">Matrícula</th>
-                                    <th>Cargo</th>
-                                    <th>Tipo HE</th>
-                                    <th>Horas</th>
-                                    <th>Justificativa</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="linhasColaboradores"></tbody>
-                        </table>
-                    </div>
+                            <!-- Lista de colaboradores adicionados -->
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 titulo-padrao"><i class="fas fa-users"></i> Colaboradores Adicionados</h5>
+                                    <span id="contadorColaboradores" class="badge badge-primary">0 colaboradores</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>Colaborador</th>
+                                                    <th style="display: none;">Matrícula</th>
+                                                    <th>Cargo</th>
+                                                    <th>Tipo HE</th>
+                                                    <th>Horas</th>
+                                                    <th>Justificativa</th>
+                                                    <th>Valor Estimado</th>
+                                                    <th class="text-center">Ações</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="listaColaboradores"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <button type="button" id="addLinha" class="btn btn-secondary mb-3">+ Adicionar Colaborador</button>
+                            <div class="text-right mt-3">
+                                <button type="button" id="btnAnteriorColaboradores" class="btn btn-secondary mr-2">Anterior</button>
+                                <button type="button" id="btnProximoColaboradores" class="btn btn-primary" disabled>Próximo</button>
+                            </div>
+                        </div>
 
-                    <div class="text-right mb-3">
-                        <h4 class="font-weight-bold">
-                            Estimativa Atual de Custos: <span id="valorTotalHoras">R$ 0,00</span>
-                        </h4>
-                    </div>
+                        <!-- Aba 3: Resumo -->
+                        <div class="tab-pane fade" id="resumo" role="tabpanel">
+                            <h5 class="titulo-padrao"><i class="fas fa-clipboard-list"></i> Resumo da Solicitação</h5>
 
-                    <div class="text-center">
-                        <button type="button" id="btnEnviar" class="btn btn-primary px-4">Enviar</button>
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6><i class="fas fa-user-tie text-primary"></i> Informações Gerais</h6>
+                                            <p><strong>Gerente:</strong> <span id="resumoGerente">-</span></p>
+                                            <p><strong>Mês:</strong> <span id="resumoMes">-</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6><i class="fas fa-chart-bar text-success"></i> Resumo Financeiro</h6>
+                                            <p><strong>Valor Estimado:</strong> <span id="resumoValor">R$ 0,00</span></p>
+                                            <p><strong>Total de Horas:</strong> <span id="resumoHoras">0h</span></p>
+                                            <p><strong>Número de Colaboradores:</strong> <span id="resumoColaboradores">0</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="titulo-padrao"><i class="fas fa-users"></i> Detalhes dos Colaboradores</h5>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Colaborador</th>
+                                            <th>Cargo</th>
+                                            <th>Tipo HE</th>
+                                            <th>Horas</th>
+                                            <th>Justificativa</th>
+                                            <th>Valor Estimado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabelaResumoColaboradores">
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                <i class="fas fa-user-clock fa-2x mb-2"></i>
+                                                <div>Nenhum colaborador adicionado</div>
+                                                <small>Adicione colaboradores na aba anterior</small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="text-right mt-4">
+                                <button type="button" id="btnAnteriorResumo" class="btn btn-secondary" data-toggle="tab" data-target="#colaboradores" role="tab">
+                                    <i class="fas fa-arrow-left"></i> Colaboradores
+                                </button>
+                                <button type="button" id="btnEnviarSolicitacao" class="btn btn-enviar btn-lg ml-2">
+                                    <i class="fas fa-paper-plane"></i> Enviar Solicitação
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Tela: Minhas Solicitações -->
                 <div id="minhasSolicitacoes" class="card" style="display: none;">
-                    <h2 class="card-title"><i class="fas fa-list"></i> Minhas Solicitações</h2>
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-list"></i> Minhas Solicitações</h2>
 
                     <!-- Filtros -->
                     <div class="row mb-3">
@@ -217,7 +383,7 @@
 
                 <!-- Tela: Dashboard -->
                 <div id="dashboard" class="card" style="display:none;">
-                    <h2 class="card-title"><i class="fas fa-chart-line"></i> Dashboard Analítica</h2>
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-chart-line"></i> Dashboard Analítica</h2>
 
                     <!-- Filtros -->
                     <div class="row mb-4">
@@ -311,7 +477,7 @@
 
                 <!-- Tela: Seleção de Gerência -->
                 <div id="selecaoGerencia" class="card" style="display: none;">
-                    <h2 class="card-title"><i class="fas fa-users-cog"></i> Selecione a Gerência</h2>
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-users-cog"></i> Selecione a Gerência</h2>
                     <p class="text-muted">Escolha a gerência que deseja gerenciar as solicitações de horas extras:</p>
 
                     <!-- Filtros -->
@@ -359,7 +525,7 @@
                     <button class="btn btn-secondary btn-voltar" onclick="voltarSelecaoGerencia()">
                         <i class="fas fa-arrow-left"></i> Voltar para Seleção
                     </button>
-                    <h2 class="card-title"><i class="fas fa-tasks"></i> Tratar Solicitações</h2>
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-tasks"></i> Tratar Solicitações</h2>
 
                     <!-- Filtros da Tela de Aprovação -->
                     <div class="row mb-4">
@@ -404,7 +570,7 @@
 
                 <!-- Tela: Painel de Gasto vs Previsto -->
                 <div id="painelGastoPrev" class="card" style="display: none;">
-                    <h2 class="card-title"><i class="fas fa-chart-bar"></i> Gasto vs Previsto</h2>
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-chart-bar"></i> Gasto vs Previsto</h2>
 
                     <!-- Filtros -->
                     <div class="row mb-4">
@@ -456,7 +622,7 @@
 
                 <!-- Tela: Gerenciar Colaboradores -->
                 <div id="gerenciarColaboradores" class="card" style="display: none;">
-                    <h2 class="card-title"><i class="fas fa-users-cog"></i> Gerenciar Colaboradores</h2>
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-users-cog"></i> Gerenciar Colaboradores</h2>
 
                     <!-- Botões de Ação -->
                     <div class="mb-3">

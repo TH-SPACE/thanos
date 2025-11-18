@@ -22,6 +22,7 @@ function carregarDadosUsuario() {
 let limitesPorGerente = {};
 let gerentesCompartilhados = {};
 let valoresPorCargo = {};
+let colaboradoresAdicionados = []; // Armazena os colaboradores adicionados
 
 // Carrega os limites de HE por gerente a partir de um arquivo JSON estático
 function carregarLimitesHE() {
@@ -61,15 +62,21 @@ function carregarValoresHE() {
 // Exibe um resumo financeiro de HE para um gerente e mês específicos
 // Mostra limite, valor aprovado, pendente, saldo e estimativa de custo
 function mostrarResumoHE(gerente, mes) {
-  const resumoDiv = document.getElementById("resumoHE");
   const limite = limitesPorGerente[gerente] || 0;
 
   // Se não houver gerente, mês ou limite definido, exibe mensagem apropriada ou limpa o resumo
   if (!gerente || !mes || limite === 0) {
-    resumoDiv.innerHTML =
-      limite === 0
-        ? '<div class="alert alert-warning">Esta gerência não tem limite definido para HE.</div>'
-        : "";
+    // Mesmo sem limite ou dados, ainda podemos mostrar o valor estimado atual
+    document.getElementById("limiteValor").textContent = limite.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+    // Os outros valores continuam como zero quando não há gerente/mês selecionado
+    document.getElementById("aprovadoValor").textContent = "R$ 0,00";
+    document.getElementById("pendenteValor").textContent = "R$ 0,00";
+    document.getElementById("saldoValor").textContent = "R$ 0,00";
+    document.getElementById("saldoValor").className = "h5 font-weight-bold text-danger"; // Sempre vermelho quando não há dados
     return;
   }
 
@@ -86,87 +93,54 @@ function mostrarResumoHE(gerente, mes) {
       const utilizado = aprovado + pendente;
       const saldo = Math.max(0, limite - utilizado);
 
-      // Verifica se este gerente compartilha limite com outro
-      let avisoCompartilhamento = '';
-      if (gerentesCompartilhados[gerente]) {
-        avisoCompartilhamento = `<div class="badge badge-pill badge-primary mb-2 p-2">
-          <small><strong>VALOR LIMITE GERÊNCIA: ${gerentesCompartilhados[gerente]}</strong></small>
-        </div>`;
-      }
+      // Atualiza os valores no resumo financeiro
+      document.getElementById("limiteValor").textContent = limite.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+      document.getElementById("aprovadoValor").textContent = aprovado.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+      document.getElementById("pendenteValor").textContent = pendente.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+      document.getElementById("saldoValor").textContent = saldo.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
 
-      // Renderiza o resumo com formatação em BRL (Real brasileiro)
-      resumoDiv.innerHTML = avisoCompartilhamento + `
-  <div class="mb-2">
-    <strong style="font-size:1rem; color:#000;">Resumo de HE - ${gerente} (${mes})</strong>
-  </div>
-  <div class="row">
-    <div class="col-md-2 col-6 mb-2">
-      <div class="alert alert-primary p-2 mb-0 text-center">
-        <div class="font-weight-bold">Limite</div>
-        <div>${limite.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      })}</div>
-      </div>
-    </div>
-    <div class="col-md-2 col-6 mb-2">
-      <div class="alert alert-info p-2 mb-0 text-center">
-        <div class="font-weight-bold">Aprovado</div>
-        <div>${aprovado.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      })}</div>
-      </div>
-    </div>
-    <div class="col-md-2 col-6 mb-2">
-      <div class="alert alert-warning p-2 mb-0 text-center">
-        <div class="font-weight-bold">Pendente</div>
-        <div>${pendente.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      })}</div>
-      </div>
-    </div>
-    <div class="col-md-2 col-6 mb-2">
-      <div class="alert ${saldo > 0 ? "alert-success" : "alert-danger"
-        } p-2 mb-0 text-center">
-        <div class="font-weight-bold">Saldo</div>
-        <div>${saldo.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })}</div>
-      </div>
-    </div>
-    <div class="col-md-4 col-12 mb-2">
-      <div class="alert alert-dark p-2 mb-0 text-center">
-        <div class="font-weight-bold">Estimativa Atual de Custos</div>
-        <div id="valorTotalHorasResumo">R$ 0,00</div>
-      </div>
-    </div>
-  </div>
-`;
+      // Atualiza a cor do saldo dependendo do valor
+      document.getElementById("saldoValor").className = "h5 font-weight-bold";
+      document.getElementById("saldoValor").classList.add(saldo > 0 ? "text-success" : "text-danger");
     })
     .catch(() => {
-      resumoDiv.innerHTML =
-        '<div class="alert alert-danger">Erro ao carregar resumo.</div>';
+      // Em caso de erro, define valores padrão
+      document.getElementById("limiteValor").textContent = limite.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+      document.getElementById("aprovadoValor").textContent = "R$ 0,00";
+      document.getElementById("pendenteValor").textContent = "R$ 0,00";
+      document.getElementById("saldoValor").textContent = "R$ 0,00";
+      document.getElementById("saldoValor").className = "h5 font-weight-bold text-danger";
     });
 }
 
-// Calcula o custo total das horas extras com base nas linhas preenchidas na tabela
-// e atualiza os elementos que exibem esse valor (no rodapé e no resumo)
+// Calcula o custo total das horas extras com base nos colaboradores adicionados
+// e atualiza os elementos que exibem esse valor
 function calcularCustoTotal() {
   let custoTotal = 0;
+  let totalHoras = 0;
 
-  // Itera sobre todas as linhas da tabela de colaboradores
-  document.querySelectorAll("#linhasColaboradores tr").forEach((row) => {
-    const cargo = row.querySelector(".cargo")?.value || "";
-    const tipoHE = row.querySelector(".tipoHE")?.value || "";
-    const horas = parseFloat(row.querySelector(".horas")?.value) || 0;
-
-    // Se houver valor definido para o cargo e tipo de HE, calcula o custo
-    if (valoresPorCargo[cargo] && valoresPorCargo[cargo][tipoHE] && horas > 0) {
-      custoTotal += valoresPorCargo[cargo][tipoHE] * horas;
-    }
+  colaboradoresAdicionados.forEach((colab) => {
+    const valorHora = valoresPorCargo[colab.cargo] && valoresPorCargo[colab.cargo][colab.tipoHE]
+      ? valoresPorCargo[colab.cargo][colab.tipoHE]
+      : 0;
+    const custoItem = valorHora * colab.horas;
+    custoTotal += custoItem;
+    totalHoras += colab.horas;
   });
 
   // Formata o valor total em BRL
@@ -179,98 +153,162 @@ function calcularCustoTotal() {
   const totalRodape = document.getElementById("valorTotalHoras");
   if (totalRodape) totalRodape.textContent = valorTotal;
 
+  // Não há mais elemento "valorTotalHorasResumo" no novo layout, mas mantemos para compatibilidade
   const totalResumo = document.getElementById("valorTotalHorasResumo");
   if (totalResumo) totalResumo.textContent = valorTotal;
+
+  return { custoTotal, totalHoras, valorTotal };
 }
 
-// Adiciona uma nova linha à tabela de planejamento de HE
-// com campos para colaborador, matrícula, cargo, tipo de HE, horas e justificativa
-function addLinhaTabela() {
-  const tbody = document.getElementById("linhasColaboradores");
-  const row = document.createElement("tr");
+// Atualiza a lista de colaboradores na aba 'Colaboradores'
+function atualizarListaColaboradores() {
+  const tbody = document.getElementById("listaColaboradores");
+  tbody.innerHTML = '';
 
-  // Cria o HTML da nova linha com campos de formulário
-  row.innerHTML = `
-    <td>
-      <select class="form-control form-control-sm colaborador">
-        <option value="">Selecione</option>
-      </select>
-    </td>
-    <td style="display: none;"><input type="text" class="form-control form-control-sm matricula" readonly></td>
-    <td><input type="text" class="form-control form-control-sm cargo" readonly></td>
-    <td>
-      <select class="form-control form-control-sm tipoHE">
-        <option value="">Selecione</option>
-        <option value="50%">50%</option>
-        <option value="100%">100%</option>
-      </select>
-    </td>
-    <td><input type="number" class="form-control form-control-sm horas" min="0.5" step="0.5"></td>
-    <td>
-      <select class="form-control form-control-sm justificativa">
-        <option value="">Selecione</option>
-        <option value="B2B Avançado">B2B Avançado</option>
-        <option value="BackOffice">BackOffice</option>
-        <option value="Célula Agendamento Regional">Célula Agendamento Regional</option>
-        <option value="Implantação">Implantação</option>
-        <option value="Manutenção de Redes">Manutenção de Redes</option>
-        <option value="Móvel">Móvel</option>
-        <option value="O&M">O&M</option>
-        <option value="Produção">Produção</option>
-        <option value="Projetos Especiais">Projetos Especiais</option>
-        <option value="Reparo">Reparo</option>
-      </select>
-    </td>
-    <td class="text-center">
-      <button type="button" class="btn btn-danger btn-sm remover">X</button>
-    </td>
-  `;
-
-  tbody.appendChild(row);
-
-  // Carrega a lista de colaboradores do gerente selecionado via API
-  const gerente = document.getElementById("gerente").value;
-  if (gerente) {
-    fetch(
-      `/planejamento-he/api/colaboradores?gerente=${encodeURIComponent(
-        gerente
-      )}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        const select = row.querySelector(".colaborador");
-        select.innerHTML = '<option value="">Selecione</option>';
-        data.colaboradores.forEach((c) => {
-          const opt = document.createElement("option");
-          opt.value = c;
-          opt.textContent = c;
-          select.appendChild(opt);
-        });
-        // Inicializa o Select2 para busca amigável
-        $(select).select2({ width: "100%", placeholder: "Buscar colaborador" });
-        // Ao selecionar um colaborador, busca seu cargo e matrícula
-        $(select).on("select2:select", function (e) {
-          fetch(
-            `/planejamento-he/api/cargo?nome=${encodeURIComponent(
-              e.params.data.id
-            )}`
-          )
-            .then((r) => r.json())
-            .then((info) => {
-              row.querySelector(".cargo").value = info.cargo || "";
-              row.querySelector(".matricula").value = info.matricula || "";
-            });
-        });
-      });
+  if (colaboradoresAdicionados.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center text-muted py-4">
+          <i class="fas fa-user-clock fa-2x mb-2"></i>
+          <div>Nenhum colaborador adicionado</div>
+          <small>Adicione colaboradores usando o formulário acima</small>
+        </td>
+      </tr>
+    `;
+    verificarEnableProximoBtn();
+    return;
   }
 
-  // Configura o botão de remover linha
-  row.querySelector(".remover").addEventListener("click", () => {
-    row.remove();
-    calcularCustoTotal(); // Atualiza o custo após remoção
+  colaboradoresAdicionados.forEach((colab, index) => {
+    const valorHora = valoresPorCargo[colab.cargo] && valoresPorCargo[colab.cargo][colab.tipoHE]
+      ? valoresPorCargo[colab.cargo][colab.tipoHE]
+      : 0;
+    const valorEstimado = (valorHora * colab.horas).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><i class="fas fa-user mr-2 text-primary"></i>${colab.colaborador}</td>
+      <td style="display: none;">${colab.matricula}</td>
+      <td>${colab.cargo}</td>
+      <td class="font-weight-bold">${colab.tipoHE}</td>
+      <td class="text-center">${colab.horas}</td>
+      <td><span class="badge badge-secondary">${colab.justificativa}</span></td>
+      <td class="font-weight-bold text-success">${valorEstimado}</td>
+      <td class="text-center">
+        <button type="button" class="btn btn-danger btn-sm remover-colaborador" data-index="${index}" title="Remover colaborador">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
   });
 
-  calcularCustoTotal(); // Atualiza o custo mesmo que a linha esteja vazia (por segurança)
+  // Adiciona evento para remover colaborador
+  document.querySelectorAll('.remover-colaborador').forEach(button => {
+    button.addEventListener('click', function() {
+      const index = parseInt(this.getAttribute('data-index'));
+      colaboradoresAdicionados.splice(index, 1);
+      atualizarListaColaboradores();
+      atualizarResumoFinais();
+      verificarEnableProximoBtn();
+    });
+  });
+
+  // Atualiza o custo total
+  calcularCustoTotal();
+  verificarEnableProximoBtn();
+}
+
+// Atualiza o contador de colaboradores
+function atualizarContadorColaboradores() {
+  const contador = document.getElementById("contadorColaboradores");
+  const total = colaboradoresAdicionados.length;
+  contador.textContent = `${total} colaborador${total !== 1 ? 'es' : ''}`;
+
+  // Atualiza visualmente a cor do badge baseado no número
+  contador.className = "badge badge-primary";
+  if (total > 0) {
+    contador.classList.add("badge-success");
+    contador.classList.remove("badge-primary");
+  }
+}
+
+// Atualiza os dados na aba de resumo
+function atualizarResumoFinais() {
+  // Atualiza o resumo com informações gerais
+  document.getElementById('resumoGerente').textContent = document.getElementById('gerente').value || '-';
+  document.getElementById('resumoMes').textContent = document.getElementById('mes').value || '-';
+
+  const { custoTotal, totalHoras, valorTotal } = calcularCustoTotal();
+  document.getElementById('resumoValor').textContent = valorTotal;
+  document.getElementById('resumoHoras').textContent = totalHoras.toFixed(1) + 'h';
+  document.getElementById('resumoColaboradores').textContent = colaboradoresAdicionados.length;
+
+  // Atualiza a tabela de resumo
+  const tbody = document.getElementById("tabelaResumoColaboradores");
+
+  if (colaboradoresAdicionados.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted py-4">
+          <i class="fas fa-user-clock fa-2x mb-2"></i>
+          <div>Nenhum colaborador adicionado</div>
+          <small>Adicione colaboradores na aba anterior</small>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = '';
+
+  colaboradoresAdicionados.forEach((colab) => {
+    const valorHora = valoresPorCargo[colab.cargo] && valoresPorCargo[colab.cargo][colab.tipoHE]
+      ? valoresPorCargo[colab.cargo][colab.tipoHE]
+      : 0;
+    const valorEstimado = (valorHora * colab.horas).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><i class="fas fa-user mr-2 text-primary"></i>${colab.colaborador}</td>
+      <td>${colab.cargo}</td>
+      <td class="font-weight-bold">${colab.tipoHE}</td>
+      <td class="text-center">${colab.horas}</td>
+      <td><span class="badge badge-secondary">${colab.justificativa}</span></td>
+      <td class="font-weight-bold text-success">${valorEstimado}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  // Adiciona linha total
+  const totalRow = document.createElement("tr");
+  totalRow.className = "table-active";
+  totalRow.innerHTML = `
+    <td colspan="5" class="text-right"><strong>Total:</strong></td>
+    <td><strong>${valorTotal}</strong></td>
+  `;
+  tbody.appendChild(totalRow);
+}
+
+// Verifica se o botão "Próximo" na aba de colaboradores deve ser habilitado
+function verificarEnableProximoBtn() {
+  const btnProximo = document.getElementById('btnProximoColaboradores');
+  btnProximo.disabled = colaboradoresAdicionados.length === 0;
+
+  // Atualiza visualmente o botão
+  if (btnProximo.disabled) {
+    btnProximo.classList.add('btn-secondary');
+    btnProximo.classList.remove('btn-primary');
+  } else {
+    btnProximo.classList.remove('btn-secondary');
+    btnProximo.classList.add('btn-primary');
+  }
 }
 
 // ========== EVENTOS ==========
@@ -296,13 +334,24 @@ document.addEventListener("DOMContentLoaded", () => {
     "Novembro",
     "Dezembro",
   ];
-  document.getElementById("mes").value = meses[new Date().getMonth()];
+  const mesAtual = meses[new Date().getMonth()];
+  document.getElementById("mes").value = mesAtual;
+
+  // Atualiza o resumo financeiro com o mês atual selecionado
+  const gerenteAtual = document.getElementById("gerente").value;
+  if (gerenteAtual) {
+    mostrarResumoHE(gerenteAtual, mesAtual);
+  } else {
+    // Mostra valores padrão quando não há gerente selecionado
+    mostrarResumoHE('', mesAtual);
+  }
 
   // Carrega a lista de gerentes via API e popula o seletor
   fetch("/planejamento-he/api/gerentes")
     .then((r) => r.json())
     .then((data) => {
       const select = document.getElementById("gerente");
+      select.innerHTML = '<option value="">Selecione</option>'; // Limpa opções anteriores
       data.gerentes.forEach((g) => {
         const opt = document.createElement("option");
         opt.value = g;
@@ -316,126 +365,278 @@ document.addEventListener("DOMContentLoaded", () => {
     const g = document.getElementById("gerente").value;
     const m = document.getElementById("mes").value;
     if (g && m) mostrarResumoHE(g, m);
-    else document.getElementById("resumoHE").innerHTML = "";
+    else mostrarResumoHE(g, m); // Mostra valores padrão mesmo quando um dos campos não está preenchido
+
+    // Atualiza a lista de colaboradores disponíveis
+    atualizarListaColaboradoresDisponiveis();
   });
 
   document.getElementById("mes").addEventListener("change", () => {
     const g = document.getElementById("gerente").value;
     const m = document.getElementById("mes").value;
     if (g && m) mostrarResumoHE(g, m);
-    else document.getElementById("resumoHE").innerHTML = "";
+    else mostrarResumoHE(g, m); // Mostra valores padrão mesmo quando um dos campos não está preenchido
   });
 
-  // Adiciona uma nova linha à tabela ao clicar no botão "+"
-  document.getElementById("addLinha").addEventListener("click", () => {
+  // Função para atualizar a lista de colaboradores disponíveis com base no gerente selecionado
+  function atualizarListaColaboradoresDisponiveis() {
     const gerente = document.getElementById("gerente").value;
+    const select = document.getElementById("novoColaborador");
+
     if (!gerente) {
-      // Mostra alerta se não tiver gerente selecionado
-      const resumoDiv = document.getElementById("resumoHE");
-      resumoDiv.innerHTML = `
-      <div class="alert alert-danger py-2 px-3">
-        <i class="fas fa-exclamation-triangle"></i>
-        Selecione um <strong>Gerente</strong> antes de adicionar colaboradores.
-      </div>
-    `;
+      select.innerHTML = '<option value="">Selecione o gerente primeiro</option>';
+      select.disabled = true;
       return;
     }
-    addLinhaTabela(); // só adiciona se gerente estiver escolhido
+
+    select.disabled = false;
+    fetch(
+      `/planejamento-he/api/colaboradores?gerente=${encodeURIComponent(gerente)}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        select.innerHTML = '<option value="">Selecione um colaborador</option>';
+        data.colaboradores.forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
+        // Inicializa o Select2 para busca amigável
+        $(select).select2({ width: "100%", placeholder: "Buscar colaborador" });
+      })
+      .catch(() => {
+        select.innerHTML = '<option value="">Erro ao carregar colaboradores</option>';
+      });
+  }
+
+  // Ao selecionar um colaborador, busca seu cargo e matrícula
+  $(document).on("select2:select", "#novoColaborador", function (e) {
+    const colaborador = e.params.data.id;
+    fetch(
+      `/planejamento-he/api/cargo?nome=${encodeURIComponent(colaborador)}`
+    )
+      .then((r) => r.json())
+      .then((info) => {
+        document.getElementById("novoCargo").value = info.cargo || "";
+        document.getElementById("novoMatricula").value = info.matricula || "";
+      });
   });
 
-  // Recalcula o custo total sempre que o valor de horas ou tipo de HE for alterado
-  document
-    .getElementById("linhasColaboradores")
-    .addEventListener("change", (e) => {
-      if (
-        e.target.classList.contains("horas") ||
-        e.target.classList.contains("tipoHE")
-      ) {
-        calcularCustoTotal();
-      }
+  // Adiciona colaborador à lista ao clicar no botão
+  document.getElementById("btnAdicionarColaborador").addEventListener("click", () => {
+    const colaborador = document.getElementById("novoColaborador").value;
+    const matricula = document.getElementById("novoMatricula").value;
+    const cargo = document.getElementById("novoCargo").value;
+    const tipoHE = document.getElementById("novoTipoHE").value;
+    const horas = parseFloat(document.getElementById("novoHoras").value) || 0;
+    const justificativa = document.getElementById("novoJustificativa").value;
+
+    // Validação
+    if (!colaborador || !matricula || !cargo || !tipoHE || horas <= 0 || !justificativa) {
+      // Exibe mensagem de erro no formulário
+      const infoGeral = document.querySelector('#colaboradores .card:first-child');
+      infoGeral.insertAdjacentHTML('afterend',
+        `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+          Preencha todos os campos corretamente.
+          <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+          </button>
+        </div>`
+      );
+      // Remove o alerta após 5 segundos
+      setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+      }, 5000);
+      return;
+    }
+
+    // Adiciona à lista de colaboradores
+    colaboradoresAdicionados.push({
+      colaborador,
+      matricula,
+      cargo,
+      tipoHE,
+      horas,
+      justificativa
     });
 
-  // Lógica de envio do formulário de planejamento de HE
-  document.getElementById("btnEnviar").addEventListener("click", () => {
+    // Atualiza a lista visual e o contador
+    atualizarListaColaboradores();
+    atualizarContadorColaboradores();
+
+    // Limpa o formulário
+    document.getElementById("novoColaborador").value = "";
+    document.getElementById("novoMatricula").value = "";
+    document.getElementById("novoCargo").value = "";
+    document.getElementById("novoTipoHE").value = "";
+    document.getElementById("novoHoras").value = "";
+    document.getElementById("novoJustificativa").value = "";
+
+    // Atualiza o Select2 se estiver presente
+    if ($("#novoColaborador").data('select2')) {
+      $("#novoColaborador").val("").trigger('change');
+    }
+
+  });
+
+  // Prevenir a navegação direta por cliques nas abas desabilitadas
+  document.querySelectorAll('#solicitacaoTabs .nav-link.disabled').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      if (this.classList.contains('disabled')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  });
+
+  // Navegação entre as abas
+  // Botão "Próximo" da aba de informações gerais
+  document.getElementById("btnProximoInfoGerais").addEventListener("click", () => {
     const gerente = document.getElementById("gerente").value;
     const mes = document.getElementById("mes").value;
-    let valido = true;
-    const dados = [];
 
-    // Valida cada linha da tabela
-    document.querySelectorAll("#linhasColaboradores tr").forEach((row) => {
-      let linhaValida = true;
-
-      const colaborador = row.querySelector(".colaborador");
-      const matricula = row.querySelector(".matricula");
-      const cargo = row.querySelector(".cargo");
-      const tipoHE = row.querySelector(".tipoHE");
-      const horas = row.querySelector(".horas");
-      const justificativa = row.querySelector(".justificativa");
-
-      // Remove classes de erro antes da validação
-      [colaborador, matricula, cargo, tipoHE, horas, justificativa].forEach(
-        (el) => {
-          el.classList.remove("is-invalid");
-        }
+    if (!gerente) {
+      // Exibe mensagem de erro no formulário
+      const infoGeral = document.querySelector('#informacoes-gerais');
+      infoGeral.insertAdjacentHTML('afterbegin',
+        `<div class="alert alert-warning alert-dismissible fade show" role="alert">
+          Selecione um gerente antes de continuar.
+          <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+          </button>
+        </div>`
       );
+      // Remove o alerta após 5 segundos
+      setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+      }, 5000);
+      return;
+    }
 
-      // Valida campos obrigatórios
-      if (!colaborador.value) {
-        colaborador.classList.add("is-invalid");
-        linhaValida = false;
-      }
-      if (!matricula.value) {
-        matricula.classList.add("is-invalid");
-        linhaValida = false;
-      }
-      if (!cargo.value) {
-        cargo.classList.add("is-invalid");
-        linhaValida = false;
-      }
-      if (!tipoHE.value) {
-        tipoHE.classList.add("is-invalid");
-        linhaValida = false;
-      }
-      if (!horas.value || parseFloat(horas.value) <= 0) {
-        horas.classList.add("is-invalid");
-        linhaValida = false;
-      }
-      if (!justificativa.value) {
-        justificativa.classList.add("is-invalid");
-        linhaValida = false;
-      }
+    if (!mes) {
+      // Exibe mensagem de erro no formulário
+      const infoGeral = document.querySelector('#informacoes-gerais');
+      infoGeral.insertAdjacentHTML('afterbegin',
+        `<div class="alert alert-warning alert-dismissible fade show" role="alert">
+          Selecione um mês antes de continuar.
+          <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+          </button>
+        </div>`
+      );
+      // Remove o alerta após 5 segundos
+      setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+      }, 5000);
+      return;
+    }
 
-      // Se a linha for inválida, aplica animação de erro
-      if (!linhaValida) {
-        valido = false;
-        row.classList.add("shake");
-        setTimeout(() => row.classList.remove("shake"), 500); // remove animação após 500ms
-      }
+    // Ativa a aba de colaboradores e remove a classe disabled
+    const colaboradoresTab = document.getElementById("colaboradores-tab");
+    colaboradoresTab.classList.remove("disabled");
 
-      // Coleta os dados da linha para envio
-      dados.push({
-        gerente,
-        mes,
-        colaborador: colaborador.value,
-        matricula: matricula.value,
-        cargo: cargo.value,
-        tipoHE: tipoHE.value,
-        horas: horas.value,
-        justificativa: justificativa.value,
+    // Mostra a aba de colaboradores
+    $('#solicitacaoTabs a[href="#colaboradores"]').tab('show');
+  });
+
+  // Botão "Anterior" da aba de colaboradores
+  document.getElementById("btnAnteriorColaboradores").addEventListener("click", () => {
+    $('#solicitacaoTabs a[href="#informacoes-gerais"]').tab('show');
+  });
+
+  // Botão "Próximo" da aba de colaboradores
+  document.getElementById("btnProximoColaboradores").addEventListener("click", () => {
+    if (colaboradoresAdicionados.length === 0) {
+      Swal.fire({
+        title: "Atenção!",
+        text: "Adicione pelo menos um colaborador antes de continuar.",
+        icon: "warning",
+        confirmButtonText: "Ok",
       });
-    });
+      return;
+    }
 
-    // Verifica se gerente e mês foram selecionados
+    // Atualiza a aba de resumo com os dados atuais
+    atualizarResumoFinais();
+
+    // Ativa a aba de resumo e remove a classe disabled
+    const resumoTab = document.getElementById("resumo-tab");
+    resumoTab.classList.remove("disabled");
+
+    // Mostra a aba de resumo
+    $('#solicitacaoTabs a[href="#resumo"]').tab('show');
+  });
+
+  // Botão "Anterior" da aba de resumo
+  document.getElementById("btnAnteriorResumo").addEventListener("click", () => {
+    // Verifica se a aba de colaboradores está ativa antes de voltar
+    const colaboradoresTab = document.getElementById("colaboradores-tab");
+    if (colaboradoresTab.classList.contains('disabled')) {
+      // Caso a aba esteja desabilitada, volta para a aba de informações gerais
+      $('#solicitacaoTabs a[href="#informacoes-gerais"]').tab('show');
+    } else {
+      $('#solicitacaoTabs a[href="#colaboradores"]').tab('show');
+    }
+  });
+
+  // Lógica de envio do formulário de planejamento de HE
+  document.getElementById("btnEnviarSolicitacao").addEventListener("click", () => {
+    const gerente = document.getElementById("gerente").value;
+    const mes = document.getElementById("mes").value;
+
     if (!gerente || !mes) {
-      alert("Selecione Gerente e Mês.");
+      // Exibe mensagem de erro no formulário
+      const infoGeral = document.querySelector('#resumo');
+      infoGeral.insertAdjacentHTML('afterbegin',
+        `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+          Selecione Gerente e Mês.
+          <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+          </button>
+        </div>`
+      );
+      // Remove o alerta após 5 segundos
+      setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+      }, 5000);
       return;
     }
-    // Se houver erros de validação, não envia
-    if (!valido) {
-      // alert("Corrija os erros antes de enviar."); // Alert comentado propositalmente
+
+    if (colaboradoresAdicionados.length === 0) {
+      // Exibe mensagem de erro no formulário
+      const infoGeral = document.querySelector('#resumo');
+      infoGeral.insertAdjacentHTML('afterbegin',
+        `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+          Adicione pelo menos um colaborador.
+          <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+          </button>
+        </div>`
+      );
+      // Remove o alerta após 5 segundos
+      setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+      }, 5000);
       return;
     }
+
+    // Prepara os dados para envio
+    const dados = colaboradoresAdicionados.map(colab => ({
+      gerente,
+      mes,
+      colaborador: colab.colaborador,
+      matricula: colab.matricula,
+      cargo: colab.cargo,
+      tipoHE: colab.tipoHE,
+      horas: colab.horas,
+      justificativa: colab.justificativa
+    }));
 
     // Envia os dados para o backend
     fetch("/planejamento-he/enviar-multiplo", {
@@ -446,38 +647,71 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((r) => r.json())
       .then((resp) => {
         if (resp.sucesso) {
-          Swal.fire({
-            title: "Sucesso!",
-            text: resp.mensagem,
-            icon: "success",
-            confirmButtonText: "Ok",
-          }).then(() => {
-            // Limpa a tabela de novas solicitações
-            document.getElementById("linhasColaboradores").innerHTML = "";
-            calcularCustoTotal(); // Recalcula o custo para zerar a estimativa
-            // Atualiza o resumo HE após envio bem-sucedido
-            const gerente = document.getElementById("gerente").value;
-            const mes = document.getElementById("mes").value;
-            if (gerente && mes) {
-              // Adiciona feedback visual de atualização
-              const resumoDiv = document.getElementById("resumoHE");
-              resumoDiv.innerHTML = `
-                <div class="alert alert-info text-center">
-                  <i class="fas fa-sync-alt fa-spin"></i> Atualizando resumo financeiro...
-                </div>
-              `;
-              // Atualiza o resumo após o envio
-              mostrarResumoHE(gerente, mes);
-            }
-          });
+          // Limpa os dados
+          colaboradoresAdicionados = [];
+          atualizarListaColaboradores();
+          atualizarResumoFinais();
+          verificarEnableProximoBtn();
+
+          // Volta para a primeira aba
+          $('#solicitacaoTabs a[href="#informacoes-gerais"]').tab('show');
+
+          // Atualiza o resumo HE após envio bem-sucedido
+          if (gerente && mes) {
+            // Atualiza o resumo após o envio (mostrarResumoHE já atualiza os valores no elemento existente)
+            mostrarResumoHE(gerente, mes);
+          }
+
+          // Exibe mensagem de sucesso
+          const infoGeral = document.querySelector('#resumo');
+          infoGeral.insertAdjacentHTML('afterbegin',
+            `<div class="alert alert-success alert-dismissible fade show" role="alert">
+              ${resp.mensagem}
+              <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+              </button>
+            </div>`
+          );
+          // Remove o alerta após 5 segundos
+          setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) alert.remove();
+          }, 5000);
         } else {
-          Swal.fire({
-            title: "Erro!",
-            text: resp.mensagem,
-            icon: "error",
-            confirmButtonText: "Ok",
-          });
+          // Exibe mensagem de erro
+          const infoGeral = document.querySelector('#resumo');
+          infoGeral.insertAdjacentHTML('afterbegin',
+            `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+              ${resp.mensagem}
+              <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+              </button>
+            </div>`
+          );
+          // Remove o alerta após 5 segundos
+          setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) alert.remove();
+          }, 5000);
         }
+      })
+      .catch(error => {
+        console.error('Erro ao enviar solicitação:', error);
+        // Exibe mensagem de erro
+        const infoGeral = document.querySelector('#resumo');
+        infoGeral.insertAdjacentHTML('afterbegin',
+          `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+            Ocorreu um erro ao enviar as solicitações. Tente novamente.
+            <button type="button" class="close" data-dismiss="alert">
+              <span>&times;</span>
+            </button>
+          </div>`
+        );
+        // Remove o alerta após 5 segundos
+        setTimeout(() => {
+          const alert = document.querySelector('.alert');
+          if (alert) alert.remove();
+        }, 5000);
       });
   });
 

@@ -875,3 +875,119 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
         margin-left: 0;
     }
 }
+
+/* Estilos para a nova interface de solicitações por etapas */
+.nav-tabs .nav-link.disabled {
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.tab-pane {
+    padding: 20px 0;
+}
+
+.info-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Estilo para a tabela de colaboradores */
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.table th {
+    background-color: #f8f9fa;
+}
+
+/* Estilo para o botão de adicionar colaborador */
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* Estilo para botões de navegação */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.btn-primary:disabled,
+.btn-primary.disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+/* Estilo para os badges de contador */
+.badge-primary {
+    background-color: #6c757d;
+}
+
+.badge-success {
+    background-color: #28a745;
+}
+
+/* Estilo para o card de adição de colaborador */
+#adicionar-colaborador-card {
+    background-color: #f8f9fa;
+}
+
+/* Estilo para a área de resumo de HE */
+#resumoHE .card {
+    border: 1px solid #dee2e6;
+}
+
+/* Estilo para os alertas de validação */
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.alert-dismissible .close {
+    padding: 0.5rem 1rem;
+}
+
+/* Estilo para o resumo financeiro na aba de informações gerais */
+.resumo-financeiro {
+    background: linear-gradient(135deg, #6a1b9a, #4a154b);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* Estilo para o botão de envio */
+.btn-enviar {
+    background-color: #6a1b9a;
+    color: white;
+    border: none;
+}
+
+.btn-enviar:hover {
+    background-color: #4a0072;
+    color: white;
+}
+
+/* Estilo para títulos consistentes */
+.titulo-padrao {
+    color: #6a1b9a !important;
+}
+
