@@ -1,0 +1,6 @@
+{
+  "watch": ["*.js", "*.json"],
+  "ext": "js,json",
+  "ignore": ["node_modules", "public", "uploads", "*.test.js", "*.spec.js"],
+  "delay": "2"
+}
