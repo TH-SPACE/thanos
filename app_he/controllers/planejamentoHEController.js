@@ -506,7 +506,7 @@ exports.obterResumoExecutado = async (req, res) => {
       Agosto: 8,
       Setembro: 9,
       Outubro: 10,
-      Novho: 11,
+      Novembro: 11,
       Dezembro: 12,
     };
     const mesNumero = meses[mes];
