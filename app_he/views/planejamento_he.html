@@ -106,18 +106,22 @@
             <div class="container-fluid">
                 <!-- Tela: Nova Solicitação -->
                 <div id="novaSolicitacao" class="card">
-                    <h2 class="card-title titulo-padrao"><i class="fas fa-layer-group"></i> Nova Solicitação de HE - CW</h2>
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-layer-group"></i> Nova Solicitação de HE - CW
+                    </h2>
 
                     <!-- Abas de navegação -->
                     <ul class="nav nav-tabs" id="solicitacaoTabs" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active" id="info-gerais-tab" data-toggle="tab" href="#informacoes-gerais" role="tab">Informações Gerais</a>
+                            <a class="nav-link active" id="info-gerais-tab" data-toggle="tab" href="#informacoes-gerais"
+                                role="tab">Informações Gerais</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link disabled" id="colaboradores-tab" data-toggle="tab" href="#colaboradores" role="tab">Colaboradores</a>
+                            <a class="nav-link disabled" id="colaboradores-tab" data-toggle="tab" href="#colaboradores"
+                                role="tab">Colaboradores</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link disabled" id="resumo-tab" data-toggle="tab" href="#resumo" role="tab">Resumo</a>
+                            <a class="nav-link disabled" id="resumo-tab" data-toggle="tab" href="#resumo"
+                                role="tab">Resumo</a>
                         </li>
                     </ul>
 
@@ -128,7 +132,8 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="gerente"><i class="fas fa-user-tie text-primary"></i> Gerente</label>
+                                        <label for="gerente"><i class="fas fa-user-tie text-primary"></i>
+                                            Gerente</label>
                                         <select id="gerente" class="form-control" required>
                                             <option value="">Selecione um gerente</option>
                                         </select>
@@ -136,7 +141,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="mes"><i class="fas fa-calendar-alt text-primary"></i> Mês de Referência</label>
+                                        <label for="mes"><i class="fas fa-calendar-alt text-primary"></i> Mês de
+                                            Referência</label>
                                         <select id="mes" class="form-control" required>
                                             <option value="Janeiro">Janeiro</option>
                                             <option value="Fevereiro">Fevereiro</option>
@@ -178,7 +184,7 @@
                                     </div>
                                     <div class="col-md-2 col-6 mb-2">
                                         <div class="text-center">
-                                            <div class="h6 mb-1">Executado</div>
+                                            <div class="h6 mb-1">Executado Real</div>
                                             <div class="h5 font-weight-bold text-info" id="executadoValor">R$ 0,00</div>
                                         </div>
                                     </div>
@@ -195,7 +201,9 @@
                             <div id="detalhesExecutadoContainer" class="card mb-4">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0"><i class="fas fa-list-check"></i> Detalhes de Horas Executadas</h5>
-                                    <button class="btn btn-outline-primary btn-sm" type="button" data-toggle="collapse" data-target="#detalhesExecutado" aria-expanded="false" aria-controls="detalhesExecutado">
+                                    <button class="btn btn-outline-primary btn-sm" type="button" data-toggle="collapse"
+                                        data-target="#detalhesExecutado" aria-expanded="false"
+                                        aria-controls="detalhesExecutado">
                                         <i class="fas fa-chevron-down"></i> Expandir/Recolher
                                     </button>
                                 </div>
@@ -236,7 +244,8 @@
                         <!-- Aba 2: Colaboradores -->
                         <div class="tab-pane fade" id="colaboradores" role="tabpanel">
                             <div class="card mb-4 p-3">
-                                <h5 class="mb-3 titulo-padrao"><i class="fas fa-user-plus"></i> Adicionar Colaborador</h5>
+                                <h5 class="mb-3 titulo-padrao"><i class="fas fa-user-plus"></i> Adicionar Colaborador
+                                </h5>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label for="novoColaborador">Colaborador</label>
@@ -262,7 +271,8 @@
                                     </div>
                                     <div class="col-md-1 mb-3">
                                         <label for="novoHoras">Horas</label>
-                                        <input type="number" id="novoHoras" class="form-control" min="0.5" step="0.5" placeholder="0.0">
+                                        <input type="number" id="novoHoras" class="form-control" min="0.5" step="0.5"
+                                            placeholder="0.0">
                                     </div>
                                     <div class="col-md-1 mb-3">
                                         <label for="novoJustificativa">Justificativa</label>
@@ -270,7 +280,8 @@
                                             <option value="">Selecione</option>
                                             <option value="B2B Avançado">B2B Avançado</option>
                                             <option value="BackOffice">BackOffice</option>
-                                            <option value="Célula Agendamento Regional">Célula Agendamento Regional</option>
+                                            <option value="Célula Agendamento Regional">Célula Agendamento Regional
+                                            </option>
                                             <option value="Implantação">Implantação</option>
                                             <option value="Manutenção de Redes">Manutenção de Redes</option>
                                             <option value="Móvel">Móvel</option>
@@ -281,7 +292,8 @@
                                         </select>
                                     </div>
                                     <div class="col-md-1 mb-3 d-flex align-items-end">
-                                        <button type="button" id="btnAdicionarColaborador" class="btn btn-success w-100" title="Adicionar colaborador à lista">
+                                        <button type="button" id="btnAdicionarColaborador" class="btn btn-success w-100"
+                                            title="Adicionar colaborador à lista">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                     </div>
@@ -291,7 +303,8 @@
                             <!-- Lista de colaboradores adicionados -->
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0 titulo-padrao"><i class="fas fa-users"></i> Colaboradores Adicionados</h5>
+                                    <h5 class="mb-0 titulo-padrao"><i class="fas fa-users"></i> Colaboradores
+                                        Adicionados</h5>
                                     <span id="contadorColaboradores" class="badge badge-primary">0 colaboradores</span>
                                 </div>
                                 <div class="card-body p-0">
@@ -316,8 +329,10 @@
                             </div>
 
                             <div class="text-right mt-3">
-                                <button type="button" id="btnAnteriorColaboradores" class="btn btn-secondary mr-2">Anterior</button>
-                                <button type="button" id="btnProximoColaboradores" class="btn btn-primary" disabled>Próximo</button>
+                                <button type="button" id="btnAnteriorColaboradores"
+                                    class="btn btn-secondary mr-2">Anterior</button>
+                                <button type="button" id="btnProximoColaboradores" class="btn btn-primary"
+                                    disabled>Próximo</button>
                             </div>
                         </div>
 
@@ -335,9 +350,11 @@
                                         </div>
                                         <div class="col-md-6">
                                             <h6><i class="fas fa-chart-bar text-success"></i> Resumo Financeiro</h6>
-                                            <p><strong>Valor Estimado:</strong> <span id="resumoValor">R$ 0,00</span></p>
+                                            <p><strong>Valor Estimado:</strong> <span id="resumoValor">R$ 0,00</span>
+                                            </p>
                                             <p><strong>Total de Horas:</strong> <span id="resumoHoras">0h</span></p>
-                                            <p><strong>Número de Colaboradores:</strong> <span id="resumoColaboradores">0</span></p>
+                                            <p><strong>Número de Colaboradores:</strong> <span
+                                                    id="resumoColaboradores">0</span></p>
                                         </div>
                                     </div>
                                 </div>
@@ -370,7 +387,8 @@
                             </div>
 
                             <div class="text-right mt-4">
-                                <button type="button" id="btnAnteriorResumo" class="btn btn-secondary" data-toggle="tab" data-target="#colaboradores" role="tab">
+                                <button type="button" id="btnAnteriorResumo" class="btn btn-secondary" data-toggle="tab"
+                                    data-target="#colaboradores" role="tab">
                                     <i class="fas fa-arrow-left"></i> Colaboradores
                                 </button>
                                 <button type="button" id="btnEnviarSolicitacao" class="btn btn-enviar btn-lg ml-2">
@@ -629,22 +647,26 @@
                     <!-- Visão Geral por Gerente -->
                     <div class="card mb-4">
                         <div class="mb-3">
-                            <h5 class="mb-0" id="tituloTabelaComparativo"><i class="fas fa-users"></i> <span>Visão por Gerência (Horas)</span></h5>
+                            <h5 class="mb-0" id="tituloTabelaComparativo"><i class="fas fa-users"></i> <span>Visão por
+                                    Gerência (Horas)</span></h5>
                         </div>
                         <div class="d-flex align-items-center mb-3">
                             <div class="mr-3">
-                                <button id="btnAlternarExecucao" class="btn btn-sm btn-outline-primary" onclick="alternarColunasExecucao()">
+                                <button id="btnAlternarExecucao" class="btn btn-sm btn-outline-primary"
+                                    onclick="alternarColunasExecucao()">
                                     <i class="fas fa-chevron-down" id="iconeExecucao"></i>
                                     <span id="textoBtnExecucao">Expandir Detalhes</span>
                                 </button>
                             </div>
                             <!-- Botões de opção para alternar visualização -->
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-outline-primary btn-sm active" id="btnVisualizacaoHoras" onclick="alterarVisualizacao('horas')">
+                                <label class="btn btn-outline-primary btn-sm active" id="btnVisualizacaoHoras"
+                                    onclick="alterarVisualizacao('horas')">
                                     <input type="radio" name="tipoVisualizacao" id="horas" checked>
                                     <i class="fas fa-clock"></i> Horas
                                 </label>
-                                <label class="btn btn-outline-success btn-sm" id="btnVisualizacaoValores" onclick="alterarVisualizacao('valores')">
+                                <label class="btn btn-outline-success btn-sm" id="btnVisualizacaoValores"
+                                    onclick="alterarVisualizacao('valores')">
                                     <input type="radio" name="tipoVisualizacao" id="valores">
                                     <i class="fas fa-dollar-sign"></i> Valores
                                 </label>
