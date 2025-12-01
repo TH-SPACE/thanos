@@ -69,7 +69,7 @@ function mostrarResumoHE(gerente, mes) {
 
   // Se não houver gerente, mês ou limite definido, exibe mensagem apropriada ou limpa o resumo
   if (!gerente || !mes || limite === 0) {
-    // Mesmo sem limite ou dados, ainda podemos mostrar o valor estimado atual
+    // Mesmo sem limite ou dados, ainda podemos mostrar os valores estimados atuais
     document.getElementById("limiteValor").textContent = limite.toLocaleString(
       "pt-BR",
       {
@@ -81,56 +81,76 @@ function mostrarResumoHE(gerente, mes) {
     // Os outros valores continuam como zero quando não há gerente/mês selecionado
     document.getElementById("aprovadoValor").textContent = "R$ 0,00";
     document.getElementById("pendenteValor").textContent = "R$ 0,00";
-    document.getElementById("saldoValor").textContent = "R$ 0,00";
-    document.getElementById("saldoValor").className =
-      "h5 font-weight-bold text-danger"; // Sempre vermelho quando não há dados
+    document.getElementById("executadoValor").textContent = "R$ 0,00";
+    document.getElementById("saldoRealValor").textContent = limite.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    document.getElementById("saldoRealValor").className =
+      "h5 font-weight-bold text-success"; // Verde quando não há consumo
     return;
   }
 
-  // Busca dados de HE aprovadas e pendentes via API
-  fetch(
-    `/planejamento-he/api/resumo-he?gerente=${encodeURIComponent(
-      gerente
-    )}&mes=${encodeURIComponent(mes)}`
-  )
-    .then((r) => r.json())
-    .then((data) => {
-      const aprovado = data.aprovado || 0;
-      const pendente = data.pendente || 0;
-      const utilizado = aprovado + pendente;
-      const saldo = Math.max(0, limite - utilizado);
+  // Primeiro busca os dados de execução (horas já realizadas) via API
+  fetch(`/planejamento-he/api/resumo-executado?gerente=${encodeURIComponent(gerente)}&mes=${encodeURIComponent(mes)}`)
+    .then(r => r.json())
+    .then(executadoData => {
+      const executadoValor = executadoData.total_executado_valor || 0;
 
-      // Atualiza os valores no resumo financeiro
-      document.getElementById("limiteValor").textContent =
-        limite.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
-      document.getElementById("aprovadoValor").textContent =
-        aprovado.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
-      document.getElementById("pendenteValor").textContent =
-        pendente.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
-      document.getElementById("saldoValor").textContent = saldo.toLocaleString(
-        "pt-BR",
-        {
-          style: "currency",
-          currency: "BRL",
-        }
-      );
+      // Em seguida, busca dados de HE aprovadas e pendentes via API
+      return fetch(
+        `/planejamento-he/api/resumo-he?gerente=${encodeURIComponent(
+          gerente
+        )}&mes=${encodeURIComponent(mes)}`
+      ).then(r => r.json())
+        .then(data => {
+          const aprovado = data.aprovado || 0;
+          const pendente = data.pendente || 0;
 
-      // Atualiza a cor do saldo dependendo do valor
-      document.getElementById("saldoValor").className = "h5 font-weight-bold";
-      document
-        .getElementById("saldoValor")
-        .classList.add(saldo > 0 ? "text-success" : "text-danger");
+          // O NOVO CÁLCULO de SALDO REAL é: LIMITE - EXECUTADO
+          const saldoReal = limite - executadoValor;
+
+          // Atualiza os valores no resumo financeiro
+          document.getElementById("limiteValor").textContent =
+            limite.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            });
+          document.getElementById("aprovadoValor").textContent =
+            aprovado.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            });
+          document.getElementById("pendenteValor").textContent =
+            pendente.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            });
+          document.getElementById("executadoValor").textContent =
+            executadoValor.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            });
+          document.getElementById("saldoRealValor").textContent = saldoReal.toLocaleString(
+            "pt-BR",
+            {
+              style: "currency",
+              currency: "BRL",
+            }
+          );
+
+          // Atualiza a cor do saldo REAL dependendo do valor
+          document.getElementById("saldoRealValor").className = "h5 font-weight-bold";
+          document
+            .getElementById("saldoRealValor")
+            .classList.add(saldoReal > 0 ? "text-success" : "text-danger");
+
+          // Carrega os detalhes de execução após atualizar o resumo
+          carregarDetalhesExecutado(gerente, mes);
+        });
     })
-    .catch(() => {
+    .catch((error) => {
+      console.error("Erro ao carregar resumo financeiro:", error);
       // Em caso de erro, define valores padrão
       document.getElementById("limiteValor").textContent =
         limite.toLocaleString("pt-BR", {
@@ -139,9 +159,79 @@ function mostrarResumoHE(gerente, mes) {
         });
       document.getElementById("aprovadoValor").textContent = "R$ 0,00";
       document.getElementById("pendenteValor").textContent = "R$ 0,00";
-      document.getElementById("saldoValor").textContent = "R$ 0,00";
-      document.getElementById("saldoValor").className =
-        "h5 font-weight-bold text-danger";
+      document.getElementById("executadoValor").textContent = "R$ 0,00";
+      document.getElementById("saldoRealValor").textContent = (limite).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+      document.getElementById("saldoRealValor").className =
+        "h5 font-weight-bold text-success";
+    });
+}
+
+// Carrega e exibe os detalhes de horas executadas por colaborador
+function carregarDetalhesExecutado(gerente, mes) {
+  // Limpa qualquer mensagem prévia na tabela de detalhes
+  const tabela = document.getElementById("tabelaDetalhesExecutado");
+
+  // Se não temos gerente ou mês, limpamos a tabela de detalhes
+  if (!gerente || !mes) {
+    tabela.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center text-muted py-3">
+          <i class="fas fa-user-clock fa-lg mb-2"></i>
+          <div>Selecione gerente e mês para visualizar detalhes</div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  // Carrega os detalhes de execução através da API
+  fetch(`/planejamento-he/api/detalhes-executado?gerente=${encodeURIComponent(gerente)}&mes=${encodeURIComponent(mes)}`)
+    .then(r => r.json())
+    .then(data => {
+      // Verifica se existem dados
+      if (!data || data.length === 0) {
+        tabela.innerHTML = `
+          <tr>
+            <td colspan="5" class="text-center text-muted py-3">
+              <i class="fas fa-user-check fa-lg mb-2"></i>
+              <div>Nenhum registro de horas executadas encontrado</div>
+              <small>Este gerente não possui horas executadas registradas para este mês</small>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Limpa a tabela existente
+      tabela.innerHTML = "";
+
+      // Adiciona os dados de cada colaborador executado
+      data.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><i class="fas fa-user text-primary mr-2"></i>${item.colaborador}</td>
+          <td>${item.cargo}</td>
+          <td class="text-center">${(item.executado_50 || 0).toFixed(1)}</td>
+          <td class="text-center">${(item.executado_100 || 0).toFixed(1)}</td>
+          <td class="font-weight-bold text-info text-center">${(item.total_executado || 0).toFixed(1)}</td>
+        `;
+        tabela.appendChild(row);
+      });
+    })
+    .catch(error => {
+      console.error("Erro ao carregar detalhes de execução:", error);
+      tabela.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center text-danger py-3">
+            <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
+            <div>Erro ao carregar detalhes de execução</div>
+            <small>Tente novamente mais tarde</small>
+          </td>
+        </tr>
+      `;
     });
 }
 

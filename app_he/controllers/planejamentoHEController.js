@@ -16,6 +16,7 @@ const path = require("path");
 const db = require("../../db/db");
 const { getValorHora } = require("../utils/valoresHE");
 const limitesData = require("../json/limite_he.json");
+const gastoPrevController = require("./gastoPrevController");
 
 // ================================================================================
 // 🔗 FUNÇÕES AUXILIARES PARA LIMITES COMPARTILHADOS
@@ -163,16 +164,87 @@ exports.getApprovalSummary = async (req, res) => {
       }
     });
 
-    // Cálculos de limite:
-    // - limiteAtual: quanto sobra após aprovados
-    // - limitePosAprovacao: quanto sobrará se aprovar todos os pendentes
-    const limiteAtual = limiteTotal - resumo.APROVADO.valor;
-    const limitePosAprovacao = limiteAtual - resumo.PENDENTE.valor;
+    // Busca também os dados de execução (horas realmente realizadas) na tabela FREQUENCIA
+    let totalExecutadoValor = 0;
+
+    // Verifica se a tabela FREQUENCIA existe e é válida
+    const tabelaValida = await gastoPrevController.validarTabelaFrequencia(conexao);
+
+    if (tabelaValida) {
+      // Se a tabela é válida, buscamos os dados de execução para o gerente e mês
+      const meses = {
+        Janeiro: 1,
+        Fevereiro: 2,
+        Março: 3,
+        Abril: 4,
+        Maio: 5,
+        Junho: 6,
+        Julho: 7,
+        Agosto: 8,
+        Setembro: 9,
+        Outubro: 10,
+        Novembro: 11,
+        Dezembro: 12,
+      };
+      const mesNumero = meses[mes];
+
+      if (mesNumero !== undefined) {
+        // Obter o grupo de gerentes que compartilham o limite
+        const limiteInfo = getInfoLimitePorGerente(gerente);
+        let gerentesParaConsulta = [gerente];
+
+        if (limiteInfo && limiteInfo.GerentesCompartilhados) {
+          gerentesParaConsulta = [limiteInfo.Responsavel, ...limiteInfo.GerentesCompartilhados];
+        }
+
+        // Obtemos todas as horas executadas (da tabela FREQUENCIA) agrupadas por colaborador
+        const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
+        const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
+
+        // Criar placeholders para a consulta IN
+        const placeholders = gerentesParaConsulta.map(() => '?').join(',');
+
+        // Primeiro, vamos obter os dados de execução por colaborador para calcular valores monetários
+        const queryExecutadoComCargo = `
+          SELECT
+            ${colunasFrequencia[0]} as colaborador,  -- NOME
+            ${colunasFrequencia[1]} as cargo,  -- CARGO
+            SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
+            SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
+          FROM ${nomeTabelaFrequencia}
+          WHERE ${colunasFrequencia[3]} IN (${placeholders}) AND MONTH(${colunasFrequencia[5]}) = ?
+          GROUP BY ${colunasFrequencia[0]}, ${colunasFrequencia[1]}
+        `;
+
+        const [executadoData] = await conexao.query(queryExecutadoComCargo, [...gerentesParaConsulta, mesNumero]);
+
+        // Carregamos os valores por hora para cálculo monetário
+        const { getValorHora } = require("../utils/valoresHE.js");
+
+        // Calcula os valores monetários para cada colaborador
+        for (const item of executadoData) {
+          const horas_50 = parseFloat(item.executado_50) || 0;
+          const horas_100 = parseFloat(item.executado_100) || 0;
+
+          // Calcula valores monetários baseados no cargo do colaborador
+          const valorHora50 = getValorHora(item.cargo, "50%");
+          const valorHora100 = getValorHora(item.cargo, "100%");
+
+          totalExecutadoValor += (horas_50 * valorHora50) + (horas_100 * valorHora100);
+        }
+      }
+    }
+
+    // Cálculos de limite CORRETOS segundo a nova lógica:
+    // - Saldo = Limite - Executado
+    const saldoAtual = limiteTotal - totalExecutadoValor;
 
     const finalSummary = {
       limiteTotal,
-      limiteAtual,
-      limitePosAprovacao,
+      aprovado: resumo.APROVADO.valor,
+      pendente: resumo.PENDENTE.valor,
+      executado: totalExecutadoValor,
+      saldoAtual,
       resumoPorStatus: resumo,
     };
 
@@ -374,6 +446,271 @@ exports.obterResumoHE = async (req, res) => {
   }
 };
 
+/**
+ * Obtém resumo de horas executadas por gerente e mês
+ *
+ * Calcula o total de horas executadas (realizadas) para um gerente específico
+ * em um determinado mês, com base na tabela FREQUENCIA.
+ * Para gerentes com limites compartilhados, considera registros de todos os
+ * gerentes no mesmo grupo de limite.
+ *
+ * @param {Object} req - Request Express
+ * @param {string} req.query.gerente - Nome do gerente (obrigatório)
+ * @param {string} req.query.mes - Mês para filtrar (obrigatório)
+ * @param {string} req.diretoriaHE - Diretoria do usuário
+ * @param {Object} res - Response Express
+ *
+ * @returns {Object} JSON:
+ * {
+ *   executado_50: 120.5,
+ *   executado_100: 80.0,
+ *   total_executado: 200.5,
+ *   executado_valor_50: 6025.00,
+ *   executado_valor_100: 4938.00,
+ *   total_executado_valor: 10963.00
+ * }
+ */
+exports.obterResumoExecutado = async (req, res) => {
+  const { gerente, mes } = req.query;
+  const diretoria = req.diretoriaHE;
+  const user = req.session.usuario;
+  const ip = req.ip;
+
+  if (!gerente || !mes) {
+    return res
+      .status(400)
+      .json({ erro: "Parâmetros 'gerente' e 'mes' são obrigatórios." });
+  }
+
+  try {
+    const conexao = db.mysqlPool;
+
+    // Verifica se a tabela FREQUENCIA existe e é válida
+    const tabelaValida = await gastoPrevController.validarTabelaFrequencia(conexao);
+
+    if (!tabelaValida) {
+      return res.status(400).json({
+        erro: "Tabela FREQUENCIA não encontrada ou com estrutura incorreta. Verifique se as colunas NOME, CARGO, EVENTO, GERENTE_IMEDIATO, QTD_HORAS e DATA existem."
+      });
+    }
+
+    // Converter nome do mês para número correspondente
+    const meses = {
+      Janeiro: 1,
+      Fevereiro: 2,
+      Março: 3,
+      Abril: 4,
+      Maio: 5,
+      Junho: 6,
+      Julho: 7,
+      Agosto: 8,
+      Setembro: 9,
+      Outubro: 10,
+      Novho: 11,
+      Dezembro: 12,
+    };
+    const mesNumero = meses[mes];
+    if (mesNumero === undefined) {
+    return res.status(400).json({
+        erro: `Mês inválido: ${mes}. Use um nome de mês válido em português.`,
+      });
+    }
+
+    // Obter o grupo de gerentes que compartilham o limite
+    const limiteInfo = getInfoLimitePorGerente(gerente);
+    let gerentesParaConsulta = [gerente];
+
+    if (limiteInfo && limiteInfo.GerentesCompartilhados) {
+      gerentesParaConsulta = [limiteInfo.Responsavel, ...limiteInfo.GerentesCompartilhados];
+    }
+
+    // Obtemos todas as horas executadas (da tabela FREQUENCIA) agrupadas por gerente
+    const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
+    const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
+
+    // Criar placeholders para a consulta IN
+    const placeholders = gerentesParaConsulta.map(() => '?').join(',');
+
+    // Primeiro, vamos obter os dados de execução por colaborador para calcular valores monetários
+    const queryExecutadoComCargo = `
+      SELECT
+        ${colunasFrequencia[0]} as colaborador,  -- NOME
+        ${colunasFrequencia[1]} as cargo,  -- CARGO
+        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
+        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
+      FROM ${nomeTabelaFrequencia}
+      WHERE ${colunasFrequencia[3]} IN (${placeholders}) AND MONTH(${colunasFrequencia[5]}) = ?
+      GROUP BY ${colunasFrequencia[0]}, ${colunasFrequencia[1]}
+    `;
+
+    const [executadoData] = await conexao.query(queryExecutadoComCargo, [...gerentesParaConsulta, mesNumero]);
+
+    // Carregamos os valores por hora para cálculo monetário
+    const { getValorHora } = require("../utils/valoresHE.js");
+
+    let totalExecutado = 0;
+    let executado_50 = 0;
+    let executado_100 = 0;
+    let executado_valor_50 = 0;
+    let executado_valor_100 = 0;
+
+    // Calcula os valores monetários para cada colaborador
+    for (const item of executadoData) {
+      const horas_50 = parseFloat(item.executado_50) || 0;
+      const horas_100 = parseFloat(item.executado_100) || 0;
+
+      executado_50 += horas_50;
+      executado_100 += horas_100;
+      totalExecutado += horas_50 + horas_100;
+
+      // Calcula valores monetários
+      const valorHora50 = getValorHora(item.cargo, "50%");
+      const valorHora100 = getValorHora(item.cargo, "100%");
+
+      executado_valor_50 += horas_50 * valorHora50;
+      executado_valor_100 += horas_100 * valorHora100;
+    }
+
+    const totalExecutadoValor = executado_valor_50 + executado_valor_100;
+
+    res.json({
+      executado_50: executado_50,
+      executado_100: executado_100,
+      total_executado: totalExecutado,
+      executado_valor_50: parseFloat(executado_valor_50.toFixed(2)),
+      executado_valor_100: parseFloat(executado_valor_100.toFixed(2)),
+      total_executado_valor: parseFloat(totalExecutadoValor.toFixed(2))
+    });
+  } catch (error) {
+    console.error(
+      `[ERRO] Usuário: ${
+        user?.nome || "desconhecido"
+      }, IP: ${ip}, Ação: Erro ao obter resumo de horas executadas para gerente: ${gerente}, mês: ${mes}.`,
+      error
+    );
+    res.status(500).json({ erro: "Erro ao buscar dados de execução." });
+  }
+};
+
+/**
+ * Obtém lista de colaboradores que executaram horas extras por gerente e mês
+ *
+ * Busca na tabela FREQUENCIA os colaboradores que tiveram horas executadas
+ * (realizadas) para um gerente específico em um determinado mês.
+ * Para gerentes com limites compartilhados, considera registros de todos os
+ * gerentes no mesmo grupo de limite.
+ *
+ * @param {Object} req - Request Express
+ * @param {string} req.query.gerente - Nome do gerente (obrigatório)
+ * @param {string} req.query.mes - Mês para filtrar (obrigatório)
+ * @param {string} req.diretoriaHE - Diretoria do usuário
+ * @param {Object} res - Response Express
+ *
+ * @returns {Array} JSON array com detalhes dos colaboradores que executaram HE:
+ * [{
+ *   colaborador: "NOME COLABORADOR",
+ *   cargo: "CARGO",
+ *   executado_50: 20.5,
+ *   executado_100: 15.0,
+ *   total_executado: 35.5
+ * }]
+ */
+exports.obterDetalhesExecutado = async (req, res) => {
+  const { gerente, mes } = req.query;
+  const diretoria = req.diretoriaHE;
+  const user = req.session.usuario;
+  const ip = req.ip;
+
+  if (!gerente || !mes) {
+    return res
+      .status(400)
+      .json({ erro: "Parâmetros 'gerente' e 'mes' são obrigatórios." });
+  }
+
+  try {
+    const conexao = db.mysqlPool;
+
+    // Verifica se a tabela FREQUENCIA existe e é válida
+    const tabelaValida = await gastoPrevController.validarTabelaFrequencia(conexao);
+
+    if (!tabelaValida) {
+      return res.status(400).json({
+        erro: "Tabela FREQUENCIA não encontrada ou com estrutura incorreta. Verifique se as colunas NOME, CARGO, EVENTO, GERENTE_IMEDIATO, QTD_HORAS e DATA existem."
+      });
+    }
+
+    // Converter nome do mês para número correspondente
+    const meses = {
+      Janeiro: 1,
+      Fevereiro: 2,
+      Março: 3,
+      Abril: 4,
+      Maio: 5,
+      Junho: 6,
+      Julho: 7,
+      Agosto: 8,
+      Setembro: 9,
+      Outubro: 10,
+      Novembro: 11,
+      Dezembro: 12,
+    };
+    const mesNumero = meses[mes];
+    if (mesNumero === undefined) {
+      return res.status(400).json({
+        erro: `Mês inválido: ${mes}. Use um nome de mês válido em português.`,
+      });
+    }
+
+    // Obter o grupo de gerentes que compartilham o limite
+    const limiteInfo = getInfoLimitePorGerente(gerente);
+    let gerentesParaConsulta = [gerente];
+
+    if (limiteInfo && limiteInfo.GerentesCompartilhados) {
+      gerentesParaConsulta = [limiteInfo.Responsavel, ...limiteInfo.GerentesCompartilhados];
+    }
+
+    // Obtemos as horas executadas (da tabela FREQUENCIA) agrupadas por colaborador
+    const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
+    const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
+
+    // Criar placeholders para a consulta IN
+    const placeholders = gerentesParaConsulta.map(() => '?').join(',');
+
+    const queryDetalhes = `
+      SELECT
+        ${colunasFrequencia[0]} as colaborador,  -- NOME
+        ${colunasFrequencia[1]} as cargo,  -- CARGO
+        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
+        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
+      FROM ${nomeTabelaFrequencia}
+      WHERE ${colunasFrequencia[3]} IN (${placeholders}) AND MONTH(${colunasFrequencia[5]}) = ?
+      GROUP BY ${colunasFrequencia[0]}, ${colunasFrequencia[1]}
+      ORDER BY ${colunasFrequencia[0]}
+    `;
+
+    const [detalhesData] = await conexao.query(queryDetalhes, [...gerentesParaConsulta, mesNumero]);
+
+    // Formatar os resultados
+    const detalhesFormatados = detalhesData.map(item => ({
+      colaborador: item.colaborador,
+      cargo: item.cargo,
+      executado_50: parseFloat(item.executado_50) || 0,
+      executado_100: parseFloat(item.executado_100) || 0,
+      total_executado: (parseFloat(item.executado_50) || 0) + (parseFloat(item.executado_100) || 0)
+    }));
+
+    res.json(detalhesFormatados);
+  } catch (error) {
+    console.error(
+      `[ERRO] Usuário: ${
+        user?.nome || "desconhecido"
+      }, IP: ${ip}, Ação: Erro ao obter detalhes de horas executadas para gerente: ${gerente}, mês: ${mes}.`,
+      error
+    );
+    res.status(500).json({ erro: "Erro ao buscar detalhes de execução." });
+  }
+};
+
 // ================================================================================
 // 📋 GESTÃO DE SOLICITAÇÕES DO USUÁRIO
 // ================================================================================
@@ -424,7 +761,7 @@ exports.listarEnvios = async (req, res) => {
 
     query += ` ORDER BY DATA_ENVIO DESC`;
     const [rows] = await conexao.query(query, params);
-    res.json(rows);
+          res.json(rows);
   } catch (error) {
     console.error(
       `[ERRO] Usuário: ${

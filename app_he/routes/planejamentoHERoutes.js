@@ -255,6 +255,26 @@ router.get("/api/cargo", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiret
 router.get("/api/resumo-he", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.obterResumoHE);
 
 /**
+ * GET /api/resumo-executado
+ * Retorna resumo das horas executadas (realizadas) por gerente e mês
+ *
+ * Middlewares: requireHEAuth, requireAnyHEDiretoria
+ * Query params: gerente (obrigatório), mes (obrigatório)
+ * Filtro: Por diretoria do usuário
+ */
+router.get("/api/resumo-executado", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.obterResumoExecutado);
+
+/**
+ * GET /api/detalhes-executado
+ * Retorna a lista detalhada de colaboradores que executaram horas extras por gerente e mês
+ *
+ * Middlewares: requireHEAuth, requireAnyHEDiretoria
+ * Query params: gerente (obrigatório), mes (obrigatório)
+ * Filtro: Por diretoria do usuário
+ */
+router.get("/api/detalhes-executado", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.obterDetalhesExecutado);
+
+/**
  * GET /api/dashboard-summary
  * Retorna dados sumarizados para o dashboard principal
  *
