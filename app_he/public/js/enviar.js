@@ -191,14 +191,20 @@ function carregarDetalhesExecutado(gerente, mes) {
   fetch(`/planejamento-he/api/detalhes-executado?gerente=${encodeURIComponent(gerente)}&mes=${encodeURIComponent(mes)}`)
     .then(r => r.json())
     .then(data => {
-      // Verifica se existem dados
-      if (!data || data.length === 0) {
+      // Filtra apenas colaboradores que têm horas executadas
+      const dadosFiltrados = data.filter(item => (item.total_executado || 0) > 0);
+
+      // Ordena os dados filtrados por total de horas executadas em ordem decrescente
+      dadosFiltrados.sort((a, b) => (b.total_executado || 0) - (a.total_executado || 0));
+
+      // Verifica se existem dados após filtragem
+      if (!dadosFiltrados || dadosFiltrados.length === 0) {
         tabela.innerHTML = `
           <tr>
             <td colspan="5" class="text-center text-muted py-3">
               <i class="fas fa-user-check fa-lg mb-2"></i>
               <div>Nenhum registro de horas executadas encontrado</div>
-              <small>Este gerente não possui horas executadas registradas para este mês</small>
+              <small>Este gerente não possui colaboradores com horas executadas registradas para este mês</small>
             </td>
           </tr>
         `;
@@ -208,8 +214,8 @@ function carregarDetalhesExecutado(gerente, mes) {
       // Limpa a tabela existente
       tabela.innerHTML = "";
 
-      // Adiciona os dados de cada colaborador executado
-      data.forEach(item => {
+      // Adiciona os dados de cada colaborador executado (ordenados)
+      dadosFiltrados.forEach(item => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td><i class="fas fa-user text-primary mr-2"></i>${item.colaborador}</td>
