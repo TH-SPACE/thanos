@@ -78,9 +78,7 @@ function mostrarResumoHE(gerente, mes) {
       }
     );
 
-    // Os outros valores continuam como zero quando não há gerente/mês selecionado
-    document.getElementById("aprovadoValor").textContent = "R$ 0,00";
-    document.getElementById("pendenteValor").textContent = "R$ 0,00";
+    // Campos "Aprovado" e "Pendente" estão ocultos conforme solicitação, mas mantemos a lógica
     document.getElementById("executadoValor").textContent = "R$ 0,00";
     document.getElementById("saldoRealValor").textContent = limite.toLocaleString("pt-BR", {
       style: "currency",
@@ -116,16 +114,7 @@ function mostrarResumoHE(gerente, mes) {
               style: "currency",
               currency: "BRL",
             });
-          document.getElementById("aprovadoValor").textContent =
-            aprovado.toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            });
-          document.getElementById("pendenteValor").textContent =
-            pendente.toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            });
+          // Campos "Aprovado" e "Pendente" estão ocultos conforme solicitação, mas mantemos a lógica caso sejam usados futuramente
           document.getElementById("executadoValor").textContent =
             executadoValor.toLocaleString("pt-BR", {
               style: "currency",
@@ -157,8 +146,7 @@ function mostrarResumoHE(gerente, mes) {
           style: "currency",
           currency: "BRL",
         });
-      document.getElementById("aprovadoValor").textContent = "R$ 0,00";
-      document.getElementById("pendenteValor").textContent = "R$ 0,00";
+      // Campos "Aprovado" e "Pendente" estão ocultos conforme solicitação
       document.getElementById("executadoValor").textContent = "R$ 0,00";
       document.getElementById("saldoRealValor").textContent = (limite).toLocaleString("pt-BR", {
         style: "currency",
