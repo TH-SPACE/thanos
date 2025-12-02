@@ -168,7 +168,7 @@ function carregarMinhasSolicitacoes(colaborador = "", mes = "", ano = "") {
 // Executa quando o DOM estiver completamente carregado
 document.addEventListener("DOMContentLoaded", () => {
   // Carrega os dropdowns de ano e mês dinamicamente
-  carregarAnosMesesDropdowns();
+  //carregarAnosMesesDropdowns();
 
   // Event listener para recarregar dados quando a página é aberta via navegação SPA
   document.addEventListener('page-load:minhasSolicitacoes', function() {
