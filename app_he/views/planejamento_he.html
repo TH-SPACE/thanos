@@ -588,6 +588,62 @@
                     </div>
                 </div>
 
+                <!-- Tela: Painel de Gasto vs Previsto -->
+                <div id="painelGastoPrev" class="card" style="display: none;">
+                    <h2 class="card-title titulo-padrao"><i class="fas fa-chart-bar"></i> Gasto vs Previsto</h2>
+
+                    <!-- Filtros -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="filtroMesComparativo">Mês</label>
+                            <select id="filtroMesComparativo" class="form-control"></select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button id="btnLimparFiltrosComparativo" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-eraser"></i> Limpar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Visão Geral por Gerente -->
+                    <div class="card mb-4">
+                        <div class="mb-3">
+                            <h5 class="mb-0" id="tituloTabelaComparativo"><i class="fas fa-users"></i> <span>Visão por
+                                    Gerência (Horas)</span></h5>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="mr-3">
+                                <button id="btnAlternarExecucao" class="btn btn-sm btn-outline-primary"
+                                    onclick="alternarColunasExecucao()">
+                                    <i class="fas fa-chevron-down" id="iconeExecucao"></i>
+                                    <span id="textoBtnExecucao">Expandir Detalhes</span>
+                                </button>
+                            </div>
+                            <!-- Botões de opção para alternar visualização -->
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-outline-primary btn-sm active" id="btnVisualizacaoHoras"
+                                    onclick="alterarVisualizacao('horas')">
+                                    <input type="radio" name="tipoVisualizacao" id="horas" checked>
+                                    <i class="fas fa-clock"></i> Horas
+                                </label>
+                                <label class="btn btn-outline-success btn-sm" id="btnVisualizacaoValores"
+                                    onclick="alterarVisualizacao('valores')">
+                                    <input type="radio" name="tipoVisualizacao" id="valores">
+                                    <i class="fas fa-dollar-sign"></i> Valores
+                                </label>
+                            </div>
+                        </div>
+                        <div id="tabelaComparativoFrequencia">
+                            <p class="text-center text-muted">Selecione um mês para visualizar os dados.</p>
+                        </div>
+                        <div id="tabelaComparativoFrequenciaValor" style="display: none;">
+                            <p class="text-center text-muted">Carregando dados monetários...</p>
+                        </div>
+                    </div>
+
+
+                </div>
+
                 <!-- Tela: Seleção de Gerência -->
                 <div id="selecaoGerencia" class="card" style="display: none;">
                     <h2 class="card-title titulo-padrao"><i class="fas fa-users-cog"></i> Selecione a Gerência</h2>
@@ -679,62 +735,6 @@
                     <div id="tabelaAprovacoesContainer">
                         <p class="text-center text-muted">Carregando...</p>
                     </div>
-                </div>
-
-                <!-- Tela: Painel de Gasto vs Previsto -->
-                <div id="painelGastoPrev" class="card" style="display: none;">
-                    <h2 class="card-title titulo-padrao"><i class="fas fa-chart-bar"></i> Gasto vs Previsto</h2>
-
-                    <!-- Filtros -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label for="filtroMesComparativo">Mês</label>
-                            <select id="filtroMesComparativo" class="form-control"></select>
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button id="btnLimparFiltrosComparativo" class="btn btn-outline-secondary w-100">
-                                <i class="fas fa-eraser"></i> Limpar
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Visão Geral por Gerente -->
-                    <div class="card mb-4">
-                        <div class="mb-3">
-                            <h5 class="mb-0" id="tituloTabelaComparativo"><i class="fas fa-users"></i> <span>Visão por
-                                    Gerência (Horas)</span></h5>
-                        </div>
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="mr-3">
-                                <button id="btnAlternarExecucao" class="btn btn-sm btn-outline-primary"
-                                    onclick="alternarColunasExecucao()">
-                                    <i class="fas fa-chevron-down" id="iconeExecucao"></i>
-                                    <span id="textoBtnExecucao">Expandir Detalhes</span>
-                                </button>
-                            </div>
-                            <!-- Botões de opção para alternar visualização -->
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-outline-primary btn-sm active" id="btnVisualizacaoHoras"
-                                    onclick="alterarVisualizacao('horas')">
-                                    <input type="radio" name="tipoVisualizacao" id="horas" checked>
-                                    <i class="fas fa-clock"></i> Horas
-                                </label>
-                                <label class="btn btn-outline-success btn-sm" id="btnVisualizacaoValores"
-                                    onclick="alterarVisualizacao('valores')">
-                                    <input type="radio" name="tipoVisualizacao" id="valores">
-                                    <i class="fas fa-dollar-sign"></i> Valores
-                                </label>
-                            </div>
-                        </div>
-                        <div id="tabelaComparativoFrequencia">
-                            <p class="text-center text-muted">Selecione um mês para visualizar os dados.</p>
-                        </div>
-                        <div id="tabelaComparativoFrequenciaValor" style="display: none;">
-                            <p class="text-center text-muted">Carregando dados monetários...</p>
-                        </div>
-                    </div>
-
-
                 </div>
 
                 <!-- Tela: Gerenciar Colaboradores -->
