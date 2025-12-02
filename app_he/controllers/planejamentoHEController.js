@@ -736,11 +736,12 @@ exports.obterDetalhesExecutado = async (req, res) => {
  * Lista todas as solicitações criadas pelo usuário logado
  *
  * Retorna todas as solicitações (PENDENTE, APROVADO, RECUSADO) enviadas
- * pelo usuário, com filtros opcionais por colaborador e mês.
+ * pelo usuário, com filtros opcionais por colaborador, mês e ano.
  *
  * @param {Object} req - Request Express
  * @param {string} req.query.colaborador - Nome do colaborador para filtrar (opcional)
  * @param {string} req.query.mes - Mês para filtrar (opcional)
+ * @param {string} req.query.ano - Ano para filtrar (opcional)
  * @param {string} req.diretoriaHE - Diretoria do usuário
  * @param {Object} res - Response Express
  *
@@ -752,7 +753,7 @@ exports.listarEnvios = async (req, res) => {
   const diretoria = req.diretoriaHE;
   const user = req.session.usuario;
   const ip = req.ip;
-  const { colaborador, mes } = req.query;
+  const { colaborador, mes, ano } = req.query;
 
   if (!emailUsuario) {
     return res.status(401).json({ erro: "Usuário não autenticado." });
@@ -761,7 +762,7 @@ exports.listarEnvios = async (req, res) => {
   try {
     let query = `
       SELECT
-        id, GERENTE, COLABORADOR, MATRICULA, CARGO, MES, HORAS, JUSTIFICATIVA, TIPO_HE, STATUS, ENVIADO_POR,
+        id, GERENTE, COLABORADOR, MATRICULA, CARGO, MES, ANO, HORAS, JUSTIFICATIVA, TIPO_HE, STATUS, ENVIADO_POR,
         DATE_FORMAT(DATA_ENVIO, '%d/%m/%Y %H:%i') AS DATA_ENVIO_FORMATADA
       FROM PLANEJAMENTO_HE
       WHERE ENVIADO_POR = ? AND (DIRETORIA = ? OR DIRETORIA IS NULL)`;
@@ -774,6 +775,10 @@ exports.listarEnvios = async (req, res) => {
     if (mes) {
       query += ` AND MES = ?`;
       params.push(mes);
+    }
+    if (ano) {
+      query += ` AND ANO = ?`;
+      params.push(ano);
     }
 
     query += ` ORDER BY DATA_ENVIO DESC`;
@@ -945,6 +950,7 @@ exports.excluirEnvio = async (req, res) => {
  * @param {Object} req - Request Express
  * @param {string} req.query.mes - Mês para filtrar (obrigatório)
  * @param {string} req.query.gerente - Nome do gerente para filtrar (opcional)
+ * @param {string} req.query.ano - Ano para filtrar (opcional)
  * @param {string} req.diretoriaHE - Diretoria do usuário
  * @param {Object} res - Response Express
  *
@@ -962,7 +968,7 @@ exports.excluirEnvio = async (req, res) => {
  */
 exports.getDashboardData = async (req, res) => {
   const conexao = db.mysqlPool;
-  const { mes, gerente } = req.query;
+  const { mes, gerente, ano } = req.query;
   const diretoria = req.diretoriaHE;
   const user = req.session.usuario;
   const ip = req.ip;
@@ -989,6 +995,11 @@ exports.getDashboardData = async (req, res) => {
     if (gerente) {
       query += ` AND GERENTE LIKE ?`;
       params.push(`%${gerente}%`);
+    }
+
+    if (ano) {
+      query += ` AND ANO = ?`;
+      params.push(ano);
     }
 
     query += ` GROUP BY GERENTE ORDER BY GERENTE`;
@@ -1738,5 +1749,71 @@ exports.exportarColaboradores = async (req, res) => {
       error
     );
     res.status(500).send("Erro interno ao exportar os colaboradores.");
+  }
+};
+
+/**
+ * Retorna meses e anos únicos da tabela PLANEJAMENTO_HE
+ *
+ * Esta função é usada para preencher os dropdowns de filtro
+ * na página "Minhas Solicitações", mostrando apenas os meses
+ * e anos que contêm registros na base.
+ */
+exports.obterMesesAnosUnicos = async (req, res) => {
+  const conexao = db.mysqlPool;
+  const emailUsuario = req.session.usuario?.email;
+  const diretoria = req.diretoriaHE;
+
+  if (!emailUsuario) {
+    return res.status(401).json({ erro: "Usuário não autenticado." });
+  }
+
+  try {
+    // Consulta para obter meses e anos únicos da base
+    // Ajustei para considerar a diretoria do usuário
+    const query = `
+      SELECT DISTINCT MES, ANO
+      FROM PLANEJAMENTO_HE
+      WHERE ENVIADO_POR = ? AND (DIRETORIA = ? OR DIRETORIA IS NULL)
+      ORDER BY ANO DESC, FIELD(MES, 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')`;
+
+    const [rows] = await conexao.query(query, [emailUsuario, diretoria]);
+
+    // Agrupa os meses por ano para facilitar o uso no frontend
+    const mesesPorAno = {};
+    const anosUnicos = new Set();
+
+    rows.forEach(row => {
+      if (row.ANO) {
+        anosUnicos.add(row.ANO);
+        if (!mesesPorAno[row.ANO]) {
+          mesesPorAno[row.ANO] = new Set();
+        }
+        if (row.MES) {
+          mesesPorAno[row.ANO].add(row.MES);
+        }
+      }
+    });
+
+    // Converte os sets para arrays
+    const resultado = {
+      anos: Array.from(anosUnicos).sort().reverse(), // Ordena do mais recente para o mais antigo
+      mesesPorAno: {}
+    };
+
+    for (const [ano, meses] of Object.entries(mesesPorAno)) {
+      resultado.mesesPorAno[ano] = Array.from(meses).sort((a, b) => {
+        // Ordena meses na ordem cronológica
+        const ordemMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        return ordemMeses.indexOf(a) - ordemMeses.indexOf(b);
+      });
+    }
+
+    res.json(resultado);
+  } catch (error) {
+    console.error('[ERRO] Erro ao obter meses e anos únicos:', error);
+    res.status(500).json({ erro: "Erro ao carregar meses e anos." });
   }
 };

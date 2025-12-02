@@ -71,9 +71,17 @@ router.post("/enviar-multiplo", heAuth.requireHEAuth, heDiretoriaAuth.requireAny
  * Lista todas as solicitações criadas pelo usuário logado
  *
  * Middlewares: requireHEAuth, requireAnyHEDiretoria
- * Query params: colaborador (opcional), mes (opcional)
+ * Query params: colaborador (opcional), mes (opcional), ano (opcional)
  */
 router.get("/api/minhas-solicitacoes", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.listarEnvios);
+
+/**
+ * GET /api/meses-anos-unicos
+ * Retorna os meses e anos únicos das solicitações do usuário logado
+ *
+ * Middlewares: requireHEAuth, requireAnyHEDiretoria
+ */
+router.get("/api/meses-anos-unicos", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.obterMesesAnosUnicos);
 
 /**
  * POST /editar
@@ -279,7 +287,7 @@ router.get("/api/detalhes-executado", heAuth.requireHEAuth, heDiretoriaAuth.requ
  * Retorna dados sumarizados para o dashboard principal
  *
  * Middlewares: requireHEAuth, requireAnyHEDiretoria
- * Query params: mes (opcional), gerente (opcional)
+ * Query params: mes (obrigatório), gerente (opcional), ano (opcional)
  * Filtro: Por diretoria do usuário
  */
 router.get("/api/dashboard-summary", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.getDashboardData);

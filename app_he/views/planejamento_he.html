@@ -176,7 +176,8 @@
                                     <div class="form-check">
                                         <input type="checkbox" id="anoAnteriorCheck" class="form-check-input">
                                         <label for="anoAnteriorCheck" class="form-check-label">
-                                            <i class="fas fa-history text-info"></i> Marcar como ano anterior (útil para envios retroativos)
+                                            <i class="fas fa-history text-info"></i> Marcar como ano anterior (útil para
+                                            envios retroativos)
                                         </label>
                                     </div>
                                 </div>
@@ -186,7 +187,8 @@
                             <div id="resumoHE" class="resumo-financeiro mb-4">
                                 <div class="row">
                                     <div class="col-md-3 col-6 mb-3">
-                                        <div class="card-resumo-he card-roxo" title="Valor total disponível para solicitações de horas extras no mês selecionado">
+                                        <div class="card-resumo-he card-roxo"
+                                            title="Valor total disponível para solicitações de horas extras no mês selecionado">
                                             <div class="card-resumo-content">
                                                 <div class="card-resumo-icon">
                                                     <i class="fas fa-wallet"></i>
@@ -199,7 +201,8 @@
                                         </div>
                                     </div>
                                     <div class="col-md-3 col-6 mb-3">
-                                        <div class="card-resumo-he card-azul" title="Valor total das horas extras já executadas e registradas no sistema">
+                                        <div class="card-resumo-he card-azul"
+                                            title="Valor total das horas extras já executadas e registradas no sistema">
                                             <div class="card-resumo-content">
                                                 <div class="card-resumo-icon">
                                                     <i class="fas fa-clock-rotate-left"></i>
@@ -212,7 +215,8 @@
                                         </div>
                                     </div>
                                     <div class="col-md-3 col-6 mb-3">
-                                        <div class="card-resumo-he card-cinza" title="Valor restante disponível após subtrair as horas executadas do limite">
+                                        <div class="card-resumo-he card-cinza"
+                                            title="Valor restante disponível após subtrair as horas executadas do limite">
                                             <div class="card-resumo-content">
                                                 <div class="card-resumo-icon">
                                                     <i class="fas fa-coins"></i>
@@ -225,7 +229,8 @@
                                         </div>
                                     </div>
                                     <div class="col-md-3 col-6 mb-3">
-                                        <div class="card-resumo-he card-laranja" title="Percentual do limite que já foi utilizado no mês">
+                                        <div class="card-resumo-he card-laranja"
+                                            title="Percentual do limite que já foi utilizado no mês">
                                             <div class="card-resumo-content">
                                                 <div class="card-resumo-icon">
                                                     <i class="fas fa-chart-line"></i>
@@ -455,25 +460,21 @@
                             <input type="text" id="filtroColaborador" class="form-control"
                                 placeholder="Digite nome do colaborador...">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="filtroMes">Mês</label>
                             <select id="filtroMes" class="form-control">
                                 <option value="">Todos os meses</option>
-                                <option value="Janeiro">Janeiro</option>
-                                <option value="Fevereiro">Fevereiro</option>
-                                <option value="Março">Março</option>
-                                <option value="Abril">Abril</option>
-                                <option value="Maio">Maio</option>
-                                <option value="Junho">Junho</option>
-                                <option value="Julho">Julho</option>
-                                <option value="Agosto">Agosto</option>
-                                <option value="Setembro">Setembro</option>
-                                <option value="Outubro">Outubro</option>
-                                <option value="Novembro">Novembro</option>
-                                <option value="Dezembro">Dezembro</option>
+                                <!-- Os meses serão preenchidos dinamicamente com base no ano selecionado -->
                             </select>
                         </div>
-                        <div class="col-md-2 d-flex align-items-end">
+                        <div class="col-md-2">
+                            <label for="filtroAno">Ano</label>
+                            <select id="filtroAno" class="form-control">
+                                <option value="">Todos os anos</option>
+                                <!-- Os anos serão preenchidos dinamicamente -->
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
                             <button id="btnLimparFiltros" class="btn btn-outline-secondary w-100">Limpar</button>
                         </div>
                     </div>
@@ -492,21 +493,29 @@
                     <!-- Filtros -->
                     <div class="row mb-4">
                         <div class="col-md-3">
-                            <label for="dashboardFiltroMes">Mês</label>
-                            <select id="dashboardFiltroMes" class="form-control"></select>
-                        </div>
-                        <div class="col-md-4">
                             <label for="dashboardFiltroGerente">Gerência</label>
                             <select id="dashboardFiltroGerente" class="form-control">
                                 <option value="">Todas as Gerências</option>
                             </select>
                         </div>
+                        <div class="col-md-3">
+                            <label for="dashboardFiltroMes">Mês</label>
+                            <select id="dashboardFiltroMes" class="form-control"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dashboardFiltroAno">Ano</label>
+                            <select id="dashboardFiltroAno" class="form-control">
+                                <option value="">Todos os anos</option>
+                            </select>
+                        </div>
+
+
                         <div class="col-md-2 d-flex align-items-end">
                             <button id="btnLimparFiltrosDashboard" class="btn btn-outline-secondary w-100">
                                 <i class="fas fa-eraser"></i> Limpar
                             </button>
                         </div>
-                        <div class="col-md-3 d-flex align-items-end">
+                        <div class="col-md-1 d-flex align-items-end">
                             <button id="btnExportarDashboard" class="btn btn-success w-100">
                                 <i class="fas fa-file-excel"></i> Exportar Dados
                             </button>

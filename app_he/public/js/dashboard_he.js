@@ -4,7 +4,7 @@
 // Este arquivo controla o dashboard principal do sistema de HE, exibindo:
 // - KPIs (Total de horas, aprovadas, pendentes, recusadas)
 // - Tabela resumida por gerente
-// - Filtros por mês e gerência
+// - Filtros por mês e ano
 // - Função de exportação para CSV
 // ================================================================================
 
@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================================================================================
 
   const filtroMes = document.getElementById("dashboardFiltroMes");
+  const filtroAno = document.getElementById("dashboardFiltroAno");  // Novo filtro de ano
   const filtroGerente = document.getElementById("dashboardFiltroGerente");
   const tabelaBody = document.getElementById("tabelaGerentesBody");
 
@@ -26,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Event listener para recarregar quando a página é aberta via navegação SPA
   document.addEventListener('page-load:dashboard', function() {
-    carregarDashboard(filtroMes.value, filtroGerente.value);
+    carregarDashboard(filtroMes.value, filtroGerente.value, filtroAno.value);
   });
 
   // ================================================================================
@@ -43,50 +44,44 @@ document.addEventListener("DOMContentLoaded", () => {
    * - Configura os event listeners dos filtros
    */
   async function inicializarFiltros() {
-    // Preenche o select de meses com todos os 12 meses
-    preencherMeses();
+      // Carrega os dropdowns de ano e mês dinamicamente
+      await carregarAnosMesesDropdowns();
 
-    // Carrega os gerentes disponíveis da API
-    await carregarGerentes();
+      // Carrega os gerentes disponíveis da API
+      await carregarGerentes();
 
-    // Define o mês atual como filtro padrão
-    const mesAtual = getMesAtual();
-    filtroMes.value = mesAtual;
+      // Event listener: Recarrega ao mudar o mês
+      filtroMes.addEventListener("change", () => carregarDashboard(filtroMes.value, filtroGerente.value, filtroAno.value));
 
-    // Carrega os dados do dashboard com o mês atual
-    carregarDashboard(mesAtual, filtroGerente.value);
+      // Event listener: Recarrega ao mudar o ano
+      filtroAno.addEventListener("change", () => carregarDashboard(filtroMes.value, filtroGerente.value, filtroAno.value));
 
-    // Event listener: Recarrega ao mudar o mês
-    filtroMes.addEventListener("change", () => carregarDashboard(filtroMes.value, filtroGerente.value));
+      // Event listener: Recarrega ao mudar o gerente
+      filtroGerente.addEventListener("change", () => carregarDashboard(filtroMes.value, filtroGerente.value, filtroAno.value));
 
-    // Event listener: Recarrega ao mudar o gerente
-    filtroGerente.addEventListener("change", () => carregarDashboard(filtroMes.value, filtroGerente.value));
+      // Event listener: Botão de exportar dados
+      document.getElementById("btnExportarDashboard").addEventListener("click", () => {
+          exportarDadosDashboard();
+      });
 
-    // Event listener: Botão de exportar dados
-    document.getElementById("btnExportarDashboard").addEventListener("click", () => {
-        exportarDadosDashboard();
-    });
+      // Event listener: Botão de limpar filtros
+      document.getElementById("btnLimparFiltrosDashboard").addEventListener("click", () => {
+        const mesAtual = getMesAtual();
+        const anoAtual = getAnoAtual();
+        filtroAno.value = anoAtual;
+        filtroMes.value = mesAtual;
+        filtroGerente.value = "";
 
-    // Event listener: Botão de limpar filtros
-    document.getElementById("btnLimparFiltrosDashboard").addEventListener("click", () => {
-      const mesAtual = getMesAtual();
-      filtroMes.value = mesAtual;
-      filtroGerente.value = "";
-      carregarDashboard(mesAtual, "");
-    });
+        // Atualizar meses com base no ano selecionado
+        atualizarMesesDropdown();
+
+        carregarDashboard(mesAtual, "", anoAtual);
+      });
   }
 
   // ================================================================================
   // 🗓️ Funções Auxiliares de Datas
   // ================================================================================
-
-  /**
-   * Preenche o select de meses com todos os 12 meses do ano
-   */
-  function preencherMeses() {
-    const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-    filtroMes.innerHTML = meses.map(m => `<option>${m}</option>`).join("");
-  }
 
   /**
    * Retorna o nome do mês atual em português
@@ -95,6 +90,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function getMesAtual() {
     const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
     return meses[new Date().getMonth()];
+  }
+
+  /**
+   * Retorna o ano atual
+   * @returns {number} Ano atual
+   */
+  function getAnoAtual() {
+    return new Date().getFullYear();
   }
 
   // ================================================================================
@@ -124,6 +127,95 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
+   * Carrega dinamicamente os dropdowns de ano e mês baseados nos dados do backend
+   */
+  async function carregarAnosMesesDropdowns() {
+    try {
+      const response = await fetch('/planejamento-he/api/meses-anos-unicos');
+      const dados = await response.json();
+
+      if (dados.erro) {
+        console.error('Erro ao carregar anos e meses:', dados.erro);
+        return;
+      }
+
+      // Preenche o dropdown de anos
+      const anoSelect = document.getElementById("dashboardFiltroAno");
+      anoSelect.innerHTML = '<option value="">Todos os anos</option>';
+      dados.anos.forEach(ano => {
+        const option = document.createElement("option");
+        option.value = ano;
+        option.textContent = ano;
+        anoSelect.appendChild(option);
+      });
+
+      // Preenche o dropdown de meses com base no ano selecionado
+      function atualizarMesesDropdown() {
+        const anoSelecionado = anoSelect.value;
+        const mesSelect = document.getElementById("dashboardFiltroMes");
+        mesSelect.innerHTML = '<option value="">Todos os meses</option>';
+
+        let mesesParaExibir = [];
+
+        if (anoSelecionado) {
+          // Se um ano está selecionado, mostra apenas os meses desse ano
+          if (dados.mesesPorAno && dados.mesesPorAno[anoSelecionado]) {
+            mesesParaExibir = dados.mesesPorAno[anoSelecionado];
+          }
+        } else {
+          // Se nenhum ano está selecionado, mostra todos os meses de todos os anos
+          const todosOsMeses = new Set();
+          for (const ano in dados.mesesPorAno) {
+            dados.mesesPorAno[ano].forEach(mes => todosOsMeses.add(mes));
+          }
+          mesesParaExibir = Array.from(todosOsMeses).sort((a, b) => {
+            const ordemMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            return ordemMeses.indexOf(a) - ordemMeses.indexOf(b);
+          });
+        }
+
+        mesesParaExibir.forEach(mes => {
+          const option = document.createElement("option");
+          option.value = mes;
+          option.textContent = mes;
+          mesSelect.appendChild(option);
+        });
+      }
+
+      // Adiciona listener para atualizar os meses quando o ano mudar
+      anoSelect.addEventListener('change', atualizarMesesDropdown);
+
+      // Atualiza os meses inicialmente
+      atualizarMesesDropdown();
+
+      // Define o ano atual como padrão se estiver disponível
+      const anoAtual = getAnoAtual();
+      if (dados.anos.includes(anoAtual.toString())) {
+        anoSelect.value = anoAtual;
+      } else if (dados.anos.length > 0) {
+        anoSelect.value = dados.anos[0]; // Usa o primeiro ano disponível
+      }
+
+      // Atualiza os meses novamente após definir o ano padrão
+      setTimeout(atualizarMesesDropdown, 100);
+
+      // Define o mês atual como padrão após atualizar os meses
+      setTimeout(() => {
+        const mesAtual = getMesAtual();
+        const mesSelect = document.getElementById("dashboardFiltroMes");
+        mesSelect.value = mesAtual;
+
+        // Carrega as solicitações com os filtros padrão
+        carregarDashboard(mesAtual, filtroGerente.value, anoAtual);
+      }, 200);
+
+    } catch (error) {
+      console.error('Erro ao carregar anos e meses para os dropdowns:', error);
+    }
+  }
+
+  /**
    * Carrega os dados do dashboard da API e atualiza a interface
    *
    * Busca o resumo de horas por gerente, filtrando por mês e gerente se fornecido.
@@ -131,13 +223,19 @@ document.addEventListener("DOMContentLoaded", () => {
    *
    * @param {string} mes - Mês para filtrar (ex: "Janeiro")
    * @param {string} gerente - Nome do gerente para filtrar (opcional, vazio = todos)
+   * @param {string} ano - Ano para filtrar (opcional, vazio = todos)
    */
-  function carregarDashboard(mes, gerente) {
+  function carregarDashboard(mes, gerente, ano) {
     // Exibe mensagem de carregamento
     tabelaBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Carregando...</td></tr>`;
 
+    // Constrói a URL com os parâmetros necessários
+    let url = `/planejamento-he/api/dashboard-summary?mes=${encodeURIComponent(mes)}`;
+    if(gerente) url += `&gerente=${encodeURIComponent(gerente)}`;
+    if(ano) url += `&ano=${encodeURIComponent(ano)}`;
+
     // Faz a requisição para a API com os filtros aplicados
-    fetch(`/planejamento-he/api/dashboard-summary?mes=${encodeURIComponent(mes)}&gerente=${encodeURIComponent(gerente)}`)
+    fetch(url)
       .then(r => r.json())
       .then(data => {
         // Valida se há dados retornados
@@ -261,11 +359,16 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   async function exportarDadosDashboard() {
     const mes = filtroMes.value;
+    const ano = filtroAno.value;
     const gerente = filtroGerente.value;
+
+    let url = `/planejamento-he/api/exportar?mes=${encodeURIComponent(mes)}`;
+    if(gerente) url += `&gerente=${encodeURIComponent(gerente)}`;
+    if(ano) url += `&ano=${encodeURIComponent(ano)}`;
 
     try {
         // Faz requisição para a API de exportação com os filtros aplicados
-        const response = await fetch(`/planejamento-he/api/exportar?mes=${encodeURIComponent(mes)}&gerente=${encodeURIComponent(gerente)}`);
+        const response = await fetch(url);
 
         // Valida se a resposta foi bem-sucedida
         if (!response.ok) {
@@ -276,22 +379,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const blob = await response.blob();
 
         // Cria uma URL temporária para o arquivo
-        const url = window.URL.createObjectURL(blob);
+        const urlObj = window.URL.createObjectURL(blob);
 
         // Cria um elemento <a> invisível para forçar o download
         const a = document.createElement("a");
         a.style.display = "none";
-        a.href = url;
+        a.href = urlObj;
 
         // Define o nome do arquivo com mês e data atual
-        a.download = `planejamento_he_${mes.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.csv`;
+        let fileName = `planejamento_he_${mes.toLowerCase()}`;
+        if(ano) fileName += `_${ano}`;
+        fileName += `_${new Date().toISOString().slice(0, 10)}.csv`;
+
+        a.download = fileName;
 
         // Adiciona ao DOM, clica e remove (truque para forçar download)
         document.body.appendChild(a);
         a.click();
 
         // Limpa a URL temporária e remove o elemento
-        window.URL.revokeObjectURL(url);
+        window.URL.revokeObjectURL(urlObj);
         document.body.removeChild(a);
 
     } catch (error) {

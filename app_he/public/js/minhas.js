@@ -31,6 +31,14 @@ function getMesAtualPortugues() {
   return meses[new Date().getMonth()];
 }
 
+/**
+ * Retorna o ano atual
+ * @returns {number} Ano atual
+ */
+function getAnoAtual() {
+  return new Date().getFullYear();
+}
+
 // ================================================================================
 // 📊 Carregamento e Exibição de Dados
 // ================================================================================
@@ -39,12 +47,13 @@ function getMesAtualPortugues() {
  * Carrega e exibe as solicitações do usuário logado
  *
  * Busca as solicitações na API e renderiza a tabela com os dados.
- * Permite filtrar por colaborador e mês.
+ * Permite filtrar por colaborador, mês e ano.
  *
  * @param {string} colaborador - Nome do colaborador para filtrar (opcional)
  * @param {string} mes - Mês para filtrar (opcional)
+ * @param {string} ano - Ano para filtrar (opcional)
  */
-function carregarMinhasSolicitacoes(colaborador = "", mes = "") {
+function carregarMinhasSolicitacoes(colaborador = "", mes = "", ano = "") {
   const container = document.getElementById("tabelaMinhasSolicitacoes");
   container.innerHTML = "<p>Carregando...</p>";
 
@@ -52,6 +61,7 @@ function carregarMinhasSolicitacoes(colaborador = "", mes = "") {
   const params = new URLSearchParams();
   if (colaborador) params.append("colaborador", colaborador);
   if (mes) params.append("mes", mes);
+  if (ano) params.append("ano", ano);
 
   // Monta a URL completa com os filtros aplicados
   const url = `/planejamento-he/api/minhas-solicitacoes${
@@ -86,6 +96,7 @@ function carregarMinhasSolicitacoes(colaborador = "", mes = "") {
                 <th>Colaborador</th>
                 <th>Cargo</th>
                 <th>Mês</th>
+                <th>Ano</th>
                 <th>Horas</th>
                 <th>Tipo HE</th>
                 <th>Status</th>
@@ -124,6 +135,7 @@ function carregarMinhasSolicitacoes(colaborador = "", mes = "") {
     <td>${s.COLABORADOR || "-"}</td>
     <td>${s.CARGO || "-"}</td>
     <td>${s.MES || "-"}</td>
+    <td>${s.ANO || "-"}</td>
     <td>${s.HORAS || "0"}</td>
     <td>${s.TIPO_HE || "-"}</td>
     <td>${statusBadge}</td>
@@ -155,18 +167,12 @@ function carregarMinhasSolicitacoes(colaborador = "", mes = "") {
 
 // Executa quando o DOM estiver completamente carregado
 document.addEventListener("DOMContentLoaded", () => {
-  // Define o mês atual como filtro padrão
-  const mesAtual = getMesAtualPortugues();
-  document.getElementById("filtroMes").value = mesAtual;
-
-  // Carrega as solicitações com o filtro de mês atual
-  carregarMinhasSolicitacoes("", mesAtual);
+  // Carrega os dropdowns de ano e mês dinamicamente
+  carregarAnosMesesDropdowns();
 
   // Event listener para recarregar dados quando a página é aberta via navegação SPA
   document.addEventListener('page-load:minhasSolicitacoes', function() {
-    const colaborador = document.getElementById("filtroColaborador").value;
-    const mes = document.getElementById("filtroMes").value;
-    carregarMinhasSolicitacoes(colaborador, mes);
+    carregarAnosMesesDropdowns();
   });
 
   // ================================================================================
@@ -182,7 +188,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function aplicarFiltros() {
     const colaborador = document.getElementById("filtroColaborador").value;
     const mes = document.getElementById("filtroMes").value;
-    carregarMinhasSolicitacoes(colaborador, mes);
+    const ano = document.getElementById("filtroAno").value;
+    carregarMinhasSolicitacoes(colaborador, mes, ano);
   }
 
   // Filtro de colaborador com debounce (aguarda 500ms após parar de digitar)
@@ -194,6 +201,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Filtro de mês aplica imediatamente ao selecionar
   document.getElementById("filtroMes").addEventListener("change", aplicarFiltros);
 
+  // Filtro de ano aplica imediatamente ao selecionar
+  document.getElementById("filtroAno").addEventListener("change", aplicarFiltros);
+
   // Botão para limpar todos os filtros
   document
     .getElementById("btnLimparFiltros")
@@ -201,12 +211,102 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /**
+ * Carrega dinamicamente os dropdowns de ano e mês baseados nos dados do backend
+ */
+async function carregarAnosMesesDropdowns() {
+  try {
+    const response = await fetch('/planejamento-he/api/meses-anos-unicos');
+    const dados = await response.json();
+
+    if (dados.erro) {
+      console.error('Erro ao carregar anos e meses:', dados.erro);
+      return;
+    }
+
+    // Preenche o dropdown de anos
+    const anoSelect = document.getElementById("filtroAno");
+    anoSelect.innerHTML = '<option value="">Todos os anos</option>';
+    dados.anos.forEach(ano => {
+      const option = document.createElement("option");
+      option.value = ano;
+      option.textContent = ano;
+      anoSelect.appendChild(option);
+    });
+
+    // Preenche o dropdown de meses com base no ano selecionado
+    function atualizarMesesDropdown() {
+      const anoSelecionado = anoSelect.value;
+      const mesSelect = document.getElementById("filtroMes");
+      mesSelect.innerHTML = '<option value="">Todos os meses</option>';
+
+      let mesesParaExibir = [];
+
+      if (anoSelecionado) {
+        // Se um ano está selecionado, mostra apenas os meses desse ano
+        if (dados.mesesPorAno && dados.mesesPorAno[anoSelecionado]) {
+          mesesParaExibir = dados.mesesPorAno[anoSelecionado];
+        }
+      } else {
+        // Se nenhum ano está selecionado, mostra todos os meses de todos os anos
+        const todosOsMeses = new Set();
+        for (const ano in dados.mesesPorAno) {
+          dados.mesesPorAno[ano].forEach(mes => todosOsMeses.add(mes));
+        }
+        mesesParaExibir = Array.from(todosOsMeses).sort((a, b) => {
+          const ordemMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                              'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+          return ordemMeses.indexOf(a) - ordemMeses.indexOf(b);
+        });
+      }
+
+      mesesParaExibir.forEach(mes => {
+        const option = document.createElement("option");
+        option.value = mes;
+        option.textContent = mes;
+        mesSelect.appendChild(option);
+      });
+    }
+
+    // Adiciona listener para atualizar os meses quando o ano mudar
+    anoSelect.addEventListener('change', atualizarMesesDropdown);
+
+    // Atualiza os meses inicialmente
+    atualizarMesesDropdown();
+
+    // Define o ano atual como padrão se estiver disponível
+    const anoAtual = getAnoAtual();
+    if (dados.anos.includes(anoAtual.toString())) {
+      anoSelect.value = anoAtual;
+    } else if (dados.anos.length > 0) {
+      anoSelect.value = dados.anos[0]; // Usa o primeiro ano disponível
+    }
+
+    // Atualiza os meses novamente após definir o ano padrão
+    setTimeout(atualizarMesesDropdown, 100);
+
+    // Define o mês atual como padrão após atualizar os meses
+    setTimeout(() => {
+      const mesAtual = getMesAtualPortugues();
+      const mesSelect = document.getElementById("filtroMes");
+      mesSelect.value = mesAtual;
+
+      // Carrega as solicitações com os filtros padrão
+      carregarMinhasSolicitacoes("", mesAtual, anoAtual);
+    }, 200);
+
+  } catch (error) {
+    console.error('Erro ao carregar anos e meses para os dropdowns:', error);
+  }
+}
+
+/**
  * Limpa todos os filtros e recarrega com valores padrão
  */
 function limparFiltros() {
   document.getElementById("filtroColaborador").value = "";
-  document.getElementById("filtroMes").value = getMesAtualPortugues();
-  carregarMinhasSolicitacoes("", getMesAtualPortugues());
+  document.getElementById("filtroMes").value = "";
+  document.getElementById("filtroAno").value = "";
+  carregarMinhasSolicitacoes();
 }
 
 // ================================================================================
@@ -311,7 +411,7 @@ function abrirModalEdicao(dados) {
   // Armazena o valor original de horas para comparação
   const originalHoras = dados.HORAS || "";
   document.getElementById("editHoras").setAttribute('data-original-value', originalHoras);
-  
+
   // Adiciona evento para detectar mudanças no campo de horas
   document.getElementById("editHoras").addEventListener('input', function() {
     const originalValue = parseFloat(this.getAttribute('data-original-value')) || 0;
@@ -364,7 +464,7 @@ function salvarEdicao(event) {
 
   // Obtém o valor original de horas para comparação
   const originalHoras = parseFloat(document.getElementById("editHoras").getAttribute('data-original-value')) || 0;
-  
+
   // Verifica se está tentando aumentar as horas e impede
   if (dados.horas > originalHoras) {
     alert("Não é permitido aumentar a quantidade de horas. Apenas é possível diminuir. Crie uma nova solicitação para horas adicionais.");
