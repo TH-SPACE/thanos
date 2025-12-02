@@ -15,6 +15,12 @@ function carregarDadosUsuario() {
     });
 }
 
+// Define o ano atual no campo de ano
+function definirAnoAtual() {
+  const anoAtual = new Date().getFullYear();
+  document.getElementById("ano").value = anoAtual;
+}
+
 // ========== RESUMO DE HE ==========
 // Variáveis globais para armazenar dados carregados de arquivos JSON:
 // - limitesPorGerente: mapeia gerentes aos seus limites financeiros de HE (Horas Extras)
@@ -456,6 +462,41 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarLimitesHE();
   carregarValoresHE();
 
+  // Preenche o dropdown de ano com opções passadas e futuras
+  function preencherDropdownAno() {
+    const anoSelect = document.getElementById("ano");
+    anoSelect.innerHTML = ""; // Limpa opções anteriores
+
+    // Obter o ano atual
+    const anoAtual = new Date().getFullYear();
+
+    // Adiciona anos de 5 anos atrás até 5 anos à frente
+    for (let i = anoAtual - 5; i <= anoAtual + 5; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = i;
+      if (i === anoAtual) {
+        option.selected = true;
+      }
+      anoSelect.appendChild(option);
+    }
+  }
+
+  // Preenche o dropdown com os anos
+  preencherDropdownAno();
+
+  // Evento para atualizar o ano quando o checkbox de ano anterior é marcado/desmarcado
+  document.getElementById("anoAnteriorCheck").addEventListener("change", function() {
+    const anoSelect = document.getElementById("ano");
+    const anoAtual = new Date().getFullYear();
+
+    if (this.checked) {
+      anoSelect.value = anoAtual - 1;  // Define como ano anterior
+    } else {
+      anoSelect.value = anoAtual;     // Retorna ao ano atual
+    }
+  });
+
   // Define o mês atual como valor padrão no seletor de mês
   const meses = [
     "Janeiro",
@@ -791,9 +832,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Prepara os dados para envio
+      const ano = document.getElementById("ano").value;
+      const anoAnteriorCheck = document.getElementById("anoAnteriorCheck").checked;
       const dados = colaboradoresAdicionados.map((colab) => ({
         gerente,
         mes,
+        ano: anoAnteriorCheck ? (new Date().getFullYear() - 1) : parseInt(ano),  // Se ano anterior estiver marcado, usa ano anterior, senão o ano selecionado
+        ano_anterior: anoAnteriorCheck,  // Flag indicando se é ano anterior
         colaborador: colab.colaborador,
         matricula: colab.matricula,
         cargo: colab.cargo,

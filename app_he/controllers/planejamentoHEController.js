@@ -292,6 +292,7 @@ exports.telaEnvio = (req, res) => {
  *   matricula: "12345",
  *   cargo: "ENGENHEIRO",
  *   mes: "Janeiro",
+ *   ano: 2025,
  *   horas: 10,
  *   justificativa: "Projeto urgente",
  *   tipoHE: "50%"
@@ -331,20 +332,35 @@ exports.enviarSolicitacoesMultiplo = async (req, res) => {
       const diretoriaColab = colabRows.length > 0 ? colabRows[0].DIRETORIA : diretoria;
       const gerenteDivisao = colabRows.length > 0 ? colabRows[0].GERENTE_DIVISAO : null;
 
+      // Determina o ano a ser utilizado:
+      // 1. Se ano_anterior for true, usa o ano anterior ao ano atual
+      // 2. Se ano for fornecido explicitamente (e ano_anterior não for true), usa esse valor
+      // 3. Senão, usa o ano atual
+      let ano;
+      if (s.ano_anterior === true) {
+        ano = new Date().getFullYear() - 1;  // Ano anterior ao ano atual
+      } else if (s.ano !== undefined) {
+        ano = s.ano;  // Ano explícito fornecido
+      } else {
+        ano = new Date().getFullYear();  // Ano atual (padrão)
+      }
+
       // Insere a solicitação com STATUS='PENDENTE'
       await conexao.query(
         `INSERT INTO PLANEJAMENTO_HE
-          (GERENTE, COLABORADOR, MATRICULA, CARGO, MES, HORAS, JUSTIFICATIVA, TIPO_HE, STATUS, ENVIADO_POR, DIRETORIA, GERENTE_DIVISAO)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDENTE', ?, ?, ?)`,
+          (GERENTE, COLABORADOR, MATRICULA, CARGO, MES, ANO, HORAS, JUSTIFICATIVA, TIPO_HE, STATUS, ENVIADO_POR, DIRETORIA, GERENTE_DIVISAO)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           s.gerente,
           s.colaborador,
           s.matricula,
           s.cargo,
           s.mes,
+          ano,
           s.horas,
           s.justificativa,
           s.tipoHE,
+          'PENDENTE',
           enviadoPor,
           diretoriaColab,
           gerenteDivisao,
@@ -389,6 +405,7 @@ exports.enviarSolicitacoesMultiplo = async (req, res) => {
  *   pendente: 15000.00
  * }
  */
+
 exports.obterResumoHE = async (req, res) => {
   const { gerente, mes } = req.query;
   const diretoria = req.diretoriaHE;
