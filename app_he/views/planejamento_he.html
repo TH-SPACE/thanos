@@ -164,34 +164,56 @@
                             <!-- Resumo de HE -->
                             <div id="resumoHE" class="resumo-financeiro mb-4">
                                 <div class="row">
-                                    <div class="col-md-3 col-6 mb-2">
-                                        <div class="text-center">
-                                            <div class="h6 mb-1">Limite</div>
-                                            <div class="h5 font-weight-bold" id="limiteValor">R$ 0,00</div>
+                                    <div class="col-md-3 col-6 mb-3">
+                                        <div class="card-resumo-he card-roxo" title="Valor total disponível para solicitações de horas extras no mês selecionado">
+                                            <div class="card-resumo-content">
+                                                <div class="card-resumo-icon">
+                                                    <i class="fas fa-wallet"></i>
+                                                </div>
+                                                <div class="card-resumo-info">
+                                                    <h4 id="limiteValor">R$ 0,00</h4>
+                                                    <p>Limite</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <!-- <div class="col-md-2 col-6 mb-2">
-                                        <div class="text-center">
-                                            <div class="h6 mb-1">Aprovado</div>
-                                            <div class="h5 font-weight-bold" id="aprovadoValor">R$ 0,00</div>
+                                    <div class="col-md-3 col-6 mb-3">
+                                        <div class="card-resumo-he card-azul" title="Valor total das horas extras já executadas e registradas no sistema">
+                                            <div class="card-resumo-content">
+                                                <div class="card-resumo-icon">
+                                                    <i class="fas fa-clock-rotate-left"></i>
+                                                </div>
+                                                <div class="card-resumo-info">
+                                                    <h4 id="executadoValor">R$ 0,00</h4>
+                                                    <p>Executado Real</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-2 col-6 mb-2">
-                                        <div class="text-center">
-                                            <div class="h6 mb-1">Pendente</div>
-                                            <div class="h5 font-weight-bold" id="pendenteValor">R$ 0,00</div>
-                                        </div>
-                                    </div> -->
-                                    <div class="col-md-3 col-6 mb-2">
-                                        <div class="text-center">
-                                            <div class="h6 mb-1">Executado Real</div>
-                                            <div class="h5 font-weight-bold text-info" id="executadoValor">R$ 0,00</div>
+                                    <div class="col-md-3 col-6 mb-3">
+                                        <div class="card-resumo-he card-cinza" title="Valor restante disponível após subtrair as horas executadas do limite">
+                                            <div class="card-resumo-content">
+                                                <div class="card-resumo-icon">
+                                                    <i class="fas fa-coins"></i>
+                                                </div>
+                                                <div class="card-resumo-info">
+                                                    <h4 id="saldoRealValor">R$ 0,00</h4>
+                                                    <p>Saldo Real</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-3 col-6 mb-2">
-                                        <div class="text-center">
-                                            <div class="h6 mb-1">Saldo Real</div>
-                                            <div class="h5 font-weight-bold" id="saldoRealValor">R$ 0,00</div>
+                                    <div class="col-md-3 col-6 mb-3">
+                                        <div class="card-resumo-he card-laranja" title="Percentual do limite que já foi utilizado no mês">
+                                            <div class="card-resumo-content">
+                                                <div class="card-resumo-icon">
+                                                    <i class="fas fa-chart-line"></i>
+                                                </div>
+                                                <div class="card-resumo-info">
+                                                    <h4 id="percentualUtilizado">0%</h4>
+                                                    <p>% Utilizado</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

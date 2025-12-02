@@ -80,19 +80,28 @@ function mostrarResumoHE(gerente, mes) {
 
     // Campos "Aprovado" e "Pendente" estão ocultos conforme solicitação, mas mantemos a lógica
     document.getElementById("executadoValor").textContent = "R$ 0,00";
-    document.getElementById("saldoRealValor").textContent = limite.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-    document.getElementById("saldoRealValor").className =
-      "h5 font-weight-bold text-success"; // Verde quando não há consumo
+    document.getElementById("saldoRealValor").textContent =
+      limite.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+
+    // Atualiza o percentual de utilização para 0% quando não há dados
+    const percentualUtilizado = limite > 0 ? 0 : 0;
+    document.getElementById("percentualUtilizado").textContent = percentualUtilizado + "%";
+
+    document.getElementById("saldoRealValor").className = "h5 font-weight-bold"; // Verde quando não há consumo
     return;
   }
 
   // Primeiro busca os dados de execução (horas já realizadas) via API
-  fetch(`/planejamento-he/api/resumo-executado?gerente=${encodeURIComponent(gerente)}&mes=${encodeURIComponent(mes)}`)
-    .then(r => r.json())
-    .then(executadoData => {
+  fetch(
+    `/planejamento-he/api/resumo-executado?gerente=${encodeURIComponent(
+      gerente
+    )}&mes=${encodeURIComponent(mes)}`
+  )
+    .then((r) => r.json())
+    .then((executadoData) => {
       const executadoValor = executadoData.total_executado_valor || 0;
 
       // Em seguida, busca dados de HE aprovadas e pendentes via API
@@ -100,8 +109,9 @@ function mostrarResumoHE(gerente, mes) {
         `/planejamento-he/api/resumo-he?gerente=${encodeURIComponent(
           gerente
         )}&mes=${encodeURIComponent(mes)}`
-      ).then(r => r.json())
-        .then(data => {
+      )
+        .then((r) => r.json())
+        .then((data) => {
           const aprovado = data.aprovado || 0;
           const pendente = data.pendente || 0;
 
@@ -120,19 +130,23 @@ function mostrarResumoHE(gerente, mes) {
               style: "currency",
               currency: "BRL",
             });
-          document.getElementById("saldoRealValor").textContent = saldoReal.toLocaleString(
-            "pt-BR",
-            {
+          document.getElementById("saldoRealValor").textContent =
+            saldoReal.toLocaleString("pt-BR", {
               style: "currency",
               currency: "BRL",
-            }
-          );
+            });
+
+          // Cálculo do percentual de utilização
+          const percentualUtilizado = limite > 0 ? (executadoValor / limite) * 100 : 0;
+          document.getElementById("percentualUtilizado").textContent =
+            percentualUtilizado.toFixed(2) + "%";
 
           // Atualiza a cor do saldo REAL dependendo do valor
-          document.getElementById("saldoRealValor").className = "h5 font-weight-bold";
+          document.getElementById("saldoRealValor").className =
+            "h5 font-weight-bold";
           document
             .getElementById("saldoRealValor")
-            .classList.add(saldoReal > 0 ? "text-success" : "text-danger");
+            .classList.add(saldoReal > 0 ? "text" : "text-danger");
 
           // Carrega os detalhes de execução após atualizar o resumo
           carregarDetalhesExecutado(gerente, mes);
@@ -148,10 +162,13 @@ function mostrarResumoHE(gerente, mes) {
         });
       // Campos "Aprovado" e "Pendente" estão ocultos conforme solicitação
       document.getElementById("executadoValor").textContent = "R$ 0,00";
-      document.getElementById("saldoRealValor").textContent = (limite).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      });
+      document.getElementById("saldoRealValor").textContent =
+        limite.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        });
+      // Define percentual como 0% em caso de erro
+      document.getElementById("percentualUtilizado").textContent = "0%";
       document.getElementById("saldoRealValor").className =
         "h5 font-weight-bold text-success";
     });
@@ -176,14 +193,22 @@ function carregarDetalhesExecutado(gerente, mes) {
   }
 
   // Carrega os detalhes de execução através da API
-  fetch(`/planejamento-he/api/detalhes-executado?gerente=${encodeURIComponent(gerente)}&mes=${encodeURIComponent(mes)}`)
-    .then(r => r.json())
-    .then(data => {
+  fetch(
+    `/planejamento-he/api/detalhes-executado?gerente=${encodeURIComponent(
+      gerente
+    )}&mes=${encodeURIComponent(mes)}`
+  )
+    .then((r) => r.json())
+    .then((data) => {
       // Filtra apenas colaboradores que têm horas executadas
-      const dadosFiltrados = data.filter(item => (item.total_executado || 0) > 0);
+      const dadosFiltrados = data.filter(
+        (item) => (item.total_executado || 0) > 0
+      );
 
       // Ordena os dados filtrados por total de horas executadas em ordem decrescente
-      dadosFiltrados.sort((a, b) => (b.total_executado || 0) - (a.total_executado || 0));
+      dadosFiltrados.sort(
+        (a, b) => (b.total_executado || 0) - (a.total_executado || 0)
+      );
 
       // Verifica se existem dados após filtragem
       if (!dadosFiltrados || dadosFiltrados.length === 0) {
@@ -203,19 +228,23 @@ function carregarDetalhesExecutado(gerente, mes) {
       tabela.innerHTML = "";
 
       // Adiciona os dados de cada colaborador executado (ordenados)
-      dadosFiltrados.forEach(item => {
+      dadosFiltrados.forEach((item) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td><i class="fas fa-user text-primary mr-2"></i>${item.colaborador}</td>
+          <td><i class="fas fa-user text-primary mr-2"></i>${
+            item.colaborador
+          }</td>
           <td>${item.cargo}</td>
           <td class="text-center">${(item.executado_50 || 0).toFixed(1)}</td>
           <td class="text-center">${(item.executado_100 || 0).toFixed(1)}</td>
-          <td class="font-weight-bold text-info text-center">${(item.total_executado || 0).toFixed(1)}</td>
+          <td class="font-weight-bold text-info text-center">${(
+            item.total_executado || 0
+          ).toFixed(1)}</td>
         `;
         tabela.appendChild(row);
       });
     })
-    .catch(error => {
+    .catch((error) => {
       console.error("Erro ao carregar detalhes de execução:", error);
       tabela.innerHTML = `
         <tr>
