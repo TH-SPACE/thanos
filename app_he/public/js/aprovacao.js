@@ -19,8 +19,6 @@ function setupAprovacoesPage() {
     limparBtn.addEventListener('click', limparFiltrosAprovacao);
     aprovarBtn.addEventListener('click', () => processarEmMassa(true));
     recusarBtn.addEventListener('click', () => processarEmMassa(false));
-
-    carregarDadosAprovacao();
 }
 
 function initializeFilters() {
@@ -88,7 +86,7 @@ function carregarAprovacoes() {
                 return;
             }
             container.innerHTML = criarTabelaAprovacoes(dados);
-            
+
             // Adiciona lógica para o checkbox "selecionar todos"
             const selectAll = document.getElementById('selectAllCheckbox');
             if (selectAll) {
@@ -237,7 +235,7 @@ function updateApprovalSummary() {
     if (gerente) {
         params.append('gerente', gerente); // Adiciona o gerente apenas se estiver selecionado
     }
-    
+
     const url = `/planejamento-he/api/approval-summary?${params.toString()}`;
 
     fetch(url)
