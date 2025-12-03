@@ -81,11 +81,12 @@ exports.getPerfilUsuario = (req, res) => {
  *
  * Calcula o total de horas e valores por status (APROVADO, PENDENTE, RECUSADO)
  * e compara com os limites financeiros definidos em limite_he.json.
- * Permite filtrar por gerente e mês específico.
+ * Permite filtrar por gerente, mês e ano específicos.
  *
  * @param {Object} req - Request Express
  * @param {string} req.query.mes - Mês para filtrar (obrigatório)
  * @param {string} req.query.gerente - Nome do gerente para filtrar (opcional)
+ * @param {string} req.query.ano - Ano para filtrar (opcional)
  * @param {string} req.diretoriaHE - Diretoria do usuário (injetada pelo middleware)
  * @param {Object} res - Response Express
  *
@@ -102,7 +103,7 @@ exports.getPerfilUsuario = (req, res) => {
  * }
  */
 exports.getApprovalSummary = async (req, res) => {
-  const { gerente, mes } = req.query;
+  const { gerente, mes, ano } = req.query;
   const diretoria = req.diretoriaHE;
   const user = req.session.usuario;
   const ip = req.ip;
@@ -126,7 +127,13 @@ exports.getApprovalSummary = async (req, res) => {
       params.push(gerente);
     }
 
-    // Busca todas as solicitações do mês/diretoria
+    // Adiciona filtro de ano se fornecido
+    if (ano) {
+      query += ` AND ANO = ?`;
+      params.push(ano);
+    }
+
+    // Busca todas as solicitações do mês/diretoria/ano
     const [solicitacoes] = await conexao.query(query, params);
 
     // Calcula o limite financeiro total baseado em limite_he.json
@@ -1061,13 +1068,14 @@ exports.getGerentes = async (req, res) => {
  * Lista solicitações pendentes para tratamento por aprovadores
  *
  * Retorna todas as solicitações da diretoria do aprovador, com filtros
- * opcionais por gerente, status e mês. Adiciona o VALOR_HORA calculado
+ * opcionais por gerente, status, mês e ano. Adiciona o VALOR_HORA calculado
  * para cada solicitação.
  *
  * @param {Object} req - Request Express
  * @param {string} req.query.gerente - Nome do gerente para filtrar (opcional)
  * @param {string} req.query.status - Status para filtrar (opcional): PENDENTE|APROVADO|RECUSADO
  * @param {string} req.query.mes - Mês para filtrar (opcional)
+ * @param {string} req.query.ano - Ano para filtrar (opcional)
  * @param {string} req.diretoriaHE - Diretoria do aprovador
  * @param {Object} res - Response Express
  *
@@ -1078,12 +1086,12 @@ exports.listarSolicitacoesPendentes = async (req, res) => {
   const diretoria = req.diretoriaHE;
   const user = req.session.usuario;
   const ip = req.ip;
-  const { gerente, status, mes } = req.query;
+  const { gerente, status, mes, ano } = req.query;
 
   try {
     let query = `
       SELECT
-        id, GERENTE, COLABORADOR, MATRICULA, CARGO, MES, HORAS, JUSTIFICATIVA, TIPO_HE, STATUS, ENVIADO_POR, GERENTE_DIVISAO,
+        id, GERENTE, COLABORADOR, MATRICULA, CARGO, MES, ANO, HORAS, JUSTIFICATIVA, TIPO_HE, STATUS, ENVIADO_POR, GERENTE_DIVISAO,
         DATE_FORMAT(DATA_ENVIO, '%d/%m/%Y %H:%i') AS DATA_ENVIO_FORMATADA
       FROM PLANEJAMENTO_HE
       WHERE (DIRETORIA = ? OR DIRETORIA IS NULL)`;
@@ -1100,6 +1108,10 @@ exports.listarSolicitacoesPendentes = async (req, res) => {
     if (mes) {
       query += ` AND MES = ?`;
       params.push(mes);
+    }
+    if (ano) {
+      query += ` AND ANO = ?`;
+      params.push(ano);
     }
 
     query += ` ORDER BY DATA_ENVIO ASC`;

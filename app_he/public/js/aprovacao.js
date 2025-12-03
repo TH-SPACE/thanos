@@ -8,6 +8,7 @@ function setupAprovacoesPage() {
   const gerenteFilter = document.getElementById("aprovacaoFiltroGerente");
   const statusFilter = document.getElementById("aprovacaoFiltroStatus");
   const mesFilter = document.getElementById("aprovacaoFiltroMes");
+  const anoFilter = document.getElementById("aprovacaoFiltroAno");
   const limparBtn = document.getElementById("btnLimparFiltrosAprovacao");
   const aprovarBtn = document.getElementById("btnAprovarSelecionados");
   const recusarBtn = document.getElementById("btnRecusarSelecionados");
@@ -15,6 +16,7 @@ function setupAprovacoesPage() {
   gerenteFilter.addEventListener("change", carregarDadosAprovacao);
   statusFilter.addEventListener("change", carregarDadosAprovacao);
   mesFilter.addEventListener("change", carregarDadosAprovacao);
+  anoFilter.addEventListener("change", carregarDadosAprovacao);
   limparBtn.addEventListener("click", limparFiltrosAprovacao);
   aprovarBtn.addEventListener("click", () => processarEmMassa(true));
   recusarBtn.addEventListener("click", () => processarEmMassa(false));
@@ -22,6 +24,7 @@ function setupAprovacoesPage() {
 
 function initializeFilters() {
   const mesSelect = document.getElementById("aprovacaoFiltroMes");
+  const anoSelect = document.getElementById("aprovacaoFiltroAno");
   const gerenteSelect = document.getElementById("aprovacaoFiltroGerente");
   const statusSelect = document.getElementById("aprovacaoFiltroStatus");
 
@@ -46,6 +49,9 @@ function initializeFilters() {
 
   statusSelect.value = "PENDENTE";
 
+  // Preenche os anos com base nos dados disponíveis
+  carregarAnosDropdown(anoSelect);
+
   fetch("/planejamento-he/api/gerentes")
     .then((r) => r.json())
     .then((data) => {
@@ -58,6 +64,40 @@ function initializeFilters() {
           gerenteSelect.appendChild(opt);
         });
       }
+    });
+}
+
+function carregarAnosDropdown(anoSelect) {
+  // Primeiro, vamos carregar os anos únicos da tabela PLANEJAMENTO_HE
+  fetch('/planejamento-he/api/meses-anos-unicos')
+    .then(response => response.json())
+    .then(data => {
+      if (data.erro) {
+        console.error('Erro ao carregar anos para o filtro:', data.erro);
+        return;
+      }
+
+      // Preenche o dropdown de anos
+      anoSelect.innerHTML = '<option value="">Todos os anos</option>';
+      data.anos.forEach(ano => {
+        const option = document.createElement("option");
+        option.value = ano;
+        option.textContent = ano;
+        anoSelect.appendChild(option);
+      });
+
+      // Define o ano atual como padrão se estiver disponível
+      const anoAtual = new Date().getFullYear();
+      if (data.anos.includes(anoAtual.toString())) {
+        anoSelect.value = anoAtual;
+      } else if (data.anos.length > 0) {
+        anoSelect.value = data.anos[0]; // Usa o primeiro ano disponível
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao carregar anos para o dropdown:', error);
+      // Mesmo em caso de erro, adicionamos uma opção padrão
+      anoSelect.innerHTML = '<option value="">Todos os anos</option>';
     });
 }
 
@@ -214,11 +254,13 @@ function carregarAprovacoes() {
   const gerente = document.getElementById("aprovacaoFiltroGerente").value;
   const status = document.getElementById("aprovacaoFiltroStatus").value;
   const mes = document.getElementById("aprovacaoFiltroMes").value;
+  const ano = document.getElementById("aprovacaoFiltroAno").value;
 
   const params = new URLSearchParams();
   if (gerente) params.append("gerente", gerente);
   if (status) params.append("status", status);
   if (mes) params.append("mes", mes);
+  if (ano) params.append("ano", ano);
 
   const url = `/planejamento-he/api/solicitacoes-pendentes?${params.toString()}`;
 
@@ -404,6 +446,7 @@ function updateApprovalSummary() {
   const container = document.getElementById("resumoFinanceiroContainer");
   const gerente = document.getElementById("aprovacaoFiltroGerente").value;
   const mes = document.getElementById("aprovacaoFiltroMes").value;
+  const ano = document.getElementById("aprovacaoFiltroAno").value;
 
   // Não retorna mais se o gerente não estiver selecionado, em vez disso, busca o resumo geral.
   container.innerHTML =
@@ -412,6 +455,9 @@ function updateApprovalSummary() {
   const params = new URLSearchParams({ mes }); // Inicia com o mês que é sempre obrigatório
   if (gerente) {
     params.append("gerente", gerente); // Adiciona o gerente apenas se estiver selecionado
+  }
+  if (ano) {
+    params.append("ano", ano); // Adiciona o ano apenas se estiver selecionado
   }
 
   const url = `/planejamento-he/api/approval-summary?${params.toString()}`;

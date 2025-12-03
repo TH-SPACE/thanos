@@ -698,22 +698,28 @@
 
                     <!-- Filtros da Tela de Aprovação -->
                     <div class="row mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="aprovacaoFiltroGerente">Gerente</label>
                             <select id="aprovacaoFiltroGerente" class="form-control"></select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="aprovacaoFiltroStatus">Status</label>
                             <select id="aprovacaoFiltroStatus" class="form-control">
                                 <option value="PENDENTE">Pendente</option>
-                                <option value="APROVADO">Aprovado</option>
+                                <option value="APPROVADO">Aprovado</option>
                                 <option value="RECUSADO">Recusado</option>
                                 <option value="">Todos</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="aprovacaoFiltroMes">Mês</label>
                             <select id="aprovacaoFiltroMes" class="form-control"></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="aprovacaoFiltroAno">Ano</label>
+                            <select id="aprovacaoFiltroAno" class="form-control">
+                                <option value="">Todos os anos</option>
+                            </select>
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
                             <button id="btnLimparFiltrosAprovacao"
