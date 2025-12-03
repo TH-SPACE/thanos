@@ -28,29 +28,17 @@ function initializeFilters() {
   const gerenteSelect = document.getElementById("aprovacaoFiltroGerente");
   const statusSelect = document.getElementById("aprovacaoFiltroStatus");
 
-  const meses = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
-  mesSelect.innerHTML = meses
-    .map((m) => `<option value="${m}">${m}</option>`)
-    .join("");
-  mesSelect.value = meses[new Date().getMonth()];
-
   statusSelect.value = "PENDENTE";
 
   // Preenche os anos com base nos dados disponíveis
   carregarAnosDropdown(anoSelect);
+
+  // Carrega meses dinamicamente com base no ano selecionado (ou todos se nenhum ano estiver selecionado)
+  if (anoSelect.value) {
+    carregarMesesDropdown(mesSelect, anoSelect.value);
+  } else {
+    carregarMesesDropdown(mesSelect); // Carrega todos os meses se nenhum ano estiver selecionado
+  }
 
   fetch("/planejamento-he/api/gerentes")
     .then((r) => r.json())
@@ -67,9 +55,99 @@ function initializeFilters() {
     });
 }
 
-function carregarAnosDropdown(anoSelect) {
-  // Primeiro, vamos carregar os anos únicos da tabela PLANEJAMENTO_HE
+function carregarMesesDropdown(mesSelect, ano = null) {
+  // Primeiro, vamos carregar os meses/anos únicos da tabela PLANEJAMENTO_HE
   fetch('/planejamento-he/api/meses-anos-unicos')
+    .then(response => response.json())
+    .then(data => {
+      if (data.erro) {
+        console.error('Erro ao carregar meses/anos para o filtro:', data.erro);
+        return;
+      }
+
+      // Filtra os meses com base no ano selecionado (se fornecido)
+      let mesesDisponiveis = [];
+      if (ano) {
+        // Se um ano específico foi fornecido, filtra apenas os meses desse ano
+        if (data.mesesPorAno && data.mesesPorAno[ano]) {
+          mesesDisponiveis = data.mesesPorAno[ano];
+        }
+      } else {
+        // Se nenhum ano foi fornecido, combina todos os meses de todos os anos
+        const todosMeses = new Set();
+        for (const mesesAno of Object.values(data.mesesPorAno || {})) {
+          mesesAno.forEach(mes => todosMeses.add(mes));
+        }
+        mesesDisponiveis = Array.from(todosMeses);
+      }
+
+      // Preenche o dropdown de meses
+      mesSelect.innerHTML = '<option value="">Todos os meses</option>';
+      mesesDisponiveis.forEach(mes => {
+        const option = document.createElement("option");
+        option.value = mes;
+        option.textContent = mes;
+        mesSelect.appendChild(option);
+      });
+
+      // Define o mês atual como padrão se estiver disponível
+      const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+      const mesAtual = meses[new Date().getMonth()];
+
+      if (mesesDisponiveis.includes(mesAtual)) {
+        mesSelect.value = mesAtual;
+      } else if (mesesDisponiveis.length > 0) {
+        mesSelect.value = mesesDisponiveis[0]; // Usa o primeiro mês disponível
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao carregar meses para o dropdown:', error);
+      // Mesmo em caso de erro, adicionamos uma opção padrão
+      mesSelect.innerHTML = '<option value="">Todos os meses</option>';
+      // Adiciona todas as opções de meses padrão
+      const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+      meses.forEach(mes => {
+        const option = document.createElement("option");
+        option.value = mes;
+        option.textContent = mes;
+        mesSelect.appendChild(option);
+      });
+    });
+}
+
+// Carrega os anos e meses quando a página de seleção de gerência é carregada
+document.addEventListener("page-load:selecaoGerencia", function () {
+  const anoSelect = document.getElementById('selecaoGerenciaAno');
+  const mesSelect = document.getElementById('selecaoGerenciaMes');
+
+  // Carrega os anos únicos primeiro
+  carregarAnosDropdown(anoSelect);
+
+  // Depois carrega os meses com base no ano selecionado (ou todos se nenhum ano estiver selecionado)
+  if (anoSelect.value) {
+    carregarMesesDropdown(mesSelect, anoSelect.value);
+  } else {
+    carregarMesesDropdown(mesSelect);
+  }
+
+  anoSelect.addEventListener('change', function() {
+    const anoSelecionado = this.value;
+
+    if (anoSelecionado) {
+      // Se um ano está selecionado, carrega apenas os meses desse ano
+      carregarMesesDropdown(mesSelect, anoSelecionado);
+    } else {
+      // Se nenhum ano está selecionado, carrega todos os meses
+      carregarMesesDropdown(mesSelect);
+    }
+  });
+});
+
+function carregarAnosDropdown(anoSelect) {
+  // Primeiro, vamos carregar os anos/meses únicos da tabela PLANEJAMENTO_HE com base na diretoria do aprovador
+  fetch('/planejamento-he/api/meses-anos-unicos-aprovador')
     .then(response => response.json())
     .then(data => {
       if (data.erro) {

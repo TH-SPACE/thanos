@@ -1074,6 +1074,8 @@
             // Carrega gerências quando acessa a tela de seleção
             document.addEventListener('page-load:selecaoGerencia', function () {
                 inicializarMesAtual();
+                // Carrega anos no dropdown para a tela de seleção de gerência
+                carregarAnosDropdown(document.getElementById("selecaoGerenciaAno"));
                 carregarGerenciasParaSelecao();
             });
 

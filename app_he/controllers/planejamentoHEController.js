@@ -1844,10 +1844,10 @@ exports.obterMesesAnosUnicosAprovador = async (req, res) => {
   try {
     // Consulta para obter meses e anos únicos da base para a tela de aprovação
     const query = `
-      SELECT DISTINCT MES, ANO
+      SELECT DISTINCT MES AS mes, ANO AS ano
       FROM PLANEJAMENTO_HE
       WHERE (DIRETORIA = ? OR DIRETORIA IS NULL)
-      ORDER BY ANO DESC, FIELD(MES, 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      ORDER BY ano DESC, FIELD(mes, 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')`;
 
     const [rows] = await conexao.query(query, [diretoria]);
@@ -1857,13 +1857,13 @@ exports.obterMesesAnosUnicosAprovador = async (req, res) => {
     const anosUnicos = new Set();
 
     rows.forEach(row => {
-      if (row.ANO) {
-        anosUnicos.add(row.ANO);
-        if (!mesesPorAno[row.ANO]) {
-          mesesPorAno[row.ANO] = new Set();
+      if (row.ano) {
+        anosUnicos.add(row.ano);
+        if (!mesesPorAno[row.ano]) {
+          mesesPorAno[row.ano] = new Set();
         }
-        if (row.MES) {
-          mesesPorAno[row.ANO].add(row.MES);
+        if (row.mes) {
+          mesesPorAno[row.ano].add(row.mes);
         }
       }
     });
