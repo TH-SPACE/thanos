@@ -651,7 +651,7 @@
 
                     <!-- Filtros -->
                     <div class="row mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="selecaoGerenciaMes">Mês de Referência</label>
                             <select id="selecaoGerenciaMes" class="form-control">
                                 <option value="Janeiro">Janeiro</option>
@@ -668,7 +668,13 @@
                                 <option value="Dezembro">Dezembro</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <label for="selecaoGerenciaAno">Ano de Referência</label>
+                            <select id="selecaoGerenciaAno" class="form-control">
+                                <option value="">Todos os anos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <label for="selecaoGerenciaStatus">Status</label>
                             <select id="selecaoGerenciaStatus" class="form-control">
                                 <option value="PENDENTE">Pendente</option>
@@ -1073,6 +1079,10 @@
 
             // Evento de mudança nos filtros
             document.getElementById('selecaoGerenciaMes').addEventListener('change', function () {
+                carregarGerenciasParaSelecao();
+            });
+
+            document.getElementById('selecaoGerenciaAno').addEventListener('change', function () {
                 carregarGerenciasParaSelecao();
             });
 

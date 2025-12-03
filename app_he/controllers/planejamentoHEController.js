@@ -1829,3 +1829,63 @@ exports.obterMesesAnosUnicos = async (req, res) => {
     res.status(500).json({ erro: "Erro ao carregar meses e anos." });
   }
 };
+
+/**
+ * Retorna meses e anos únicos para a tela de seleção de gerência
+ *
+ * Esta função é semelhante à obterMesesAnosUnicos mas é usada especificamente
+ * para a tela de seleção de gerência (Tratar Solicitações), considerando
+ * todas as solicitações da diretoria do aprovador.
+ */
+exports.obterMesesAnosUnicosAprovador = async (req, res) => {
+  const conexao = db.mysqlPool;
+  const diretoria = req.diretoriaHE;
+
+  try {
+    // Consulta para obter meses e anos únicos da base para a tela de aprovação
+    const query = `
+      SELECT DISTINCT MES, ANO
+      FROM PLANEJAMENTO_HE
+      WHERE (DIRETORIA = ? OR DIRETORIA IS NULL)
+      ORDER BY ANO DESC, FIELD(MES, 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')`;
+
+    const [rows] = await conexao.query(query, [diretoria]);
+
+    // Agrupa os meses por ano para facilitar o uso no frontend
+    const mesesPorAno = {};
+    const anosUnicos = new Set();
+
+    rows.forEach(row => {
+      if (row.ANO) {
+        anosUnicos.add(row.ANO);
+        if (!mesesPorAno[row.ANO]) {
+          mesesPorAno[row.ANO] = new Set();
+        }
+        if (row.MES) {
+          mesesPorAno[row.ANO].add(row.MES);
+        }
+      }
+    });
+
+    // Converte os sets para arrays
+    const resultado = {
+      anos: Array.from(anosUnicos).sort().reverse(), // Ordena do mais recente para o mais antigo
+      mesesPorAno: {}
+    };
+
+    for (const [ano, meses] of Object.entries(mesesPorAno)) {
+      resultado.mesesPorAno[ano] = Array.from(meses).sort((a, b) => {
+        // Ordena meses na ordem cronológica
+        const ordemMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        return ordemMeses.indexOf(a) - ordemMeses.indexOf(b);
+      });
+    }
+
+    res.json(resultado);
+  } catch (error) {
+    console.error('[ERRO] Erro ao obter meses e anos únicos para aprovação:', error);
+    res.status(500).json({ erro: "Erro ao carregar meses e anos para aprovação." });
+  }
+};

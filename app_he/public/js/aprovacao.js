@@ -103,9 +103,15 @@ function carregarAnosDropdown(anoSelect) {
 
 function carregarGerenciasParaSelecao() {
   const mesSelecionado = document.getElementById("selecaoGerenciaMes").value;
+  const anoSelecionado = document.getElementById("selecaoGerenciaAno").value;
   const statusSelecionado = document.getElementById(
     "selecaoGerenciaStatus"
   ).value;
+
+  // Preenche o dropdown de anos se ainda não estiver preenchido
+  if (anoSelecionado === '') {
+    carregarAnosDropdown(document.getElementById("selecaoGerenciaAno"));
+  }
 
   fetch("/planejamento-he/api/gerentes")
     .then((r) => r.json())
@@ -132,6 +138,9 @@ function carregarGerenciasParaSelecao() {
         )}&mes=${encodeURIComponent(mesSelecionado)}`;
         if (statusSelecionado) {
           url += `&status=${statusSelecionado}`;
+        }
+        if (anoSelecionado) {
+          url += `&ano=${anoSelecionado}`;
         }
 
         // Busca as solicitações filtradas
@@ -168,7 +177,7 @@ function carregarGerenciasParaSelecao() {
                                     </div>
                                     <div class="gerencia-list-details">
                                         <div class="gerencia-list-name">${gerente}</div>
-                                        <div class="gerencia-list-meta">Mês de ${mesSelecionado}${
+                                        <div class="gerencia-list-meta">Mês de ${mesSelecionado}${anoSelecionado ? `/${anoSelecionado}` : ''}${
                 statusSelecionado ? ` - ${statusTexto}` : ""
               }</div>
                                     </div>
@@ -207,7 +216,7 @@ function carregarGerenciasParaSelecao() {
                 const statusMsg = statusSelecionado
                   ? `com status "${statusSelecionado}"`
                   : "";
-                list.innerHTML = `<p class="text-center text-muted">Nenhuma gerência com solicitações ${statusMsg} em ${mesSelecionado}.</p>`;
+                list.innerHTML = `<p class="text-center text-muted">Nenhuma gerência com solicitações ${statusMsg} em ${mesSelecionado}${anoSelecionado ? `/${anoSelecionado}` : ''}.</p>`;
               }
             }, 1000);
           });

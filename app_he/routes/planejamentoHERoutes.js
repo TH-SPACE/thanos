@@ -84,6 +84,14 @@ router.get("/api/minhas-solicitacoes", heAuth.requireHEAuth, heDiretoriaAuth.req
 router.get("/api/meses-anos-unicos", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.obterMesesAnosUnicos);
 
 /**
+ * GET /api/meses-anos-unicos-aprovador
+ * Retorna os meses e anos únicos das solicitações para a tela de aprovações
+ *
+ * Middlewares: requireHEAuth, requireAprovadorComDiretoria
+ */
+router.get("/api/meses-anos-unicos-aprovador", heAuth.requireHEAuth, heDiretoriaAuth.requireAprovadorComDiretoria, planejamentoHE.obterMesesAnosUnicosAprovador);
+
+/**
  * POST /editar
  * Edita uma solicitação existente (apenas se STATUS = PENDENTE)
  *
