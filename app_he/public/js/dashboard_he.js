@@ -203,11 +203,50 @@ document.addEventListener("DOMContentLoaded", () => {
       // Define o mês atual como padrão após atualizar os meses
       setTimeout(() => {
         const mesAtual = getMesAtual();
+        const anoAtual = getAnoAtual();
         const mesSelect = document.getElementById("dashboardFiltroMes");
-        mesSelect.value = mesAtual;
 
-        // Carrega as solicitações com os filtros padrão
-        carregarDashboard(mesAtual, filtroGerente.value, anoAtual);
+        // Verifica se o mês/ano atual existe nos dados disponíveis
+        const mesAnoAtualDisponivel = dados.anos.includes(anoAtual.toString()) &&
+                                     dados.mesesPorAno[anoAtual] &&
+                                     dados.mesesPorAno[anoAtual].includes(mesAtual);
+
+        if (mesAnoAtualDisponivel) {
+          // Se o mês/ano atual está disponível, define como padrão
+          mesSelect.value = mesAtual;
+        } else {
+          // Se não, define o mês mais recente disponível como padrão
+          let mesMaisRecente = "";
+          let anoMaisRecente = "";
+
+          // Percorre os anos em ordem decrescente (do mais recente para o mais antigo)
+          for (const ano of dados.anos.sort((a, b) => b - a)) {
+            if (dados.mesesPorAno[ano] && dados.mesesPorAno[ano].length > 0) {
+              // Encontra o mês mais recente dentro do ano
+              const mesesDisponiveis = dados.mesesPorAno[ano].sort((a, b) => {
+                const ordemMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                return ordemMeses.indexOf(b) - ordemMeses.indexOf(a); // Ordem reversa (mais recente primeiro)
+              });
+
+              if (mesesDisponiveis.length > 0) {
+                mesMaisRecente = mesesDisponiveis[0];
+                anoMaisRecente = ano;
+                break; // Sai do loop ao encontrar o ano e mês mais recentes
+              }
+            }
+          }
+
+          // Define o mês e ano mais recentes disponíveis como padrão
+          if (mesMaisRecente && anoMaisRecente) {
+            mesSelect.value = mesMaisRecente;
+            document.getElementById("dashboardFiltroAno").value = anoMaisRecente;
+          }
+        }
+
+        // Carrega o dashboard com os filtros padrão
+        const anoFiltro = document.getElementById("dashboardFiltroAno").value || anoAtual;
+        carregarDashboard(mesSelect.value, filtroGerente.value, anoFiltro);
       }, 200);
 
     } catch (error) {
