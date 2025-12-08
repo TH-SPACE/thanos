@@ -56,14 +56,16 @@ function formatarMoeda(valor) {
  * Carrega e exibe o comparativo de horas executadas vs autorizadas por gerente
  *
  * @param {string} mes - Mês para filtrar (obrigatório)
+ * @param {string} ano - Ano para filtrar (opcional)
  */
-function carregarComparativoGastoPrev(mes) {
+function carregarComparativoGastoPrev(mes, ano = null) {
   const container = document.getElementById("tabelaComparativoFrequencia");
   container.innerHTML =
     '<p class="text-center text-muted">Carregando comparativo...</p>';
 
   const params = new URLSearchParams();
   params.append("mes", mes);
+  if (ano && ano !== "") params.append("ano", ano);
 
   const url = `/planejamento-he/api/comparativo-gasto-prev?${params.toString()}`;
 
@@ -87,7 +89,7 @@ function carregarComparativoGastoPrev(mes) {
       container.innerHTML = criarTabelaComparativo(dados);
 
       // Carregar também a tabela de valores monetários
-      carregarComparativoGastoPrevValor(mes);
+      carregarComparativoGastoPrevValor(mes, ano);
     })
     .catch((erro) => {
       console.error("Erro ao carregar comparativo de Gasto vs Previsto:", erro);
@@ -99,14 +101,16 @@ function carregarComparativoGastoPrev(mes) {
  * Carrega e exibe o comparativo de valores monetários executados vs autorizados por gerente
  *
  * @param {string} mes - Mês para filtrar (obrigatório)
+ * @param {string} ano - Ano para filtrar (opcional)
  */
-function carregarComparativoGastoPrevValor(mes) {
+function carregarComparativoGastoPrevValor(mes, ano = null) {
   const container = document.getElementById("tabelaComparativoFrequenciaValor");
   container.innerHTML =
     '<p class="text-center text-muted">Carregando comparativo monetário...</p>';
 
   const params = new URLSearchParams();
   params.append("mes", mes);
+  if (ano && ano !== "") params.append("ano", ano);
 
   const url = `/planejamento-he/api/comparativo-gasto-prev-valor?${params.toString()}`;
 
@@ -573,46 +577,62 @@ function criarTabelaComparativoValor(dados) {
  */
 function inicializarPainelGastoPrev() {
   const mesSelect = document.getElementById("filtroMesComparativo");
+  const anoSelect = document.getElementById("filtroAnoComparativo");
 
   // Busca os meses disponíveis na tabela de frequência
   fetch("/planejamento-he/api/gasto-prev/meses-disponiveis")
     .then((res) => res.json())
     .then((mesesDisponiveis) => {
-      // Limpa o select antes de popular
+      // Limpa os selects antes de popular
       mesSelect.innerHTML = "";
+      anoSelect.innerHTML = '<option value="">Todos os anos</option>';
 
       if (mesesDisponiveis && mesesDisponiveis.length > 0) {
-        // Popula o select com os meses retornados pela API
+        // Agrupa os meses por ano para preencher o dropdown de anos
+        const anos = [...new Set(mesesDisponiveis.map(m => m.ano))];
+        anos.forEach(ano => {
+          const option = document.createElement("option");
+          option.value = ano;
+          option.textContent = ano;
+          anoSelect.appendChild(option);
+        });
+
+        // Popula o select de meses com os meses retornados pela API
         mesSelect.innerHTML = mesesDisponiveis
-          .map((m) => `<option value="${m.nome}">${m.nome}</option>`)
+          .map((m) => `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`)
           .join("");
 
-        // Lógica para definir o mês padrão
+        // Lógica para definir o mês e ano padrão
         const mesAtual = getMesAtualPortugues();
         const anoAtual = new Date().getFullYear();
 
         // Verifica se o mês/ano atual existe na lista de meses disponíveis
-        const mesAtualDisponivel = mesesDisponiveis.find(
+        const mesAnoAtualDisponivel = mesesDisponiveis.find(
           (m) => m.nome === mesAtual && m.ano === anoAtual
         );
 
-        if (mesAtualDisponivel) {
-          // Se o mês atual existe, define ele como padrão
+        if (mesAnoAtualDisponivel) {
+          // Se o mês/ano atual existe, define eles como padrão
           mesSelect.value = mesAtual;
+          anoSelect.value = anoAtual;
         } else {
           // Se não, define o mais recente da lista (que é o primeiro) como padrão
           mesSelect.value = mesesDisponiveis[0].nome;
+          anoSelect.value = mesesDisponiveis[0].ano;
         }
       } else {
         mesSelect.innerHTML =
           '<option value="" disabled>Nenhum mês com dados</option>';
+        anoSelect.innerHTML =
+          '<option value="" disabled>Nenhum ano com dados</option>';
       }
-      // Carrega os dados iniciais com o mês padrão
-      carregarComparativoGastoPrev(mesSelect.value);
+      // Carrega os dados iniciais com o mês e ano padrão
+      carregarComparativoGastoPrev(mesSelect.value, anoSelect.value);
     })
     .catch((err) => {
       console.error("Erro ao buscar meses disponíveis:", err);
       mesSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+      anoSelect.innerHTML = '<option value="">Erro ao carregar</option>';
     });
 
   // Inicializa o container da nova tabela de valores
@@ -629,23 +649,107 @@ function inicializarPainelGastoPrev() {
     .getElementById("filtroMesComparativo")
     .addEventListener("change", function () {
       const mes = this.value;
-      carregarComparativoGastoPrev(mes);
-      carregarComparativoGastoPrevValor(mes);
+      const ano = document.getElementById("filtroAnoComparativo").value;
+      carregarComparativoGastoPrev(mes, ano);
+      carregarComparativoGastoPrevValor(mes, ano);
+    });
+
+  // Event listener para o dropdown de ano
+  document
+    .getElementById("filtroAnoComparativo")
+    .addEventListener("change", function () {
+      const ano = this.value;
+      const mes = document.getElementById("filtroMesComparativo").value;
+
+      // Atualiza o dropdown de meses para mostrar apenas os meses do ano selecionado
+      atualizarMesesDropdown(ano);
+
+      carregarComparativoGastoPrev(mes, ano);
+      carregarComparativoGastoPrevValor(mes, ano);
     });
 
   // Botão para limpar filtros
   document
     .getElementById("btnLimparFiltrosComparativo")
     .addEventListener("click", function () {
-      const mesSelect = document.getElementById("filtroMesComparativo");
-      // Pega o primeiro <option> que é o mês mais recente disponível
-      const mesPadrao =
-        mesSelect.options.length > 0 ? mesSelect.options[0].value : "";
+      fetch("/planejamento-he/api/gasto-prev/meses-disponiveis")
+        .then((res) => res.json())
+        .then((mesesDisponiveis) => {
+          const mesSelect = document.getElementById("filtroMesComparativo");
+          const anoSelect = document.getElementById("filtroAnoComparativo");
 
-      // Define o valor para o mês padrão (o mais recente da lista)
-      mesSelect.value = mesPadrao;
-      carregarComparativoGastoPrev(mesPadrao);
-      carregarComparativoGastoPrevValor(mesPadrao);
+          // Limpa os selects e os re-popula
+          mesSelect.innerHTML = "";
+          anoSelect.innerHTML = '<option value="">Todos os anos</option>';
+
+          if (mesesDisponiveis && mesesDisponiveis.length > 0) {
+            // Agrupa os meses por ano para preencher o dropdown de anos
+            const anos = [...new Set(mesesDisponiveis.map(m => m.ano))];
+            anos.forEach(ano => {
+              const option = document.createElement("option");
+              option.value = ano;
+              option.textContent = ano;
+              anoSelect.appendChild(option);
+            });
+
+            // Popula o select de meses
+            mesSelect.innerHTML = mesesDisponiveis
+              .map((m) => `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`)
+              .join("");
+
+            // Define o mês e ano padrão (o mais recente da lista)
+            const mesPadrao = mesesDisponiveis[0].nome;
+            const anoPadrao = mesesDisponiveis[0].ano;
+            mesSelect.value = mesPadrao;
+            anoSelect.value = anoPadrao;
+
+            carregarComparativoGastoPrev(mesPadrao, anoPadrao);
+            carregarComparativoGastoPrevValor(mesPadrao, anoPadrao);
+          } else {
+            mesSelect.innerHTML = '<option value="" disabled>Nenhum mês com dados</option>';
+            anoSelect.innerHTML = '<option value="" disabled>Nenhum ano com dados</option>';
+          }
+        })
+        .catch((err) => {
+          console.error("Erro ao buscar meses disponíveis:", err);
+        });
+    });
+}
+
+/**
+ * Atualiza o dropdown de meses para mostrar apenas os meses do ano selecionado
+ * @param {string} ano - Ano selecionado
+ */
+function atualizarMesesDropdown(ano) {
+  const mesSelect = document.getElementById("filtroMesComparativo");
+  const anoSelect = document.getElementById("filtroAnoComparativo");
+
+  // Busca novamente os meses disponíveis para atualizar o dropdown
+  fetch("/planejamento-he/api/gasto-prev/meses-disponiveis")
+    .then((res) => res.json())
+    .then((mesesDisponiveis) => {
+      if (mesesDisponiveis && mesesDisponiveis.length > 0) {
+        if (ano && ano !== "") {
+          // Filtra os meses apenas para o ano selecionado
+          const mesesDoAno = mesesDisponiveis.filter(m => m.ano === ano);
+          mesSelect.innerHTML = mesesDoAno
+            .map((m) => `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}</option>`)
+            .join("");
+
+          // Define o primeiro mês do ano como padrão
+          if (mesesDoAno.length > 0) {
+            mesSelect.value = mesesDoAno[0].nome;
+          }
+        } else {
+          // Se nenhum ano está selecionado, mostra todos os meses
+          mesSelect.innerHTML = mesesDisponiveis
+            .map((m) => `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`)
+            .join("");
+        }
+      }
+    })
+    .catch((err) => {
+      console.error("Erro ao atualizar meses disponíveis:", err);
     });
 }
 
