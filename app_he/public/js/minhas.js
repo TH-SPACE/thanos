@@ -287,11 +287,50 @@ async function carregarAnosMesesDropdowns() {
     // Define o mês atual como padrão após atualizar os meses
     setTimeout(() => {
       const mesAtual = getMesAtualPortugues();
+      const anoAtual = getAnoAtual();
       const mesSelect = document.getElementById("filtroMes");
-      mesSelect.value = mesAtual;
+
+      // Verifica se o mês/ano atual existe nos dados disponíveis
+      const mesAnoAtualDisponivel = dados.anos.includes(anoAtual.toString()) &&
+                                   dados.mesesPorAno[anoAtual] &&
+                                   dados.mesesPorAno[anoAtual].includes(mesAtual);
+
+      if (mesAnoAtualDisponivel) {
+        // Se o mês/ano atual está disponível, define como padrão
+        mesSelect.value = mesAtual;
+      } else {
+        // Se não, define o mês mais recente disponível como padrão
+        let mesMaisRecente = "";
+        let anoMaisRecente = "";
+
+        // Percorre os anos em ordem decrescente (do mais recente para o mais antigo)
+        for (const ano of dados.anos.sort((a, b) => b - a)) {
+          if (dados.mesesPorAno[ano] && dados.mesesPorAno[ano].length > 0) {
+            // Encontra o mês mais recente dentro do ano
+            const mesesDisponiveis = dados.mesesPorAno[ano].sort((a, b) => {
+              const ordemMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                                  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+              return ordemMeses.indexOf(b) - ordemMeses.indexOf(a); // Ordem reversa (mais recente primeiro)
+            });
+
+            if (mesesDisponiveis.length > 0) {
+              mesMaisRecente = mesesDisponiveis[0];
+              anoMaisRecente = ano;
+              break; // Sai do loop ao encontrar o ano e mês mais recentes
+            }
+          }
+        }
+
+        // Define o mês e ano mais recentes disponíveis como padrão
+        if (mesMaisRecente && anoMaisRecente) {
+          mesSelect.value = mesMaisRecente;
+          document.getElementById("filtroAno").value = anoMaisRecente;
+        }
+      }
 
       // Carrega as solicitações com os filtros padrão
-      carregarMinhasSolicitacoes("", mesAtual, anoAtual);
+      const anoFiltro = document.getElementById("filtroAno").value || anoAtual;
+      carregarMinhasSolicitacoes("", mesSelect.value, anoFiltro);
     }, 200);
 
   } catch (error) {
