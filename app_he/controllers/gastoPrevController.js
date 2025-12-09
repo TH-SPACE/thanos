@@ -912,7 +912,7 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
 
     if (!mes) {
         return res.status(400).json({
-            erro: "Parâmetro 'mes' é obrigatório para gerar o comparativo monetário.",
+            erro: "Parâmetro 'mes' é obrigatório para gerar o comparativo.",
         });
     }
 
@@ -966,7 +966,7 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
     `;
         let paramsExecutado = [mesNumero];
 
-        // Adiciona filtro por gerente se especificado (agora usando o GERENTE_IMEDIATO da tabela FREQUENCIA)
+        // Adiciona filtro por gerente se especificado
         if (gerente && gerente !== "") {
             queryExecutado += ` AND ${colunas[3]} = ?`;
             paramsExecutado.push(gerente);
@@ -981,10 +981,9 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
         );
 
         // Obtemos todas as horas autorizadas (da tabela PLANEJAMENTO_HE) - agrupadas por colaborador e gerente
-        // Mas mantemos o COLABORADOR para associar com os dados da FREQUENCIA
         let queryAutorizado = `
       SELECT
-        GERENTE as planejamento_gerente,
+        GERENTE as gerente,
         COLABORADOR as colaborador,
         CARGO,
         SUM(CASE WHEN TIPO_HE = '50%' THEN HORAS ELSE 0 END) as autorizado_50,
@@ -996,7 +995,7 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
     `;
         const paramsAutorizado = [mes, diretoria];
 
-        // Adiciona filtro por gerente se especificado (neste caso, filtraríamos pelo gerente do planejamento)
+        // Adiciona filtro por gerente se especificado
         if (gerente && gerente !== "") {
             queryAutorizado += ` AND GERENTE = ?`;
             paramsAutorizado.push(gerente);
@@ -1037,10 +1036,10 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
                 mapaExecutado[key] = {
                     executado_50: 0,
                     executado_100: 0,
+                    gerente_divisao: item.gerente_divisao,
                     gerente: item.gerente,
                     colaborador: item.colaborador,
                     cargo: item.cargo,
-                    gerente_divisao: item.gerente_divisao,
                 };
             }
 
@@ -1058,8 +1057,8 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
                 parseFloat(item.executado_100 || 0) * valorHora100;
             mapaExecutado[key].gerente = item.gerente;
             mapaExecutado[key].colaborador = item.colaborador;
-            mapaExecutado[key].cargo = item.cargo;
             mapaExecutado[key].gerente_divisao = item.gerente_divisao;
+            mapaExecutado[key].cargo = item.cargo;
         }
 
         const mapaAutorizado = {};
@@ -1076,7 +1075,7 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
                 };
             }
 
-            // Converter horas para valores monetários diretamente aqui
+            // Converter horas para valores monetários
             const valorHora50 = valoresPorCargo[item.CARGO]
                 ? valoresPorCargo[item.CARGO]["50%"]
                 : 0;
@@ -1110,8 +1109,7 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
             const nao_aut_50 = Math.max(0, exec.executado_50 - aut.autorizado_50);
             const nao_aut_100 = Math.max(0, exec.executado_100 - aut.autorizado_100);
 
-            // Lógica corrigida: O valor autorizado é a parte do executado que foi coberta.
-            // Valor Autorizado = Valor Executado - Valor Não Autorizado
+            // Apenas autorizações do mesmo colaborador podem cobrir horas executadas dele
             const autorizado_50 = exec.executado_50 - nao_aut_50;
             const autorizado_100 = exec.executado_100 - nao_aut_100;
 
@@ -1127,10 +1125,11 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
                 resultado.push({
                     colaborador: colaboradorFinal,
                     gerente: gerenteFinal,
+                    cargo: cargoFinal,
                     executado_50: exec.executado_50,
                     executado_100: exec.executado_100,
-                    autorizado_50: Math.max(0, autorizado_50), // Garante que não seja negativo
-                    autorizado_100: Math.max(0, autorizado_100), // Garante que não seja negativo
+                    autorizado_50: Math.max(0, autorizado_50),
+                    autorizado_100: Math.max(0, autorizado_100),
                     nao_autorizado_50: nao_aut_50,
                     nao_autorizado_100: nao_aut_100,
                     total_executado: total_executado,
@@ -1147,12 +1146,12 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
         res.json(resultado);
     } catch (error) {
         console.error(
-            `[ERRO] Usuário: ${user?.nome}, IP: ${ip}, Ação: Erro ao gerar comparativo monetário por Colaborador.`,
+            `[ERRO] Usuário: ${user?.nome}, IP: ${ip}, Ação: Erro ao gerar comparativo monetário de Gasto vs Previsto por Colaborador.`,
             error
         );
         res
             .status(500)
-            .json({ erro: "Erro interno ao gerar o comparativo monetário por Colaborador." });
+            .json({ erro: "Erro interno ao gerar o comparativo monetário de Gasto vs Previsto por Colaborador." });
     }
 };
 
