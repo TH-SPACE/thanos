@@ -1137,6 +1137,10 @@
                         const menuAprovacoes = document.getElementById('menuAprovacoes');
                         const menuColaboradores = document.getElementById('menuColaboradores');
                         const menuGerencia = document.getElementById('menuGerencia');
+                        const menuGastoPrev = document.getElementById('menuGastoPrev'); // Adiciona referência ao menu Gasto vs Previsto
+                        const resumoHE = document.getElementById('resumoHE'); // Adiciona referência à div de resumo financeiro
+                        const detalhesExecutadoContainer = document.getElementById('detalhesExecutadoContainer'); // Adiciona referência à div de detalhes de horas executadas
+                        const resumoFinanceiroAprovacao = document.getElementById('resumoFinanceiroAprovacao'); // Adiciona referência à div de resumo financeiro na tela de aprovações
                         const painelAdmBtn = document.getElementById('painelAdmBtn');
 
                         // Mostra PAINEL ADM apenas para quem tem perfil ADM
@@ -1148,7 +1152,19 @@
                             menuAprovacoes.style.display = 'flex';
                             menuColaboradores.style.display = 'flex';
                             menuGerencia.style.display = 'flex';
-                            menuGastoPrev.style.display = 'flex'; // Mostra o menu de Gasto vs Previsto para aprovadores
+
+                            // Mostra o menu de Gasto vs Previsto apenas para aprovadores que não sejam do perfil HE_IMPLANTACAO
+                            if (perfil.includes('HE_IMPLANTACAO')) {
+                                menuGastoPrev.style.display = 'none'; // Oculta o menu de Gasto vs Previsto para implantacao
+                                if (resumoHE) resumoHE.style.display = 'none'; // Oculta o resumo financeiro para implantacao
+                                if (detalhesExecutadoContainer) detalhesExecutadoContainer.style.display = 'none'; // Oculta os detalhes de horas executadas para implantacao
+                                if (resumoFinanceiroAprovacao) resumoFinanceiroAprovacao.style.display = 'none'; // Oculta o resumo financeiro na tela de aprovações para implantacao
+                            } else {
+                                menuGastoPrev.style.display = 'flex'; // Mostra o menu de Gasto vs Previsto para outros aprovadores
+                                if (resumoHE) resumoHE.style.display = 'block'; // Mostra o resumo financeiro para outros aprovadores
+                                if (detalhesExecutadoContainer) detalhesExecutadoContainer.style.display = 'block'; // Mostra os detalhes de horas executadas para outros aprovadores
+                                if (resumoFinanceiroAprovacao) resumoFinanceiroAprovacao.style.display = 'block'; // Mostra o resumo financeiro na tela de aprovações para outros aprovadores
+                            }
 
                             // Inicializa o mês antes de mostrar a tela
                             inicializarMesAtual();
@@ -1156,6 +1172,20 @@
                             showPage('selecaoGerencia');
                             // Carrega as gerências com o mês já setado
                             setTimeout(() => carregarGerenciasParaSelecao(), 100);
+                        } else if (perfil.includes('HE_IMPLANTACAO')) {
+                            // Oculta o menu de Gasto vs Previsto para implantacao que não são aprovadores
+                            menuGastoPrev.style.display = 'none';
+                            // Oculta o resumo financeiro para implantacao
+                            if (resumoHE) resumoHE.style.display = 'none';
+                            // Oculta os detalhes de horas executadas para implantacao
+                            if (detalhesExecutadoContainer) detalhesExecutadoContainer.style.display = 'none';
+                            // Oculta o resumo financeiro na tela de aprovações para implantacao
+                            if (resumoFinanceiroAprovacao) resumoFinanceiroAprovacao.style.display = 'none';
+                        } else {
+                            // Para outros perfis que não são HE_APROVADOR nem HE_IMPLANTACAO, mostrar resumo financeiro e detalhes executados
+                            if (resumoHE) resumoHE.style.display = 'block';
+                            if (detalhesExecutadoContainer) detalhesExecutadoContainer.style.display = 'block';
+                            if (resumoFinanceiroAprovacao) resumoFinanceiroAprovacao.style.display = 'block';
                         }
                     })
                     .catch(err => console.error("Erro ao buscar perfil do usuário:", err));
