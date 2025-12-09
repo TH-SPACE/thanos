@@ -628,6 +628,10 @@ function inicializarPainelGastoPrev() {
       }
       // Carrega os dados iniciais com o mês e ano padrão
       carregarComparativoGastoPrev(mesSelect.value, anoSelect.value);
+
+      // Carregar também a nova tabela com os dados iniciais
+      preencherFiltroGerenciaColaborador();
+      carregarComparativoColaborador(mesSelect.value, anoSelect.value);
     })
     .catch((err) => {
       console.error("Erro ao buscar meses disponíveis:", err);
@@ -652,6 +656,10 @@ function inicializarPainelGastoPrev() {
       const ano = document.getElementById("filtroAnoComparativo").value;
       carregarComparativoGastoPrev(mes, ano);
       carregarComparativoGastoPrevValor(mes, ano);
+
+      // Atualizar o filtro de gerência e carregar a nova tabela
+      preencherFiltroGerenciaColaborador();
+      carregarComparativoColaborador(mes, ano);
     });
 
   // Event listener para o dropdown de ano
@@ -666,6 +674,21 @@ function inicializarPainelGastoPrev() {
 
       carregarComparativoGastoPrev(mes, ano);
       carregarComparativoGastoPrevValor(mes, ano);
+
+      // Atualizar o filtro de gerência e carregar a nova tabela
+      preencherFiltroGerenciaColaborador();
+      carregarComparativoColaborador(mes, ano);
+    });
+
+  // Event listener para o filtro de gerência dos colaboradores
+  document
+    .getElementById("filtroGerenciaColaborador")
+    .addEventListener("change", function () {
+      const mes = document.getElementById("filtroMesComparativo").value;
+      const ano = document.getElementById("filtroAnoComparativo").value;
+      const gerente = this.value;
+
+      carregarComparativoColaborador(mes, ano, gerente);
     });
 
   // Botão para limpar filtros
@@ -677,10 +700,12 @@ function inicializarPainelGastoPrev() {
         .then((mesesDisponiveis) => {
           const mesSelect = document.getElementById("filtroMesComparativo");
           const anoSelect = document.getElementById("filtroAnoComparativo");
+          const gerenteSelect = document.getElementById("filtroGerenciaColaborador");
 
           // Limpa os selects e os re-popula
           mesSelect.innerHTML = "";
           anoSelect.innerHTML = '<option value="">Todos os anos</option>';
+          gerenteSelect.innerHTML = '<option value="">Todas as Gerências</option>';
 
           if (mesesDisponiveis && mesesDisponiveis.length > 0) {
             // Agrupa os meses por ano para preencher o dropdown de anos
@@ -705,9 +730,14 @@ function inicializarPainelGastoPrev() {
 
             carregarComparativoGastoPrev(mesPadrao, anoPadrao);
             carregarComparativoGastoPrevValor(mesPadrao, anoPadrao);
+
+            // Atualizar o filtro de gerência e carregar a nova tabela
+            preencherFiltroGerenciaColaborador();
+            carregarComparativoColaborador(mesPadrao, anoPadrao);
           } else {
             mesSelect.innerHTML = '<option value="" disabled>Nenhum mês com dados</option>';
             anoSelect.innerHTML = '<option value="" disabled>Nenhum ano com dados</option>';
+            gerenteSelect.innerHTML = '<option value="">Nenhuma gerência disponível</option>';
           }
         })
         .catch((err) => {
@@ -896,6 +926,655 @@ function alterarVisualizacao(tipo) {
   } else if (tipo === "valores") {
     titulo.innerHTML =
       '<i class="fas fa-dollar-sign"></i> <span>Visão por Gerência (Valores em R$)</span>';
+    tabelaHoras.style.display = "none";
+    tabelaValores.style.display = "block";
+
+    // Atualiza os botões para refletir o estado ativo
+    btnValores.classList.add("active");
+    btnValores.classList.remove("btn-outline-primary");
+    btnValores.classList.add("btn-outline-success");
+    btnHoras.classList.remove("active");
+    btnHoras.classList.remove("btn-outline-success");
+    btnHoras.classList.add("btn-outline-primary");
+  }
+}
+
+/**
+ * Preenche o dropdown de filtro de gerência com as gerências disponíveis
+ */
+function preencherFiltroGerenciaColaborador() {
+  const filtroSelect = document.getElementById("filtroGerenciaColaborador");
+
+  // Busca as gerências disponíveis na tabela de frequência
+  const mes = document.getElementById("filtroMesComparativo").value;
+  const ano = document.getElementById("filtroAnoComparativo").value;
+
+  if (!mes) {
+    filtroSelect.innerHTML = '<option value="">Selecione um mês primeiro</option>';
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.append("mes", mes);
+  if (ano && ano !== "") params.append("ano", ano);
+
+  const url = `/planejamento-he/api/gerentes-disponiveis?${params.toString()}`;
+
+  fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
+      return response.json();
+    })
+    .then((dados) => {
+      if (dados.erro) {
+        filtroSelect.innerHTML = '<option value="">Erro ao carregar gerentes</option>';
+        return;
+      }
+
+      if (!Array.isArray(dados) || dados.length === 0) {
+        filtroSelect.innerHTML = '<option value="">Nenhuma gerência encontrada</option>';
+        return;
+      }
+
+      // Adiciona as opções ao dropdown
+      filtroSelect.innerHTML = '<option value="">Todas as Gerências</option>';
+      dados.forEach((gerente) => {
+        const option = document.createElement("option");
+        option.value = gerente.gerente;
+        option.textContent = gerente.gerente;
+        filtroSelect.appendChild(option);
+      });
+    })
+    .catch((erro) => {
+      console.error("Erro ao carregar gerências disponíveis:", erro);
+      filtroSelect.innerHTML = '<option value="">Erro ao carregar gerências</option>';
+    });
+}
+
+/**
+ * Carrega e exibe o comparativo de horas executadas vs autorizadas por colaborador
+ *
+ * @param {string} mes - Mês para filtrar (obrigatório)
+ * @param {string} ano - Ano para filtrar (opcional)
+ * @param {string} gerente - Gerente para filtrar (opcional)
+ */
+function carregarComparativoColaborador(mes, ano = null, gerente = null) {
+  const container = document.getElementById("tabelaComparativoColaborador");
+  container.innerHTML =
+    '<p class="text-center text-muted">Carregando comparativo por colaborador...</p>';
+
+  const params = new URLSearchParams();
+  params.append("mes", mes);
+  if (ano && ano !== "") params.append("ano", ano);
+  if (gerente && gerente !== "") params.append("gerente", gerente);
+
+  const url = `/planejamento-he/api/comparativo-gasto-prev-colaborador?${params.toString()}`;
+
+  fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
+      return response.json();
+    })
+    .then((dados) => {
+      if (dados.erro) {
+        container.innerHTML = `<div class="alert alert-danger">${dados.erro}</div>`;
+        return;
+      }
+
+      if (!Array.isArray(dados) || dados.length === 0) {
+        container.innerHTML =
+          '<p class="text-center text-muted">Nenhum dado encontrado para o filtro selecionado.</p>';
+        return;
+      }
+
+      container.innerHTML = criarTabelaComparativoColaborador(dados);
+
+      // Carregar também a tabela de valores monetários
+      carregarComparativoColaboradorValor(mes, ano, gerente);
+    })
+    .catch((erro) => {
+      console.error("Erro ao carregar comparativo de Gasto vs Previsto por Colaborador:", erro);
+      container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados por colaborador. Tente novamente.</div>`;
+    });
+}
+
+/**
+ * Carrega e exibe o comparativo de valores monetários executados vs autorizados por colaborador
+ *
+ * @param {string} mes - Mês para filtrar (obrigatório)
+ * @param {string} ano - Ano para filtrar (opcional)
+ * @param {string} gerente - Gerente para filtrar (opcional)
+ */
+function carregarComparativoColaboradorValor(mes, ano = null, gerente = null) {
+  const container = document.getElementById("tabelaComparativoColaboradorValor");
+  container.innerHTML =
+    '<p class="text-center text-muted">Carregando comparativo monetário por colaborador...</p>';
+
+  const params = new URLSearchParams();
+  params.append("mes", mes);
+  if (ano && ano !== "") params.append("ano", ano);
+  if (gerente && gerente !== "") params.append("gerente", gerente);
+
+  const url = `/planejamento-he/api/comparativo-gasto-prev-colaborador-valor?${params.toString()}`;
+
+  fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
+      return response.json();
+    })
+    .then((dados) => {
+      if (dados.erro) {
+        container.innerHTML = `<div class="alert alert-danger">${dados.erro}</div>`;
+        return;
+      }
+
+      if (!Array.isArray(dados) || dados.length === 0) {
+        container.innerHTML =
+          '<p class="text-center text-muted">Nenhum dado monetário encontrado para o filtro selecionado.</p>';
+        return;
+      }
+
+      container.innerHTML = criarTabelaComparativoColaboradorValor(dados);
+    })
+    .catch((erro) => {
+      console.error("Erro ao carregar comparativo monetário por colaborador:", erro);
+      container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados monetários por colaborador. Tente novamente.</div>`;
+    });
+}
+
+/**
+ * Cria a tabela HTML do comparativo por colaborador
+ *
+ * @param {Array} dados - Array de objetos com os dados comparativos
+ * @returns {string} HTML da tabela
+ */
+function criarTabelaComparativoColaborador(dados) {
+  let totalExecutado50 = 0;
+  let totalExecutado100 = 0;
+  let totalAutorizado50 = 0;
+  let totalAutorizado100 = 0;
+  let totalNaoAutorizado50 = 0;
+  let totalNaoAutorizado100 = 0;
+
+  // Agrupa os dados por gerente de divisão para cálculo de totais
+  const dadosAgrupados = {};
+  dados.forEach((item) => {
+    const gerente = item.gerente || "Sem Gerente";
+    if (!dadosAgrupados[gerente]) {
+      dadosAgrupados[gerente] = {
+        colaboradores: [],
+        total_executado_50: 0,
+        total_executado_100: 0,
+        total_autorizado_50: 0,
+        total_autorizado_100: 0,
+        total_nao_autorizado_50: 0,
+        total_nao_autorizado_100: 0,
+        total_executado: 0,
+        total_autorizado: 0,
+        total_nao_autorizado: 0,
+      };
+    }
+
+    dadosAgrupados[gerente].total_executado_50 += item.executado_50 || 0;
+    dadosAgrupados[gerente].total_executado_100 += item.executado_100 || 0;
+    dadosAgrupados[gerente].total_autorizado_50 += item.autorizado_50 || 0;
+    dadosAgrupados[gerente].total_autorizado_100 += item.autorizado_100 || 0;
+    dadosAgrupados[gerente].total_nao_autorizado_50 += Math.max(
+      0,
+      (item.executado_50 || 0) - (item.autorizado_50 || 0)
+    );
+    dadosAgrupados[gerente].total_nao_autorizado_100 += Math.max(
+      0,
+      (item.executado_100 || 0) - (item.autorizado_100 || 0)
+    );
+    dadosAgrupados[gerente].total_executado += item.total_executado || 0;
+    dadosAgrupados[gerente].total_autorizado += item.total_autorizado || 0;
+    dadosAgrupados[gerente].total_nao_autorizado +=
+      item.total_nao_autorizado || 0;
+    dadosAgrupados[gerente].colaboradores.push(item);
+  });
+
+  let html = `
+    <div class="table-responsive-sm table-responsive-md table-responsive-lg">
+      <table class="table table-bordered table-hover table-sm w-100">
+        <thead class="thead" style="background-color: #8700d4ff; text-color: white; color: white;">
+          <tr>
+            <th class="text-left">Colaborador</th>
+            <th class="text-center">Gerente</th>
+            <th class="text-center autorizado-col" style="display: none;">Autorizado 50%</th>
+            <th class="text-center autorizado-col" style="display: none;">Autorizado 100%</th>
+            <th class="text-center nao-autorizado-col" style="display: none;">Não Autorizado 50%</th>
+            <th class="text-center nao-autorizado-col" style="display: none;">Não Autorizado 100%</th>
+            <th class="text-center">Total Autorizado</th>
+            <th class="text-center">Total Não Autorizado</th>
+            <th class="text-center executado-col" style="display: none;">Executado 50%</th>
+            <th class="text-center executado-col" style="display: none;">Executado 100%</th>
+            <th class="text-center">Total Executado</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  // Ordena os gerentes e adiciona os dados à tabela
+  Object.keys(dadosAgrupados)
+    .sort()
+    .forEach((gerente) => {
+      const dadosGerente = dadosAgrupados[gerente];
+      const colaboradores = dadosGerente.colaboradores;
+
+      // Adiciona uma linha para o gerente com os totais consolidados
+      html += `
+      <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
+        <td class="text-left"><i class="fa-solid fa-user-tie"></i> <strong>${gerente}</strong></td>
+        <td class="text-center">TOTAL</td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${dadosGerente.total_autorizado_50.toFixed(
+          2
+        )}</strong></td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${dadosGerente.total_autorizado_100.toFixed(
+          2
+        )}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosGerente.total_nao_autorizado_50.toFixed(
+          2
+        )}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${dadosGerente.total_nao_autorizado_100.toFixed(
+          2
+        )}</strong></td>
+        <td class="text-center"><strong>${dadosGerente.total_autorizado.toFixed(
+          2
+        )}</strong></td>
+        <td class="text-center"><strong>${dadosGerente.total_nao_autorizado.toFixed(
+          2
+        )}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${dadosGerente.total_executado_50.toFixed(
+          2
+        )}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${dadosGerente.total_executado_100.toFixed(
+          2
+        )}</strong></td>
+        <td class="text-center"><strong>${dadosGerente.total_executado.toFixed(
+          2
+        )}</strong></td>
+      </tr>
+    `;
+
+      // Adiciona linha para cada colaborador sob o gerente
+      colaboradores.forEach((item) => {
+        const naoAut50 = Math.max(
+          0,
+          (item.executado_50 || 0) - (item.autorizado_50 || 0)
+        );
+        const naoAut100 = Math.max(
+          0,
+          (item.executado_100 || 0) - (item.autorizado_100 || 0)
+        );
+
+        html += `
+        <tr>
+          <td class="text-left"><strong>${item.colaborador || '-'}</strong></td>
+          <td class="text-center">${item.gerente || '-'}</td>
+          <td class="text-center autorizado-col" style="display: none;">${(
+            item.autorizado_50 || 0
+          ).toFixed(2)}</td>
+          <td class="text-center autorizado-col" style="display: none;">${(
+            item.autorizado_100 || 0
+          ).toFixed(2)}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${naoAut50.toFixed(
+            2
+          )}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${naoAut100.toFixed(
+            2
+          )}</td>
+          <td class="text-center">${(item.total_autorizado || 0).toFixed(
+            2
+          )}</td>
+          <td class="text-center">${(item.total_nao_autorizado || 0).toFixed(
+            2
+          )}</td>
+          <td class="text-center executado-col" style="display: none;">${(
+            item.executado_50 || 0
+          ).toFixed(2)}</td>
+          <td class="text-center executado-col" style="display: none;">${(
+            item.executado_100 || 0
+          ).toFixed(2)}</td>
+          <td class="text-center">${(item.total_executado || 0).toFixed(2)}</td>
+        </tr>
+      `;
+
+        // Acumula totais
+        totalExecutado50 += item.executado_50 || 0;
+        totalExecutado100 += item.executado_100 || 0;
+        totalAutorizado50 += item.autorizado_50 || 0;
+        totalAutorizado100 += item.autorizado_100 || 0;
+        totalNaoAutorizado50 += naoAut50;
+        totalNaoAutorizado100 += naoAut100;
+      });
+    });
+
+  // Adiciona linha de total geral
+  html += `
+        </tbody>
+        <tfoot class="font-weight-bold" style="background-color: #f8f9fa;">
+          <tr>
+            <td class="text-left">TOTAL GERAL</td>
+            <td class="text-center">-</td>
+            <td class="text-center autorizado-col" style="display: none;">${totalAutorizado50.toFixed(
+              2
+            )}</td>
+            <td class="text-center autorizado-col" style="display: none;">${totalAutorizado100.toFixed(
+              2
+            )}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado50.toFixed(
+              2
+            )}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${totalNaoAutorizado100.toFixed(
+              2
+            )}</td>
+            <td class="text-center">${(
+              totalAutorizado50 + totalAutorizado100
+            ).toFixed(2)}</td>
+            <td class="text-center">${(
+              totalNaoAutorizado50 + totalNaoAutorizado100
+            ).toFixed(2)}</td>
+            <td class="text-center executado-col" style="display: none;">${totalExecutado50.toFixed(
+              2
+            )}</td>
+            <td class="text-center executado-col" style="display: none;">${totalExecutado100.toFixed(
+              2
+            )}</td>
+            <td class="text-center">${(
+              totalExecutado50 + totalExecutado100
+            ).toFixed(2)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+
+  return html;
+}
+
+/**
+ * Cria a tabela HTML do comparativo por colaborador em valores monetários (R$)
+ *
+ * @param {Array} dados - Array de objetos com os dados comparativos em valores monetários
+ * @returns {string} HTML da tabela
+ */
+function criarTabelaComparativoColaboradorValor(dados) {
+  let totalExecutado50 = 0;
+  let totalExecutado100 = 0;
+  let totalAutorizado50 = 0;
+  let totalAutorizado100 = 0;
+  let totalNaoAutorizado50 = 0;
+  let totalNaoAutorizado100 = 0;
+
+  // Agrupa os dados por gerente de divisão para cálculo de totais
+  const dadosAgrupados = {};
+  dados.forEach((item) => {
+    const gerente = item.gerente || "Sem Gerente";
+    if (!dadosAgrupados[gerente]) {
+      dadosAgrupados[gerente] = {
+        colaboradores: [],
+        total_executado_50: 0,
+        total_executado_100: 0,
+        total_autorizado_50: 0,
+        total_autorizado_100: 0,
+        total_nao_autorizado_50: 0,
+        total_nao_autorizado_100: 0,
+        total_executado: 0,
+        total_autorizado: 0,
+        total_nao_autorizado: 0,
+      };
+    }
+
+    dadosAgrupados[gerente].total_executado_50 += item.executado_50 || 0;
+    dadosAgrupados[gerente].total_executado_100 += item.executado_100 || 0;
+    dadosAgrupados[gerente].total_autorizado_50 += item.autorizado_50 || 0;
+    dadosAgrupados[gerente].total_autorizado_100 += item.autorizado_100 || 0;
+    dadosAgrupados[gerente].total_nao_autorizado_50 += Math.max(
+      0,
+      (item.executado_50 || 0) - (item.autorizado_50 || 0)
+    );
+    dadosAgrupados[gerente].total_nao_autorizado_100 += Math.max(
+      0,
+      (item.executado_100 || 0) - (item.autorizado_100 || 0)
+    );
+    dadosAgrupados[gerente].total_executado += item.total_executado || 0;
+    dadosAgrupados[gerente].total_autorizado += item.total_autorizado || 0;
+    dadosAgrupados[gerente].total_nao_autorizado +=
+      item.total_nao_autorizado || 0;
+    dadosAgrupados[gerente].colaboradores.push(item);
+  });
+
+  let html = `
+    <div class="table-responsive-sm table-responsive-md table-responsive-lg">
+      <table class="table table-bordered table-hover table-sm w-100">
+        <thead class="thead" style="background-color: #8700d4ff; text-color: white; color: white;">
+          <tr>
+            <th class="text-left">Colaborador</th>
+            <th class="text-center">Gerente</th>
+            <th class="text-center autorizado-col" style="display: none;">Autorizado 50% (R$)</th>
+            <th class="text-center autorizado-col" style="display: none;">Autorizado 100% (R$)</th>
+            <th class="text-center nao-autorizado-col" style="display: none;">Não Autorizado 50% (R$)</th>
+            <th class="text-center nao-autorizado-col" style="display: none;">Não Autorizado 100% (R$)</th>
+            <th class="text-center">Total Autorizado (R$)</th>
+            <th class="text-center">Total Não Autorizado (R$)</th>
+            <th class="text-center executado-col" style="display: none;">Executado 50% (R$)</th>
+            <th class="text-center executado-col" style="display: none;">Executado 100% (R$)</th>
+            <th class="text-center">Total Executado (R$)</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  // Ordena os gerentes e adiciona os dados à tabela
+  Object.keys(dadosAgrupados)
+    .sort()
+    .forEach((gerente) => {
+      const dadosGerente = dadosAgrupados[gerente];
+      const colaboradores = dadosGerente.colaboradores;
+
+      // Adiciona uma linha para o gerente com os totais consolidados
+      html += `
+      <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
+        <td class="text-left"><i class="fa-solid fa-user-tie"></i> <strong>${gerente}</strong></td>
+        <td class="text-center">TOTAL</td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosGerente.total_autorizado_50
+        )}</strong></td>
+        <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosGerente.total_autorizado_100
+        )}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosGerente.total_nao_autorizado_50
+        )}</strong></td>
+        <td class="text-center nao-autorizado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosGerente.total_nao_autorizado_100
+        )}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(
+          dadosGerente.total_autorizado
+        )}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(
+          dadosGerente.total_nao_autorizado
+        )}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosGerente.total_executado_50
+        )}</strong></td>
+        <td class="text-center executado-col" style="display: none;"><strong>${formatarMoeda(
+          dadosGerente.total_executado_100
+        )}</strong></td>
+        <td class="text-center"><strong>${formatarMoeda(
+          dadosGerente.total_executado
+        )}</strong></td>
+      </tr>
+    `;
+
+      // Adiciona linha para cada colaborador sob o gerente
+      colaboradores.forEach((item) => {
+        const naoAut50 = Math.max(
+          0,
+          (item.executado_50 || 0) - (item.autorizado_50 || 0)
+        );
+        const naoAut100 = Math.max(
+          0,
+          (item.executado_100 || 0) - (item.autorizado_100 || 0)
+        );
+
+        html += `
+        <tr>
+          <td class="text-left"><strong>${item.colaborador || '-'}</strong></td>
+          <td class="text-center">${item.gerente || '-'}</td>
+          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
+            item.autorizado_50 || 0
+          )}</td>
+          <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
+            item.autorizado_100 || 0
+          )}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
+            naoAut50
+          )}</td>
+          <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
+            naoAut100
+          )}</td>
+          <td class="text-center">${formatarMoeda(
+            item.total_autorizado || 0
+          )}</td>
+          <td class="text-center">${formatarMoeda(
+            item.total_nao_autorizado || 0
+          )}</td>
+          <td class="text-center executado-col" style="display: none;">${formatarMoeda(
+            item.executado_50 || 0
+          )}</td>
+          <td class="text-center executado-col" style="display: none;">${formatarMoeda(
+            item.executado_100 || 0
+          )}</td>
+          <td class="text-center">${formatarMoeda(
+            item.total_executado || 0
+          )}</td>
+        </tr>
+      `;
+
+        // Acumula totais
+        totalExecutado50 += item.executado_50 || 0;
+        totalExecutado100 += item.executado_100 || 0;
+        totalAutorizado50 += item.autorizado_50 || 0;
+        totalAutorizado100 += item.autorizado_100 || 0;
+        totalNaoAutorizado50 += naoAut50;
+        totalNaoAutorizado100 += naoAut100;
+      });
+    });
+
+  // Adiciona linha de total geral
+  html += `
+        </tbody>
+        <tfoot class="font-weight-bold" style="background-color: #f8f9fa;">
+          <tr>
+            <td class="text-left">TOTAL GERAL</td>
+            <td class="text-center">-</td>
+            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
+              totalAutorizado50
+            )}</td>
+            <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
+              totalAutorizado100
+            )}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
+              totalNaoAutorizado50
+            )}</td>
+            <td class="text-center nao-autorizado-col" style="display: none;">${formatarMoeda(
+              totalNaoAutorizado100
+            )}</td>
+            <td class="text-center">${formatarMoeda(
+              totalAutorizado50 + totalAutorizado100
+            )}</td>
+            <td class="text-center">${formatarMoeda(
+              totalNaoAutorizado50 + totalNaoAutorizado100
+            )}</td>
+            <td class="text-center executado-col" style="display: none;">${formatarMoeda(
+              totalExecutado50
+            )}</td>
+            <td class="text-center executado-col" style="display: none;">${formatarMoeda(
+              totalExecutado100
+            )}</td>
+            <td class="text-center">${formatarMoeda(
+              totalExecutado50 + totalExecutado100
+            )}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+
+  return html;
+}
+
+// ================================================================================
+// 🔘 Funções para alternar visibilidade das colunas de execução para a nova tabela
+// ================================================================================
+
+let colunasExecucaoColaboradorExpandidas = false;
+
+/**
+ * Alterna a visibilidade das colunas de execução (50% e 100%) na tabela de colaboradores
+ */
+function alternarColunasExecucaoColaborador() {
+  const iconesExecucao = document.querySelectorAll(
+    "#iconeExecucaoColaborador, .execucao-resumo i"
+  );
+  const textoBtn = document.getElementById("textoBtnExecucaoColaborador");
+  const colunasExecutado = document.querySelectorAll(".executado-col");
+  const colunasAutorizado = document.querySelectorAll(".autorizado-col");
+  const colunasNaoAutorizado = document.querySelectorAll(".nao-autorizado-col");
+
+  colunasExecucaoColaboradorExpandidas = !colunasExecucaoColaboradorExpandidas;
+
+  // Atualiza o ícone e o texto do botão
+  iconesExecucao.forEach((icone) => {
+    icone.className = colunasExecucaoColaboradorExpandidas
+      ? "fas fa-chevron-up"
+      : "fas fa-chevron-down";
+  });
+
+  textoBtn.textContent = colunasExecucaoColaboradorExpandidas
+    ? "Recolher Detalhes"
+    : "Expandir Detalhes";
+
+  // Alterna a visibilidade das colunas
+  colunasExecutado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoColaboradorExpandidas ? "table-cell" : "none";
+  });
+
+  colunasAutorizado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoColaboradorExpandidas ? "table-cell" : "none";
+  });
+
+  colunasNaoAutorizado.forEach((coluna) => {
+    coluna.style.display = colunasExecucaoColaboradorExpandidas ? "table-cell" : "none";
+  });
+}
+
+/**
+ * Alterna a visualização entre as tabelas de horas e valores para a nova tabela
+ * @param {string} tipo - 'horas' ou 'valores'
+ */
+function alterarVisualizacaoColaborador(tipo) {
+  const tabelaHoras = document.getElementById("tabelaComparativoColaborador");
+  const tabelaValores = document.getElementById(
+    "tabelaComparativoColaboradorValor"
+  );
+  const btnHoras = document.getElementById("btnVisualizacaoHorasColaborador");
+  const btnValores = document.getElementById("btnVisualizacaoValoresColaborador");
+
+  if (tipo === "horas") {
+    tabelaHoras.style.display = "block";
+    tabelaValores.style.display = "none";
+
+    // Atualiza os botões para refletir o estado ativo
+    btnHoras.classList.add("active");
+    btnHoras.classList.remove("btn-outline-success");
+    btnHoras.classList.add("btn-outline-primary");
+    btnValores.classList.remove("active");
+    btnValores.classList.remove("btn-outline-primary");
+    btnValores.classList.add("btn-outline-success");
+  } else if (tipo === "valores") {
     tabelaHoras.style.display = "none";
     tabelaValores.style.display = "block";
 

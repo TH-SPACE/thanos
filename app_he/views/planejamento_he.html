@@ -643,6 +643,50 @@
                         </div>
                     </div>
 
+                    <!-- Visão por Colaborador -->
+                    <div class="card mb-4">
+                        <div class="mb-3">
+                            <h5 class="mb-0"><i class="fas fa-user"></i> <span>Visão por Colaborador</span></h5>
+                        </div>
+                        <!-- Filtro de Gerência para Colaboradores -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="filtroGerenciaColaborador">Filtrar por Gerência</label>
+                                <select id="filtroGerenciaColaborador" class="form-control">
+                                    <option value="">Todas as Gerências</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="mr-3">
+                                <button id="btnAlternarExecucaoColaborador" class="btn btn-sm btn-outline-primary"
+                                    onclick="alternarColunasExecucaoColaborador()">
+                                    <i class="fas fa-chevron-down" id="iconeExecucaoColaborador"></i>
+                                    <span id="textoBtnExecucaoColaborador">Expandir Detalhes</span>
+                                </button>
+                            </div>
+                            <!-- Botões de opção para alternar visualização -->
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-outline-primary btn-sm active" id="btnVisualizacaoHorasColaborador"
+                                    onclick="alterarVisualizacaoColaborador('horas')">
+                                    <input type="radio" name="tipoVisualizacaoColaborador" id="horasColaborador" checked>
+                                    <i class="fas fa-clock"></i> Horas
+                                </label>
+                                <label class="btn btn-outline-success btn-sm" id="btnVisualizacaoValoresColaborador"
+                                    onclick="alterarVisualizacaoColaborador('valores')">
+                                    <input type="radio" name="tipoVisualizacaoColaborador" id="valoresColaborador">
+                                    <i class="fas fa-dollar-sign"></i> Valores
+                                </label>
+                            </div>
+                        </div>
+                        <div id="tabelaComparativoColaborador">
+                            <p class="text-center text-muted">Selecione um mês para visualizar os dados.</p>
+                        </div>
+                        <div id="tabelaComparativoColaboradorValor" style="display: none;">
+                            <p class="text-center text-muted">Carregando dados monetários...</p>
+                        </div>
+                    </div>
+
 
                 </div>
 
