@@ -102,83 +102,121 @@ exports.getPerfilUsuario = (req, res) => {
  *   }
  * }
  */
-exports.getApprovalSummary = async (req, res) => {
+
+// ================================================================================
+// 📤 ENVIO DE SOLICITAÇÕES DE HE
+// ================================================================================
+
+/**
+ * Retorna resumo financeiro para a tela de aprovações
+ *
+ * @param {Object} req - Request Express
+ * @param {string} req.query.gerente - Nome do gerente (obrigatório)
+ * @param {string} req.query.mes - Mês para filtrar (obrigatório)
+ * @param {string} req.query.ano - Ano para filtrar (opcional)
+ * @param {Object} req - Request Express com diretoria do aprovador
+ * @param {string} req.diretoriaHE - Diretoria do aprovador
+ * @param {Object} res - Response Express
+ *
+ * @returns {Object} JSON com o resumo financeiro
+ */
+exports.getResumoFinanceiroAprovacao = async (req, res) => {
   const { gerente, mes, ano } = req.query;
   const diretoria = req.diretoriaHE;
   const user = req.session.usuario;
   const ip = req.ip;
 
-  if (!mes) {
-    return res
-      .status(400)
-      .json({ erro: "Parâmetro 'mes' é obrigatório para gerar o resumo." });
+  if (!gerente || !mes) {
+    return res.status(400).json({
+      erro: "Parâmetros 'gerente' e 'mes' são obrigatórios."
+    });
   }
 
   try {
     const conexao = db.mysqlPool;
+    const gastoPrevController = require("./gastoPrevController.js");
+    const limitesData = require("../json/limite_he.json");
 
-    // Monta query SQL com filtros dinâmicos
-    let query = `SELECT STATUS, CARGO, HORAS, TIPO_HE FROM PLANEJAMENTO_HE WHERE MES = ? AND (DIRETORIA = ? OR DIRETORIA IS NULL)`;
-    const params = [mes, diretoria];
-
-    // Adiciona filtro de gerente se fornecido
-    if (gerente) {
-      query += ` AND GERENTE = ?`;
-      params.push(gerente);
-    }
-
-    // Adiciona filtro de ano se fornecido
-    if (ano) {
-      query += ` AND ANO = ?`;
-      params.push(ano);
-    }
-
-    // Busca todas as solicitações do mês/diretoria/ano
-    const [solicitacoes] = await conexao.query(query, params);
-
-    // Calcula o limite financeiro total baseado em limite_he.json
+    // Obter o grupo de gerentes que compartilham o limite
+    const limiteInfo = getInfoLimitePorGerente(gerente);
+    let gerentesParaConsulta = [gerente];
     let limiteTotal = 0;
-    if (gerente) {
-      // Para um gerente específico, busca o limite individual ou compartilhado
-      const limiteInfo = getInfoLimitePorGerente(gerente);
-      limiteTotal = limiteInfo
-        ? parseFloat(limiteInfo.Valores.replace(".", "").replace(",", "."))
-        : 0;
+
+    if (limiteInfo && limiteInfo.GerentesCompartilhados) {
+      gerentesParaConsulta = [limiteInfo.Responsavel, ...limiteInfo.GerentesCompartilhados];
+      // Se for um grupo de gerentes compartilhados, soma os limites de todos
+      for (const gerenteGrupo of gerentesParaConsulta) {
+        const limiteInfoGrupo = getInfoLimitePorGerente(gerenteGrupo);
+        if (limiteInfoGrupo) {
+          limiteTotal += parseFloat(limiteInfoGrupo.Valores.replace(".", "").replace(",", "."));
+        }
+      }
     } else {
-      // Se não especificar gerente, soma todos os limites da diretoria
-      limiteTotal = limitesData.reduce((acc, l) => {
-        const valor =
-          parseFloat(l.Valores.replace(".", "").replace(",", ".")) || 0;
-        return acc + valor;
-      }, 0);
+      // Limite individual
+      const limiteInfoIndividual = getInfoLimitePorGerente(gerente);
+      limiteTotal = limiteInfoIndividual
+        ? parseFloat(limiteInfoIndividual.Valores.replace(".", "").replace(",", "."))
+        : 0;
     }
 
-    // Estrutura para acumular totais por status
-    let resumo = {
-      APROVADO: { horas: 0, valor: 0 },
-      PENDENTE: { horas: 0, valor: 0 },
-      RECUSADO: { horas: 0, valor: 0 },
-    };
+    // Criar placeholders para a consulta IN
+    const placeholders = gerentesParaConsulta.map(() => '?').join(',');
 
-    // Itera sobre cada solicitação e acumula horas e valores
-    solicitacoes.forEach((s) => {
-      if (resumo[s.STATUS]) {
-        const horas = Number(s.HORAS) || 0;
-        // Calcula o valor financeiro usando a função getValorHora
-        const valor = getValorHora(s.CARGO, s.TIPO_HE) * horas;
-        resumo[s.STATUS].horas += horas;
-        resumo[s.STATUS].valor += valor;
+    // Buscar todas as solicitações do grupo de gerentes para o mês/ano especificados
+    let querySolicitacoes = `
+      SELECT
+        STATUS, CARGO, HORAS, TIPO_HE
+      FROM PLANEJAMENTO_HE
+      WHERE GERENTE IN (${placeholders}) AND MES = ? AND (DIRETORIA = ? OR DIRETORIA IS NULL)
+    `;
+    const paramsSolicitacoes = [...gerentesParaConsulta, mes, diretoria];
+
+    if (ano) {
+      querySolicitacoes += " AND ANO = ?";
+      paramsSolicitacoes.push(ano);
+    }
+
+    const [solicitacoes] = await conexao.query(querySolicitacoes, paramsSolicitacoes);
+
+    // Calcular os valores de aprovação por status
+    let totalAprovadoHoras = 0;
+    let totalAprovadoValor = 0;
+    let totalPendenteHoras = 0;
+    let totalPendenteValor = 0;
+    let totalRecusadoHoras = 0;
+    let totalRecusadoValor = 0;
+    let totalGeralHoras = 0;
+    let totalGeralValor = 0;
+
+    solicitacoes.forEach(s => {
+      const horas = Number(s.HORAS) || 0;
+      const tipoHE = s.TIPO_HE || '50%'; // Valor padrão se não estiver definido
+      const cargo = s.CARGO || ''; // Garantir que o cargo existe
+      const valor = getValorHora(cargo, tipoHE) * horas;
+
+      totalGeralHoras += horas;
+      totalGeralValor += valor;
+
+      if (s.STATUS === "APROVADO") {
+        totalAprovadoHoras += horas;
+        totalAprovadoValor += valor;
+      } else if (s.STATUS === "PENDENTE") {
+        totalPendenteHoras += horas;
+        totalPendenteValor += valor;
+      } else if (s.STATUS === "RECUSADO") {
+        totalRecusadoHoras += horas;
+        totalRecusadoValor += valor;
       }
     });
 
-    // Busca também os dados de execução (horas realmente realizadas) na tabela FREQUENCIA
+    // Buscar dados de execução real na tabela FREQUENCIA
+    let totalExecutadoHoras = 0;
     let totalExecutadoValor = 0;
 
     // Verifica se a tabela FREQUENCIA existe e é válida
     const tabelaValida = await gastoPrevController.validarTabelaFrequencia(conexao);
 
     if (tabelaValida) {
-      // Se a tabela é válida, buscamos os dados de execução para o gerente e mês
       const meses = {
         Janeiro: 1,
         Fevereiro: 2,
@@ -196,80 +234,86 @@ exports.getApprovalSummary = async (req, res) => {
       const mesNumero = meses[mes];
 
       if (mesNumero !== undefined) {
-        // Obter o grupo de gerentes que compartilham o limite
-        const limiteInfo = getInfoLimitePorGerente(gerente);
-        let gerentesParaConsulta = [gerente];
-
-        if (limiteInfo && limiteInfo.GerentesCompartilhados) {
-          gerentesParaConsulta = [limiteInfo.Responsavel, ...limiteInfo.GerentesCompartilhados];
-        }
-
-        // Obtemos todas as horas executadas (da tabela FREQUENCIA) agrupadas por colaborador
         const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
         const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
 
         // Criar placeholders para a consulta IN
         const placeholders = gerentesParaConsulta.map(() => '?').join(',');
 
-        // Primeiro, vamos obter os dados de execução por colaborador para calcular valores monetários
-        const queryExecutadoComCargo = `
+        // Query para obter os dados de execução com base nos gerentes
+        const queryExecutado = `
           SELECT
-            ${colunasFrequencia[0]} as colaborador,  -- NOME
             ${colunasFrequencia[1]} as cargo,  -- CARGO
             SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
             SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
           FROM ${nomeTabelaFrequencia}
           WHERE ${colunasFrequencia[3]} IN (${placeholders}) AND MONTH(${colunasFrequencia[5]}) = ?
-          GROUP BY ${colunasFrequencia[0]}, ${colunasFrequencia[1]}
+          GROUP BY ${colunasFrequencia[1]}
         `;
 
-        const [executadoData] = await conexao.query(queryExecutadoComCargo, [...gerentesParaConsulta, mesNumero]);
+        const [executadoData] = await conexao.query(queryExecutado, [...gerentesParaConsulta, mesNumero]);
 
-        // Carregamos os valores por hora para cálculo monetário
-        const { getValorHora } = require("../utils/valoresHE.js");
-
-        // Calcula os valores monetários para cada colaborador
+        // Calcular valores monetários para os dados de execução
         for (const item of executadoData) {
           const horas_50 = parseFloat(item.executado_50) || 0;
           const horas_100 = parseFloat(item.executado_100) || 0;
+          const cargo = item.cargo || ''; // Garantir que o cargo existe
 
-          // Calcula valores monetários baseados no cargo do colaborador
-          const valorHora50 = getValorHora(item.cargo, "50%");
-          const valorHora100 = getValorHora(item.cargo, "100%");
+          const valorHora50 = getValorHora(cargo, "50%");
+          const valorHora100 = getValorHora(cargo, "100%");
 
+          totalExecutadoHoras += horas_50 + horas_100;
           totalExecutadoValor += (horas_50 * valorHora50) + (horas_100 * valorHora100);
         }
       }
     }
 
-    // Cálculos de limite CORRETOS segundo a nova lógica:
-    // - Saldo = Limite - Executado
-    const saldoAtual = limiteTotal - totalExecutadoValor;
+    // Calcular os diferentes valores solicitados
+    // Calcular horas equivalentes baseadas na média de valor por hora (apenas para valores gerais)
+    const valorPorHoraMedio = totalGeralHoras > 0 ? totalGeralValor / totalGeralHoras : 0;
 
-    const finalSummary = {
-      limiteTotal,
-      aprovado: resumo.APROVADO.valor,
-      pendente: resumo.PENDENTE.valor,
-      executado: totalExecutadoValor,
-      saldoAtual,
-      resumoPorStatus: resumo,
+    // Para calcular horas equivalentes para valores, usaremos o valor por hora médio
+    // Limite Total em horas: usando a relação média de valor/hora
+    const limiteTotalHoras = valorPorHoraMedio > 0 ? limiteTotal / valorPorHoraMedio : 0;
+
+    // Saldo Real = Limite Total - Executado Real
+    const saldoReal = limiteTotal - totalExecutadoValor;
+    const saldoRealHoras = valorPorHoraMedio > 0 ? saldoReal / valorPorHoraMedio : 0;
+
+    // Simulação: Saldo Final se Aprovar Todos Pendentes
+    const saldoFinalSimulado = saldoReal - totalPendenteValor;
+    const saldoFinalSimuladoHoras = valorPorHoraMedio > 0 ? saldoFinalSimulado / valorPorHoraMedio : 0;
+
+
+    // Garantir que todos os valores sejam números válidos
+    const result = {
+      limiteTotal: Number(limiteTotal) || 0,
+      limiteTotalHoras: null, // Removido o cálculo baseado em média de valor por hora
+      executadoReal: {
+        valor: Number(totalExecutadoValor) || 0,
+        horas: Number(totalExecutadoHoras) || 0
+      },
+      saldoReal: Number(saldoReal) || 0,
+      saldoRealHoras: Number(saldoRealHoras) || 0,
+      pendente: {
+        valor: Number(totalPendenteValor) || 0,
+        horas: Number(totalPendenteHoras) || 0
+      },
+      saldoFinalSimulado: Number(saldoFinalSimulado) || 0,
+      saldoFinalSimuladoHoras: Number(saldoFinalSimuladoHoras) || 0
     };
 
-    res.json(finalSummary);
+    // Retornar o resumo financeiro
+    res.json(result);
   } catch (error) {
     console.error(
-      `[ERRO] Usuário: ${user?.nome}, IP: ${ip}, Ação: Erro ao gerar resumo de aprovação.`,
+      `[ERRO] Usuário: ${user?.nome}, IP: ${ip}, Ação: Erro ao gerar resumo financeiro para aprovação.`,
       error
     );
-    res
-      .status(500)
-      .json({ erro: "Erro interno ao gerar o resumo financeiro." });
+    res.status(500).json({ erro: "Erro interno ao gerar o resumo financeiro." });
   }
 };
 
-// ================================================================================
-// 📤 ENVIO DE SOLICITAÇÕES DE HE
-// ================================================================================
 
 /**
  * Renderiza a página HTML de envio de solicitações de HE

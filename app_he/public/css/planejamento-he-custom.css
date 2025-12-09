@@ -965,14 +965,6 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
     padding: 0.5rem 1rem;
 }
 
-/* Estilo para o resumo financeiro na aba de informações gerais */
-.resumo-financeiro {
-    background: transparent;
-    color: #333;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
 
 /* Estilos para os cards de resumo de HE */
 .card-resumo-he {

@@ -699,13 +699,15 @@
 
                 <!-- Tela: Aprovações (NOVA) -->
                 <div id="aprovacoes" class="card" style="display: none;">
-                    <button class="btn btn-secondary btn-voltar" onclick="voltarSelecaoGerencia()">
-                        <i class="fas fa-arrow-left"></i> Voltar para Seleção
-                    </button>
-                    <h2 class="card-title titulo-padrao"><i class="fas fa-tasks"></i> Tratar Solicitações</h2>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="card-title titulo-padrao mb-0"><i class="fas fa-tasks"></i> Tratar Solicitações</h2>
+                        <button class="btn btn-secondary btn-voltar" onclick="voltarSelecaoGerencia()">
+                            <i class="fas fa-arrow-left"></i> Voltar para Seleção
+                        </button>
+                    </div>
 
                     <!-- Filtros da Tela de Aprovação -->
-                    <div class="row mb-4">
+                    <div class="row mb-2">
                         <div class="col-md-3">
                             <label for="aprovacaoFiltroGerente">Gerente</label>
                             <select id="aprovacaoFiltroGerente" class="form-control"></select>
@@ -735,8 +737,46 @@
                         </div>
                     </div>
 
-                    <!-- Tabela Resumo Financeiro -->
-                    <div id="resumoFinanceiroContainer" class="mb-4"></div>
+                    <!-- Resumo Financeiro -->
+                    <div id="resumoFinanceiroAprovacao" class="mb-2">
+                        <div class="card p-0">
+                            <div class="card-header d-flex justify-content-between align-items-center py-0 px-1"
+                                style="font-size: 0.8rem;">
+                                <h5 class="mb-0" style="font-size: 0.8rem;"><i class="fas fa-chart-bar"></i> Resumo</h5>
+                                <span id="tituloResumoFinanceiro" class="text-muted"
+                                    style="font-size: 0.7rem;">Selecione um gerente</span>
+                            </div>
+                            <div class="card-body p-0 m-0">
+                                <div class="row text-center">
+                                    <div class="col-2 px-1 py-0">
+                                        <div class="small text-muted" style="font-size: 0.7rem;">Limite</div>
+                                        <div id="resumoLimiteTotal" class="font-weight-bold"
+                                            style="font-size: 0.75rem;">-</div>
+                                    </div>
+                                    <div class="col-2 px-1 py-0">
+                                        <div class="small text-muted" style="font-size: 0.7rem;">Executado Real</div>
+                                        <div id="resumoExecutadoReal" class="font-weight-bold"
+                                            style="font-size: 0.75rem;">-</div>
+                                    </div>
+                                    <div class="col-2 px-1 py-0">
+                                        <div class="small text-muted" style="font-size: 0.7rem;">Saldo</div>
+                                        <div id="resumoSaldoReal" class="font-weight-bold" style="font-size: 0.75rem;">-
+                                        </div>
+                                    </div>
+                                    <div class="col-3 px-1 py-0">
+                                        <div class="small text-muted" style="font-size: 0.7rem;">Pendente Aprov.</div>
+                                        <div id="resumoPendente" class="font-weight-bold text-warning"
+                                            style="font-size: 0.75rem;">-</div>
+                                    </div>
+                                    <div class="col-3 px-1 py-0">
+                                        <div class="small text-muted" style="font-size: 0.7rem;">Saldo Após Aprov.</div>
+                                        <div id="resumoSimulacaoSaldoFinal" class="font-weight-bold"
+                                            style="font-size: 0.75rem;">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Ações em Massa -->
                     <div class="mb-3">

@@ -330,7 +330,7 @@ function limparFiltrosAprovacao() {
 
 function carregarDadosAprovacao() {
   carregarAprovacoes();
-  updateApprovalSummary();
+  updateResumoFinanceiroAprovacao();
 }
 
 function carregarAprovacoes() {
@@ -529,116 +529,86 @@ function processarEmMassa(isAprovado, ids = null) {
   });
 }
 
-function updateApprovalSummary() {
-  const container = document.getElementById("resumoFinanceiroContainer");
+function updateResumoFinanceiroAprovacao() {
   const gerente = document.getElementById("aprovacaoFiltroGerente").value;
   const mes = document.getElementById("aprovacaoFiltroMes").value;
   const ano = document.getElementById("aprovacaoFiltroAno").value;
 
-  // Não retorna mais se o gerente não estiver selecionado, em vez disso, busca o resumo geral.
-  container.innerHTML =
-    '<p class="text-center text-muted">Calculando resumo...</p>';
-
-  const params = new URLSearchParams({ mes }); // Inicia com o mês que é sempre obrigatório
-  if (gerente) {
-    params.append("gerente", gerente); // Adiciona o gerente apenas se estiver selecionado
+  // Verifica se o gerente está selecionado
+  if (!gerente) {
+    document.getElementById("tituloResumoFinanceiro").textContent = "Selecione um gerente para visualizar";
+    document.getElementById("resumoLimiteTotal").textContent = "-";
+    document.getElementById("resumoExecutadoReal").textContent = "-";
+    document.getElementById("resumoSaldoReal").textContent = "-";
+    document.getElementById("resumoPendente").textContent = "-";
+    document.getElementById("resumoSimulacaoSaldoFinal").textContent = "-";
+    return;
   }
+
+  document.getElementById("tituloResumoFinanceiro").textContent = `${gerente} - ${mes}${ano ? `/${ano}` : ''}`;
+
+  // Mostrar carregando
+  document.getElementById("resumoLimiteTotal").textContent = "Carregando...";
+  document.getElementById("resumoExecutadoReal").textContent = "Carregando...";
+  document.getElementById("resumoSaldoReal").textContent = "Carregando...";
+  document.getElementById("resumoPendente").textContent = "Carregando...";
+  document.getElementById("resumoSimulacaoSaldoFinal").textContent = "Carregando...";
+
+  // Montar os parâmetros da URL
+  const params = new URLSearchParams({ gerente, mes });
   if (ano) {
-    params.append("ano", ano); // Adiciona o ano apenas se estiver selecionado
+    params.append("ano", ano);
   }
 
-  const url = `/planejamento-he/api/approval-summary?${params.toString()}`;
-
-  fetch(url)
-    .then((res) => res.json())
-    .then((summary) => {
-      if (summary.erro) {
-        container.innerHTML = `<div class="alert alert-warning">${summary.erro}</div>`;
+  // Fazer a chamada para a API
+  fetch(`/planejamento-he/api/resumo-financeiro-aprovacao?${params.toString()}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.erro) {
+        console.error("Erro ao obter resumo financeiro:", data.erro);
+        document.getElementById("resumoLimiteTotal").textContent = "Erro";
+        document.getElementById("resumoExecutadoReal").textContent = "Erro";
+        document.getElementById("resumoSaldoReal").textContent = "Erro";
+        document.getElementById("resumoSimulacaoSaldoFinal").textContent = "Erro";
         return;
       }
 
-      const formatCurrency = (value) =>
-        (value || 0).toLocaleString("pt-BR", {
+      // Formatar valores monetários
+      const formatCurrency = (value) => {
+        return (value || 0).toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL",
         });
+      };
 
-      const { resumoPorStatus, limiteTotal, limiteAtual, limitePosAprovacao } =
-        summary;
+      // Formatar horas
+      const formatHoras = (value) => {
+        return (value || 0).toFixed(2);
+      };
 
-      // Títulos e labels dinâmicos
-      const tituloResumo = gerente
-        ? "Resumo Financeiro da Gerência"
-        : "Resumo Financeiro Geral";
-      const labelLimite = gerente
-        ? "Limite Total da Gerência"
-        : "Limite Total Geral";
+      // Atualizar os valores no HTML
+      // Limite Total
+      document.getElementById("resumoLimiteTotal").textContent = formatCurrency(data.limiteTotal);
 
-      container.innerHTML = `
-                <h5 class="mb-3">${tituloResumo}</h5>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>Status</th>
-                                <th>Qtd. Horas</th>
-                                <th>Valor Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><span class="badge badge-success">Aprovado</span></td>
-                                <td>${(
-                                  resumoPorStatus.APROVADO?.horas || 0
-                                ).toFixed(2)}</td>
-                                <td>${formatCurrency(
-                                  resumoPorStatus.APROVADO?.valor || 0
-                                )}</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge badge-warning">Pendente</span></td>
-                                <td>${(
-                                  resumoPorStatus.PENDENTE?.horas || 0
-                                ).toFixed(2)}</td>
-                                <td>${formatCurrency(
-                                  resumoPorStatus.PENDENTE?.valor || 0
-                                )}</td>
-                            </tr>
-                             <tr>
-                                <td><span class="badge badge-danger">Recusado</span></td>
-                                <td>${(
-                                  resumoPorStatus.RECUSADO?.horas || 0
-                                ).toFixed(2)}</td>
-                                <td>${formatCurrency(
-                                  resumoPorStatus.RECUSADO?.valor || 0
-                                )}</td>
-                            </tr>
-                        </tbody>
-                        <tfoot class="bg-light font-weight-bold">
-                            <tr>
-                                <td colspan="2">${labelLimite}</td>
-                                <td>${formatCurrency(limiteTotal)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">Saldo Atual (Limite - Aprovado)</td>
-                                <td class="${
-                                  limiteAtual < 0 ? "text-danger" : ""
-                                }">${formatCurrency(limiteAtual)}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">Saldo Pós-Aprovação (Saldo Atual - Pendente)</td>
-                                <td class="${
-                                  limitePosAprovacao < 0 ? "text-danger" : ""
-                                }">${formatCurrency(limitePosAprovacao)}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            `;
+      // Executado Real
+      document.getElementById("resumoExecutadoReal").textContent = formatCurrency(data.executadoReal.valor);
+
+      // Saldo Real
+      document.getElementById("resumoSaldoReal").textContent = formatCurrency(data.saldoReal);
+
+      // Pendente
+      document.getElementById("resumoPendente").textContent = formatCurrency(data.pendente.valor);
+
+      // Simulação: Saldo Final se Aprovar Todos Pendentes
+      document.getElementById("resumoSimulacaoSaldoFinal").textContent = formatCurrency(data.saldoFinalSimulado);
     })
-    .catch((err) => {
-      console.error("Erro ao buscar resumo financeiro:", err);
-      container.innerHTML =
-        '<div class="alert alert-danger">Não foi possível carregar o resumo financeiro.</div>';
+    .catch(error => {
+      console.error("Erro ao obter resumo financeiro:", error);
+      document.getElementById("resumoLimiteTotal").textContent = "Erro";
+      document.getElementById("resumoExecutadoReal").textContent = "Erro";
+      document.getElementById("resumoSaldoReal").textContent = "Erro";
+      document.getElementById("resumoPendente").textContent = "Erro";
+      document.getElementById("resumoSimulacaoSaldoFinal").textContent = "Erro";
     });
 }
+

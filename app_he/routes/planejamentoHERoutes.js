@@ -353,14 +353,11 @@ router.post("/api/recusar-solicitacao", heAuth.requireHEAuth, heDiretoriaAuth.re
  */
 router.post("/api/tratar-em-massa", heAuth.requireHEAuth, heDiretoriaAuth.requireAprovadorComDiretoria, planejamentoHE.tratarSolicitacoesEmMassa);
 
-/**
- * GET /api/approval-summary
- * Retorna resumo de aprovações para o aprovador
- *
- * Middlewares: requireHEAuth, requireAprovadorComDiretoria
- * Retorna: Contadores de pendentes, aprovadas e recusadas
- */
-router.get("/api/approval-summary", heAuth.requireHEAuth, heDiretoriaAuth.requireAprovadorComDiretoria, planejamentoHE.getApprovalSummary);
+// ================================================================================
+// 💰 API PARA RESUMO FINANCEIRO NA APROVAÇÃO
+// ================================================================================
+// Rota para obter o resumo financeiro para a tela de aprovações
+router.get("/api/resumo-financeiro-aprovacao", heAuth.requireHEAuth, heDiretoriaAuth.requireAprovadorComDiretoria, planejamentoHE.getResumoFinanceiroAprovacao);
 
 // ================================================================================
 // 👥 API PARA GERENCIAR COLABORADORES (CRUD)
