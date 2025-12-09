@@ -955,7 +955,7 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
         // Obtemos todas as horas executadas (da tabela FREQUENCIA) agrupadas por colaborador e gerente
         let queryExecutado = `
       SELECT
-        ${colunas[3]} as gerente,  // Este é o GERENTE_IMEDIATO da tabela FREQUENCIA
+        ${colunas[3]} as gerente,
         ${colunas[0]} as colaborador,
         ${colunas[1]} as cargo,
         COALESCE(GERENTE_DIVISAO, '') as gerente_divisao,
@@ -984,7 +984,7 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
         // Mas mantemos o COLABORADOR para associar com os dados da FREQUENCIA
         let queryAutorizado = `
       SELECT
-        GERENTE as planejamento_gerente,  // Guardamos o gerente do planejamento para referência, mas usamos o da frequência
+        GERENTE as planejamento_gerente,
         COLABORADOR as colaborador,
         CARGO,
         SUM(CASE WHEN TIPO_HE = '50%' THEN HORAS ELSE 0 END) as autorizado_50,
