@@ -1096,7 +1096,7 @@ function criarTabelaComparativoColaborador(dados) {
   let totalNaoAutorizado50 = 0;
   let totalNaoAutorizado100 = 0;
 
-  // Agrupa os dados por gerente de divisão para cálculo de totais
+  // Agrupa os dados por gerente para cálculo de totais
   const dadosAgrupados = {};
   dados.forEach((item) => {
     const gerente = item.gerente || "Sem Gerente";
@@ -1140,7 +1140,6 @@ function criarTabelaComparativoColaborador(dados) {
         <thead class="thead" style="background-color: #8700d4ff; text-color: white; color: white;">
           <tr>
             <th class="text-left">Colaborador</th>
-            <th class="text-center">Gerente</th>
             <th class="text-center autorizado-col" style="display: none;">Autorizado 50%</th>
             <th class="text-center autorizado-col" style="display: none;">Autorizado 100%</th>
             <th class="text-center nao-autorizado-col" style="display: none;">Não Autorizado 50%</th>
@@ -1166,7 +1165,6 @@ function criarTabelaComparativoColaborador(dados) {
       html += `
       <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
         <td class="text-left"><i class="fa-solid fa-user-tie"></i> <strong>${gerente}</strong></td>
-        <td class="text-center">TOTAL</td>
         <td class="text-center autorizado-col" style="display: none;"><strong>${dadosGerente.total_autorizado_50.toFixed(
           2
         )}</strong></td>
@@ -1211,7 +1209,6 @@ function criarTabelaComparativoColaborador(dados) {
         html += `
         <tr>
           <td class="text-left"><strong>${item.colaborador || '-'}</strong></td>
-          <td class="text-center">${item.gerente || '-'}</td>
           <td class="text-center autorizado-col" style="display: none;">${(
             item.autorizado_50 || 0
           ).toFixed(2)}</td>
@@ -1256,7 +1253,6 @@ function criarTabelaComparativoColaborador(dados) {
         <tfoot class="font-weight-bold" style="background-color: #f8f9fa;">
           <tr>
             <td class="text-left">TOTAL GERAL</td>
-            <td class="text-center">-</td>
             <td class="text-center autorizado-col" style="display: none;">${totalAutorizado50.toFixed(
               2
             )}</td>
@@ -1351,7 +1347,6 @@ function criarTabelaComparativoColaboradorValor(dados) {
         <thead class="thead" style="background-color: #8700d4ff; text-color: white; color: white;">
           <tr>
             <th class="text-left">Colaborador</th>
-            <th class="text-center">Gerente</th>
             <th class="text-center autorizado-col" style="display: none;">Autorizado 50% (R$)</th>
             <th class="text-center autorizado-col" style="display: none;">Autorizado 100% (R$)</th>
             <th class="text-center nao-autorizado-col" style="display: none;">Não Autorizado 50% (R$)</th>
@@ -1377,7 +1372,6 @@ function criarTabelaComparativoColaboradorValor(dados) {
       html += `
       <tr class="table font-weight-bold" style="background-color: #f3dbfdff;">
         <td class="text-left"><i class="fa-solid fa-user-tie"></i> <strong>${gerente}</strong></td>
-        <td class="text-center">TOTAL</td>
         <td class="text-center autorizado-col" style="display: none;"><strong>${formatarMoeda(
           dadosGerente.total_autorizado_50
         )}</strong></td>
@@ -1422,7 +1416,6 @@ function criarTabelaComparativoColaboradorValor(dados) {
         html += `
         <tr>
           <td class="text-left"><strong>${item.colaborador || '-'}</strong></td>
-          <td class="text-center">${item.gerente || '-'}</td>
           <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
             item.autorizado_50 || 0
           )}</td>
@@ -1469,7 +1462,6 @@ function criarTabelaComparativoColaboradorValor(dados) {
         <tfoot class="font-weight-bold" style="background-color: #f8f9fa;">
           <tr>
             <td class="text-left">TOTAL GERAL</td>
-            <td class="text-center">-</td>
             <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
               totalAutorizado50
             )}</td>
