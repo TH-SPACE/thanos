@@ -9,9 +9,20 @@ function carregarDadosUsuario() {
       const cargo = data.cargo || "USUÁRIO";
       const primeiroNome = nomeCompleto;
 
-      document.getElementById("userName").textContent = primeiroNome;
-      document.getElementById("sidebarUserName").textContent = nomeCompleto;
-      document.querySelector(".profile-role").textContent = cargo;
+      const userNameElement = document.getElementById("userName");
+      if (userNameElement) {
+        userNameElement.textContent = primeiroNome;
+      }
+
+      const sidebarUserNameElement = document.getElementById("sidebarUserName");
+      if (sidebarUserNameElement) {
+        sidebarUserNameElement.textContent = nomeCompleto;
+      }
+
+      const profileRoleElement = document.querySelector(".profile-role");
+      if (profileRoleElement) {
+        profileRoleElement.textContent = cargo;
+      }
     });
 }
 
