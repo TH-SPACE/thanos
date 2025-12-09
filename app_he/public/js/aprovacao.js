@@ -539,8 +539,10 @@ function updateResumoFinanceiroAprovacao() {
     document.getElementById("tituloResumoFinanceiro").textContent = "Selecione um gerente para visualizar";
     document.getElementById("resumoLimiteTotal").textContent = "-";
     document.getElementById("resumoExecutadoReal").textContent = "-";
+    document.getElementById("resumoExecutadoRealHoras").textContent = "0h";
     document.getElementById("resumoSaldoReal").textContent = "-";
     document.getElementById("resumoPendente").textContent = "-";
+    document.getElementById("resumoPendenteHoras").textContent = "0h";
     document.getElementById("resumoSimulacaoSaldoFinal").textContent = "-";
     return;
   }
@@ -550,8 +552,10 @@ function updateResumoFinanceiroAprovacao() {
   // Mostrar carregando
   document.getElementById("resumoLimiteTotal").textContent = "Carregando...";
   document.getElementById("resumoExecutadoReal").textContent = "Carregando...";
+  document.getElementById("resumoExecutadoRealHoras").textContent = "Carregando...";
   document.getElementById("resumoSaldoReal").textContent = "Carregando...";
   document.getElementById("resumoPendente").textContent = "Carregando...";
+  document.getElementById("resumoPendenteHoras").textContent = "Carregando...";
   document.getElementById("resumoSimulacaoSaldoFinal").textContent = "Carregando...";
 
   // Montar os parâmetros da URL
@@ -568,7 +572,10 @@ function updateResumoFinanceiroAprovacao() {
         console.error("Erro ao obter resumo financeiro:", data.erro);
         document.getElementById("resumoLimiteTotal").textContent = "Erro";
         document.getElementById("resumoExecutadoReal").textContent = "Erro";
+        document.getElementById("resumoExecutadoRealHoras").textContent = "Erro";
         document.getElementById("resumoSaldoReal").textContent = "Erro";
+        document.getElementById("resumoPendente").textContent = "Erro";
+        document.getElementById("resumoPendenteHoras").textContent = "Erro";
         document.getElementById("resumoSimulacaoSaldoFinal").textContent = "Erro";
         return;
       }
@@ -583,21 +590,23 @@ function updateResumoFinanceiroAprovacao() {
 
       // Formatar horas
       const formatHoras = (value) => {
-        return (value || 0).toFixed(2);
+        return (value || 0).toFixed(1) + 'h';
       };
 
       // Atualizar os valores no HTML
       // Limite Total
       document.getElementById("resumoLimiteTotal").textContent = formatCurrency(data.limiteTotal);
 
-      // Executado Real
+      // Executado Real - Valor e Horas
       document.getElementById("resumoExecutadoReal").textContent = formatCurrency(data.executadoReal.valor);
+      document.getElementById("resumoExecutadoRealHoras").textContent = formatHoras(data.executadoReal.horas);
 
       // Saldo Real
       document.getElementById("resumoSaldoReal").textContent = formatCurrency(data.saldoReal);
 
-      // Pendente
+      // Pendente - Valor e Horas
       document.getElementById("resumoPendente").textContent = formatCurrency(data.pendente.valor);
+      document.getElementById("resumoPendenteHoras").textContent = formatHoras(data.pendente.horas);
 
       // Simulação: Saldo Final se Aprovar Todos Pendentes
       document.getElementById("resumoSimulacaoSaldoFinal").textContent = formatCurrency(data.saldoFinalSimulado);
@@ -606,8 +615,10 @@ function updateResumoFinanceiroAprovacao() {
       console.error("Erro ao obter resumo financeiro:", error);
       document.getElementById("resumoLimiteTotal").textContent = "Erro";
       document.getElementById("resumoExecutadoReal").textContent = "Erro";
+      document.getElementById("resumoExecutadoRealHoras").textContent = "Erro";
       document.getElementById("resumoSaldoReal").textContent = "Erro";
       document.getElementById("resumoPendente").textContent = "Erro";
+      document.getElementById("resumoPendenteHoras").textContent = "Erro";
       document.getElementById("resumoSimulacaoSaldoFinal").textContent = "Erro";
     });
 }
