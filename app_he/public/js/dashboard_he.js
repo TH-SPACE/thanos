@@ -327,6 +327,129 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================================================================================
+  // 📊 Carregamento e Exibição do Gráfico de Horas Executadas dos Últimos 3 Meses
+  // ================================================================================
+
+  /**
+   * Carrega os dados dos últimos 3 meses e exibe no gráfico
+   */
+  async function carregarGraficoUltimos3Meses() {
+    try {
+      // Exibe mensagem de carregamento
+      const chartContainer = document.getElementById('graficoHorasExecutadasChart');
+      if (!chartContainer) return;
+
+      // Atualiza o contexto do canvas
+      const ctx = chartContainer.getContext('2d');
+
+      // Mostra mensagem de carregamento
+      ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+      ctx.font = "14px Arial";
+      ctx.fillStyle = "#6c757d";
+      ctx.textAlign = "center";
+      ctx.fillText("Carregando dados dos últimos 3 meses...", chartContainer.width / 2, chartContainer.height / 2);
+
+      // Faz a requisição para a API
+      const response = await fetch('/planejamento-he/api/ultimos-3-meses');
+      const dados = await response.json();
+
+      if (!Array.isArray(dados) || dados.length === 0) {
+        ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+        ctx.fillText("Nenhum dado encontrado para os últimos 3 meses.", chartContainer.width / 2, chartContainer.height / 2);
+        return;
+      }
+
+      // Configuração dos dados para o gráfico
+      const labels = dados.map(item => `${item.mes}/${item.ano}`);
+      const dataExecutado50 = dados.map(item => item.executado_50);
+      const dataExecutado100 = dados.map(item => item.executado_100);
+      const dataTotal = dados.map(item => item.total_horas);
+
+      // Destroi o gráfico anterior se existir
+      if (window.graficoHorasExecutadas && typeof window.graficoHorasExecutadas.destroy === 'function') {
+        try {
+          window.graficoHorasExecutadas.destroy();
+        } catch (e) {
+          console.warn('Erro ao destruir gráfico anterior:', e);
+        }
+      }
+
+      // Cria o novo gráfico - agora com apenas o total de horas executadas
+      window.graficoHorasExecutadas = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Total de Horas Executadas',
+              data: dataTotal,
+              backgroundColor: 'rgba(0, 123, 255, 0.6)', // Azul
+              borderColor: 'rgba(0, 123, 255, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Horas'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Mês/Ano'
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Horas Executadas nos Últimos 3 Meses'
+            },
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y.toFixed(2) + 'h';
+                  }
+                  return label;
+                }
+              }
+            }
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao carregar dados do gráfico de horas executadas:', error);
+      const chartContainer = document.getElementById('graficoHorasExecutadasChart');
+      if (!chartContainer) return;
+      const ctx = chartContainer.getContext('2d');
+      ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+      ctx.font = "14px Arial";
+      ctx.fillStyle = "#dc3545";
+      ctx.textAlign = "center";
+      ctx.fillText("Erro ao carregar os dados do gráfico.", chartContainer.width / 2, chartContainer.height / 2);
+    }
+  }
+
+  // Carrega o gráfico ao inicializar o dashboard
+  carregarGraficoUltimos3Meses();
+
+  // ================================================================================
   // 📈 Atualização de KPIs (Indicadores)
   // ================================================================================
 

@@ -427,4 +427,13 @@ router.post("/api/colaboradores/excluir", heAuth.requireHEAuth, heDiretoriaAuth.
 // Inclui as rotas de frequência no router principal
 router.use('/', gastoPrevRoutes);
 
+/**
+ * GET /api/ultimos-3-meses
+ * Retorna dados de horas executadas dos últimos 3 meses para exibir em gráfico
+ *
+ * Middlewares: requireHEAuth, requireAnyHEDiretoria
+ * Filtro: Utiliza a tabela FREQUENCIA e retorna os dados dos últimos 3 meses
+ */
+router.get("/api/ultimos-3-meses", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.obterDadosUltimos3Meses);
+
 module.exports = router;

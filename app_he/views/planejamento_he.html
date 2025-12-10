@@ -558,6 +558,25 @@
                         </div>
                     </div>
 
+                    <!-- Gráfico de Horas Executadas dos Últimos 3 Meses -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Horas Executadas nos Últimos 3 Meses</h5>
+                            <button class="btn btn-outline-primary btn-sm" type="button" data-toggle="collapse"
+                                data-target="#graficoHorasExecutadas" aria-expanded="true"
+                                aria-controls="graficoHorasExecutadas">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="collapse show" id="graficoHorasExecutadas">
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="graficoHorasExecutadasChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Tabela de Gerentes -->
                     <div class="card">
                         <h5 class="mb-3"><i class="fas fa-users"></i> Horas por Gerência</h5>

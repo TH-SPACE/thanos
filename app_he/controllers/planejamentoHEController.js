@@ -1933,3 +1933,90 @@ exports.obterMesesAnosUnicosAprovador = async (req, res) => {
     res.status(500).json({ erro: "Erro ao carregar meses e anos para aprovação." });
   }
 };
+
+/**
+ * Retorna dados de horas executadas dos últimos 3 meses para exibir em gráfico
+ *
+ * Busca na tabela FREQUENCIA os dados de horas executadas dos últimos 3 meses
+ * e agrupa por mês para exibir em um gráfico de barras.
+ *
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ * @returns {Array} JSON array com dados dos últimos 3 meses:
+ * [{
+ *   mes: "Janeiro",
+ *   ano: 2025,
+ *   total_horas: 150.5,
+ *   executado_50: 100.0,
+ *   executado_100: 50.5
+ * }]
+ */
+exports.obterDadosUltimos3Meses = async (req, res) => {
+  const conexao = db.mysqlPool;
+  const user = req.session.usuario;
+  const ip = req.ip;
+
+  try {
+    // Verifica se a tabela FREQUENCIA existe e é válida
+    const gastoPrevController = require("./gastoPrevController.js");
+    const tabelaValida = await gastoPrevController.validarTabelaFrequencia(conexao);
+
+    if (!tabelaValida) {
+      return res.status(400).json({
+        erro: "Tabela FREQUENCIA não encontrada ou com estrutura incorreta. Verifique se as colunas NOME, CARGO, EVENTO, GERENTE_IMEDIATO, QTD_HORAS e DATA existem."
+      });
+    }
+
+    // Obtemos as colunas obrigatórias configuradas
+    const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
+    const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
+
+    // Query para obter os dados dos últimos 3 meses
+    const query = `
+      SELECT
+        MONTH(${colunasFrequencia[5]}) as mes_numero,
+        YEAR(${colunasFrequencia[5]}) as ano,
+        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
+        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
+      FROM ${nomeTabelaFrequencia}
+      WHERE ${colunasFrequencia[5]} >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+      GROUP BY YEAR(${colunasFrequencia[5]}), MONTH(${colunasFrequencia[5]})
+      ORDER BY YEAR(${colunasFrequencia[5]}) DESC, MONTH(${colunasFrequencia[5]}) DESC
+    `;
+
+    const [rows] = await conexao.query(query);
+
+    // Mapeia o número do mês para o nome do mês
+    const mesesNomes = {
+      1: "Janeiro",
+      2: "Fevereiro",
+      3: "Março",
+      4: "Abril",
+      5: "Maio",
+      6: "Junho",
+      7: "Julho",
+      8: "Agosto",
+      9: "Setembro",
+      10: "Outubro",
+      11: "Novembro",
+      12: "Dezembro"
+    };
+
+    // Formata os dados para retorno
+    const dadosFormatados = rows.map(row => ({
+      mes: mesesNomes[row.mes_numero],
+      ano: row.ano,
+      executado_50: parseFloat(row.executado_50) || 0,
+      executado_100: parseFloat(row.executado_100) || 0,
+      total_horas: parseFloat(row.executado_50) + parseFloat(row.executado_100)
+    }));
+
+    res.json(dadosFormatados);
+  } catch (error) {
+    console.error(
+      `[ERRO] Usuário: ${user?.nome || "desconhecido"}, IP: ${ip}, Ação: Erro ao obter dados dos últimos 3 meses.`,
+      error
+    );
+    res.status(500).json({ erro: "Erro ao buscar dados dos últimos 3 meses." });
+  }
+};

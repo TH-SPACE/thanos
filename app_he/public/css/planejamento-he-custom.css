@@ -998,6 +998,18 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
     width: 100%;
 }
 
+/* Estilos para o container do gráfico */
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+}
+
+/* Estilo para o card que contém o gráfico */
+.card.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
 .card-resumo-icon {
     font-size: 1rem;
     margin-bottom: 2px;
