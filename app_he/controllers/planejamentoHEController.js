@@ -234,8 +234,7 @@ exports.getResumoFinanceiroAprovacao = async (req, res) => {
       const mesNumero = meses[mes];
 
       if (mesNumero !== undefined) {
-        const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
-        const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
+        const nomeTabelaFrequencia = 'FREQUENCIA';
 
         // Criar placeholders para a consulta IN
         const placeholders = gerentesParaConsulta.map(() => '?').join(',');
@@ -243,12 +242,12 @@ exports.getResumoFinanceiroAprovacao = async (req, res) => {
         // Query para obter os dados de execução com base nos gerentes
         const queryExecutado = `
           SELECT
-            ${colunasFrequencia[1]} as cargo,  -- CARGO
-            SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
-            SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
+            CARGO as cargo,
+            SUM(CASE WHEN EVENTO = 'Hora Extra 50%' THEN QTD_HORAS ELSE 0 END) as executado_50,
+            SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
           FROM ${nomeTabelaFrequencia}
-          WHERE ${colunasFrequencia[3]} IN (${placeholders}) AND MONTH(${colunasFrequencia[5]}) = ?
-          GROUP BY ${colunasFrequencia[1]}
+          WHERE GERENTE_IMEDIATO IN (${placeholders}) AND MONTH(DATA) = ?
+          GROUP BY CARGO
         `;
 
         const [executadoData] = await conexao.query(queryExecutado, [...gerentesParaConsulta, mesNumero]);
@@ -593,8 +592,7 @@ exports.obterResumoExecutado = async (req, res) => {
     }
 
     // Obtemos todas as horas executadas (da tabela FREQUENCIA) agrupadas por gerente
-    const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
-    const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
+    const nomeTabelaFrequencia = 'FREQUENCIA';
 
     // Criar placeholders para a consulta IN
     const placeholders = gerentesParaConsulta.map(() => '?').join(',');
@@ -602,13 +600,13 @@ exports.obterResumoExecutado = async (req, res) => {
     // Primeiro, vamos obter os dados de execução por colaborador para calcular valores monetários
     const queryExecutadoComCargo = `
       SELECT
-        ${colunasFrequencia[0]} as colaborador,  -- NOME
-        ${colunasFrequencia[1]} as cargo,  -- CARGO
-        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
-        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
+        NOME as colaborador,
+        CARGO as cargo,
+        SUM(CASE WHEN EVENTO = 'Hora Extra 50%' THEN QTD_HORAS ELSE 0 END) as executado_50,
+        SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabelaFrequencia}
-      WHERE ${colunasFrequencia[3]} IN (${placeholders}) AND MONTH(${colunasFrequencia[5]}) = ?
-      GROUP BY ${colunasFrequencia[0]}, ${colunasFrequencia[1]}
+      WHERE GERENTE_IMEDIATO IN (${placeholders}) AND MONTH(DATA) = ?
+      GROUP BY NOME, CARGO
     `;
 
     const [executadoData] = await conexao.query(queryExecutadoComCargo, [...gerentesParaConsulta, mesNumero]);
@@ -738,22 +736,21 @@ exports.obterDetalhesExecutado = async (req, res) => {
     }
 
     // Obtemos as horas executadas (da tabela FREQUENCIA) agrupadas por colaborador
-    const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
-    const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
+    const nomeTabelaFrequencia = 'FREQUENCIA';
 
     // Criar placeholders para a consulta IN
     const placeholders = gerentesParaConsulta.map(() => '?').join(',');
 
     const queryDetalhes = `
       SELECT
-        ${colunasFrequencia[0]} as colaborador,  -- NOME
-        ${colunasFrequencia[1]} as cargo,  -- CARGO
-        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
-        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
+        NOME as colaborador,
+        CARGO as cargo,
+        SUM(CASE WHEN EVENTO = 'Hora Extra 50%' THEN QTD_HORAS ELSE 0 END) as executado_50,
+        SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabelaFrequencia}
-      WHERE ${colunasFrequencia[3]} IN (${placeholders}) AND MONTH(${colunasFrequencia[5]}) = ?
-      GROUP BY ${colunasFrequencia[0]}, ${colunasFrequencia[1]}
-      ORDER BY ${colunasFrequencia[0]}
+      WHERE GERENTE_IMEDIATO IN (${placeholders}) AND MONTH(DATA) = ?
+      GROUP BY NOME, CARGO
+      ORDER BY NOME
     `;
 
     const [detalhesData] = await conexao.query(queryDetalhes, [...gerentesParaConsulta, mesNumero]);
@@ -1968,20 +1965,19 @@ exports.obterDadosUltimos3Meses = async (req, res) => {
     }
 
     // Obtemos as colunas obrigatórias configuradas
-    const colunasFrequencia = require("../json/config_frequencia.json").tabela_frequencia.colunas_obrigatorias;
-    const nomeTabelaFrequencia = require("../json/config_frequencia.json").tabela_frequencia.nome;
+    const nomeTabelaFrequencia = 'FREQUENCIA';
 
     // Query para obter os dados dos últimos 3 meses
     const query = `
       SELECT
-        MONTH(${colunasFrequencia[5]}) as mes_numero,
-        YEAR(${colunasFrequencia[5]}) as ano,
-        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Hora Extra 50%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_50,
-        SUM(CASE WHEN ${colunasFrequencia[2]} = 'Horas extras 100%' THEN ${colunasFrequencia[4]} ELSE 0 END) as executado_100
+        MONTH(DATA) as mes_numero,
+        YEAR(DATA) as ano,
+        SUM(CASE WHEN EVENTO = 'Hora Extra 50%' THEN QTD_HORAS ELSE 0 END) as executado_50,
+        SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabelaFrequencia}
-      WHERE ${colunasFrequencia[5]} >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
-      GROUP BY YEAR(${colunasFrequencia[5]}), MONTH(${colunasFrequencia[5]})
-      ORDER BY YEAR(${colunasFrequencia[5]}) DESC, MONTH(${colunasFrequencia[5]}) DESC
+      WHERE DATA >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+      GROUP BY YEAR(DATA), MONTH(DATA)
+      ORDER BY YEAR(DATA) DESC, MONTH(DATA) DESC
     `;
 
     const [rows] = await conexao.query(query);

@@ -10,7 +10,6 @@ const ExcelJS = require("exceljs");
 const path = require("path");
 const fs = require("fs");
 const db = require("../../db/db");
-const configFrequencia = require("../json/config_frequencia.json");
 
 // ================================================================================
 // 🔍 Funções auxiliares de validação
@@ -27,7 +26,7 @@ exports.validarTabelaFrequencia = async function validarTabelaFrequencia(
     conexao
 ) {
     try {
-        const tabelaNome = configFrequencia.tabela_frequencia.nome;
+        const tabelaNome = 'FREQUENCIA';
 
         // Verifica se a tabela FREQUENCIA existe
         const [tabelas] = await conexao.query(`SHOW TABLES LIKE '${tabelaNome}'`);
@@ -43,8 +42,14 @@ exports.validarTabelaFrequencia = async function validarTabelaFrequencia(
         const [colunas] = await conexao.query(`SHOW COLUMNS FROM ${tabelaNome}`);
         const nomesColunas = colunas.map((c) => c.Field.toUpperCase());
 
-        const colunasNecessarias =
-            configFrequencia.tabela_frequencia.colunas_obrigatorias;
+        const colunasNecessarias = [
+            "NOME",
+            "CARGO",
+            "EVENTO",
+            "GERENTE_IMEDIATO",
+            "QTD_HORAS",
+            "DATA"
+        ];
         const colunasFaltando = colunasNecessarias.filter(
             (col) => !nomesColunas.includes(col)
         );
@@ -118,8 +123,7 @@ exports.getComparativoGastoPrev = async (req, res) => {
             });
         }
 
-        const colunas = configFrequencia.tabela_frequencia.colunas_obrigatorias;
-        const nomeTabela = configFrequencia.tabela_frequencia.nome;
+        const nomeTabela = 'FREQUENCIA';
 
         // Converter nome do mês para número correspondente
         const meses = {
@@ -148,18 +152,18 @@ exports.getComparativoGastoPrev = async (req, res) => {
 
         let queryExecutado = `
       SELECT
-        ${colunas[3]} as gerente,
-        ${colunas[0]} as colaborador,
+        GERENTE_IMEDIATO as gerente,
+        NOME as colaborador,
         COALESCE(GERENTE_DIVISAO, '') as gerente_divisao,
-        SUM(CASE WHEN ${colunas[2]} = 'Hora Extra 50%' THEN ${colunas[4]} ELSE 0 END) as executado_50,
-        SUM(CASE WHEN ${colunas[2]} = 'Horas extras 100%' THEN ${colunas[4]} ELSE 0 END) as executado_100
+        SUM(CASE WHEN EVENTO = 'Hora Extra 50%' THEN QTD_HORAS ELSE 0 END) as executado_50,
+        SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabela}
-      WHERE MONTH(${colunas[5]}) = ?
+      WHERE MONTH(DATA) = ?
     `;
         let paramsExecutado = [mesNumero];
 
-        queryExecutado += ` GROUP BY ${colunas[3]}, ${colunas[0]}, GERENTE_DIVISAO
-        ORDER BY ${colunas[3]}, ${colunas[0]}`;
+        queryExecutado += ` GROUP BY GERENTE_IMEDIATO, NOME, GERENTE_DIVISAO
+        ORDER BY GERENTE_IMEDIATO, NOME`;
 
         const [executado] = await conexao.query(queryExecutado, paramsExecutado);
 
@@ -368,8 +372,7 @@ exports.getComparativoGastoPrevValor = async (req, res) => {
             });
         }
 
-        const colunas = configFrequencia.tabela_frequencia.colunas_obrigatorias;
-        const nomeTabela = configFrequencia.tabela_frequencia.nome;
+        const nomeTabela = 'FREQUENCIA';
 
         // Converter nome do mês para número correspondente
         const meses = {
@@ -397,19 +400,19 @@ exports.getComparativoGastoPrevValor = async (req, res) => {
         // Usando a mesma abordagem da função que funciona corretamente, com distinção exata no SQL
         let queryExecutado = `
       SELECT
-        ${colunas[3]} as gerente,
-        ${colunas[0]} as colaborador,
-        ${colunas[1]} as cargo,
+        GERENTE_IMEDIATO as gerente,
+        NOME as colaborador,
+        CARGO as cargo,
         COALESCE(GERENTE_DIVISAO, '') as gerente_divisao,
-        SUM(CASE WHEN ${colunas[2]} = 'Hora Extra 50%' THEN ${colunas[4]} ELSE 0 END) as executado_50,
-        SUM(CASE WHEN ${colunas[2]} = 'Horas extras 100%' THEN ${colunas[4]} ELSE 0 END) as executado_100
+        SUM(CASE WHEN EVENTO = 'Hora Extra 50%' THEN QTD_HORAS ELSE 0 END) as executado_50,
+        SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabela}
-      WHERE MONTH(${colunas[5]}) = ?
+      WHERE MONTH(DATA) = ?
     `;
         let paramsExecutado = [mesNumero];
 
-        queryExecutado += ` GROUP BY ${colunas[3]}, ${colunas[0]}, ${colunas[1]}, GERENTE_DIVISAO
-        ORDER BY ${colunas[3]}, ${colunas[0]}`;
+        queryExecutado += ` GROUP BY GERENTE_IMEDIATO, NOME, CARGO, GERENTE_DIVISAO
+        ORDER BY GERENTE_IMEDIATO, NOME`;
 
         const [dadosExecutado] = await conexao.query(
             queryExecutado,
@@ -612,8 +615,7 @@ exports.getMesesDisponiveisGastoPrev = async (req, res) => {
 
     try {
         const conexao = db.mysqlPool;
-        const nomeTabela = configFrequencia.tabela_frequencia.nome;
-        const colunaData = configFrequencia.tabela_frequencia.colunas_obrigatorias[5]; // 'DATA'
+        const nomeTabela = 'FREQUENCIA';
 
         // Valida se a tabela FREQUENCIA existe antes de prosseguir
         const tabelaValida = await exports.validarTabelaFrequencia(conexao);
@@ -626,8 +628,8 @@ exports.getMesesDisponiveisGastoPrev = async (req, res) => {
         // Query para buscar ano e mês distintos, ordenando pelo mais recente primeiro
         const query = `
       SELECT DISTINCT
-        YEAR(${colunaData}) as ano,
-        MONTH(${colunaData}) as mes
+        YEAR(DATA) as ano,
+        MONTH(DATA) as mes
       FROM ${nomeTabela}
       ORDER BY ano DESC, mes DESC
     `;
@@ -705,8 +707,7 @@ exports.getComparativoGastoPrevColaborador = async (req, res) => {
             });
         }
 
-        const colunas = configFrequencia.tabela_frequencia.colunas_obrigatorias;
-        const nomeTabela = configFrequencia.tabela_frequencia.nome;
+        const nomeTabela = 'FREQUENCIA';
 
         // Converter nome do mês para número correspondente
         const meses = {
@@ -733,24 +734,24 @@ exports.getComparativoGastoPrevColaborador = async (req, res) => {
         // Obtemos todas as horas executadas (da tabela FREQUENCIA) agrupadas por colaborador e gerente
         let queryExecutado = `
       SELECT
-        ${colunas[3]} as gerente,
-        ${colunas[0]} as colaborador,
+        GERENTE_IMEDIATO as gerente,
+        NOME as colaborador,
         COALESCE(GERENTE_DIVISAO, '') as gerente_divisao,
-        SUM(CASE WHEN ${colunas[2]} = 'Hora Extra 50%' THEN ${colunas[4]} ELSE 0 END) as executado_50,
-        SUM(CASE WHEN ${colunas[2]} = 'Horas extras 100%' THEN ${colunas[4]} ELSE 0 END) as executado_100
+        SUM(CASE WHEN EVENTO = 'Hora Extra 50%' THEN QTD_HORAS ELSE 0 END) as executado_50,
+        SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabela}
-      WHERE MONTH(${colunas[5]}) = ?
+      WHERE MONTH(DATA) = ?
     `;
         let paramsExecutado = [mesNumero];
 
         // Adiciona filtro por gerente se especificado
         if (gerente && gerente !== "") {
-            queryExecutado += ` AND ${colunas[3]} = ?`;
+            queryExecutado += ` AND GERENTE_IMEDIATO = ?`;
             paramsExecutado.push(gerente);
         }
 
-        queryExecutado += ` GROUP BY ${colunas[3]}, ${colunas[0]}, GERENTE_DIVISAO
-        ORDER BY ${colunas[3]}, ${colunas[0]}`;
+        queryExecutado += ` GROUP BY GERENTE_IMEDIATO, NOME, GERENTE_DIVISAO
+        ORDER BY GERENTE_IMEDIATO, NOME`;
 
         const [executado] = await conexao.query(queryExecutado, paramsExecutado);
 
@@ -927,8 +928,7 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
             });
         }
 
-        const colunas = configFrequencia.tabela_frequencia.colunas_obrigatorias;
-        const nomeTabela = configFrequencia.tabela_frequencia.nome;
+        const nomeTabela = 'FREQUENCIA';
 
         // Converter nome do mês para número correspondente
         const meses = {
@@ -955,25 +955,25 @@ exports.getComparativoGastoPrevColaboradorValor = async (req, res) => {
         // Obtemos todas as horas executadas (da tabela FREQUENCIA) agrupadas por colaborador e gerente
         let queryExecutado = `
       SELECT
-        ${colunas[3]} as gerente,
-        ${colunas[0]} as colaborador,
-        ${colunas[1]} as cargo,
+        GERENTE_IMEDIATO as gerente,
+        NOME as colaborador,
+        CARGO as cargo,
         COALESCE(GERENTE_DIVISAO, '') as gerente_divisao,
-        SUM(CASE WHEN ${colunas[2]} = 'Hora Extra 50%' THEN ${colunas[4]} ELSE 0 END) as executado_50,
-        SUM(CASE WHEN ${colunas[2]} = 'Horas extras 100%' THEN ${colunas[4]} ELSE 0 END) as executado_100
+        SUM(CASE WHEN EVENTO = 'Hora Extra 50%' THEN QTD_HORAS ELSE 0 END) as executado_50,
+        SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabela}
-      WHERE MONTH(${colunas[5]}) = ?
+      WHERE MONTH(DATA) = ?
     `;
         let paramsExecutado = [mesNumero];
 
         // Adiciona filtro por gerente se especificado
         if (gerente && gerente !== "") {
-            queryExecutado += ` AND ${colunas[3]} = ?`;
+            queryExecutado += ` AND GERENTE_IMEDIATO = ?`;
             paramsExecutado.push(gerente);
         }
 
-        queryExecutado += ` GROUP BY ${colunas[3]}, ${colunas[0]}, ${colunas[1]}, GERENTE_DIVISAO
-        ORDER BY ${colunas[3]}, ${colunas[0]}`;
+        queryExecutado += ` GROUP BY GERENTE_IMEDIATO, NOME, CARGO, GERENTE_DIVISAO
+        ORDER BY GERENTE_IMEDIATO, NOME`;
 
         const [dadosExecutado] = await conexao.query(
             queryExecutado,
@@ -1179,9 +1179,7 @@ exports.getGerentesDisponiveis = async (req, res) => {
 
     try {
         const conexao = db.mysqlPool;
-        const nomeTabela = configFrequencia.tabela_frequencia.nome;
-        const colunaData = configFrequencia.tabela_frequencia.colunas_obrigatorias[5]; // 'DATA'
-        const colunaGerente = configFrequencia.tabela_frequencia.colunas_obrigatorias[3]; // 'GERENTE_IMEDIATO'
+        const nomeTabela = 'FREQUENCIA';
 
         // Valida se a tabela FREQUENCIA existe antes de prosseguir
         const tabelaValida = await exports.validarTabelaFrequencia(conexao);
@@ -1216,20 +1214,20 @@ exports.getGerentesDisponiveis = async (req, res) => {
         // Query para buscar gerentes distintos no mês/ano especificado
         let query = `
       SELECT DISTINCT
-        ${colunaGerente} as gerente
+        GERENTE_IMEDIATO as gerente
       FROM ${nomeTabela}
-      WHERE MONTH(${colunaData}) = ?
+      WHERE MONTH(DATA) = ?
     `;
 
         let params = [mesNumero];
 
         // Adiciona filtro por ano se especificado
         if (ano && ano !== "") {
-            query += ` AND YEAR(${colunaData}) = ?`;
+            query += ` AND YEAR(DATA) = ?`;
             params.push(ano);
         }
 
-        query += ` ORDER BY ${colunaGerente}`;
+        query += ` ORDER BY GERENTE_IMEDIATO`;
 
         const [rows] = await conexao.query(query, params);
 
