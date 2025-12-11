@@ -1977,7 +1977,7 @@ exports.obterDadosUltimos3Meses = async (req, res) => {
       FROM ${nomeTabelaFrequencia}
       WHERE DATA >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
       GROUP BY YEAR(DATA), MONTH(DATA)
-      ORDER BY YEAR(DATA) DESC, MONTH(DATA) DESC
+      ORDER BY YEAR(DATA) ASC, MONTH(DATA) ASC
     `;
 
     const [rows] = await conexao.query(query);
