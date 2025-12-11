@@ -247,6 +247,7 @@ exports.getResumoFinanceiroAprovacao = async (req, res) => {
             SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
           FROM ${nomeTabelaFrequencia}
           WHERE GERENTE_IMEDIATO IN (${placeholders}) AND MONTH(DATA) = ?
+            AND EVENTO IN ('Hora Extra 50%', 'Horas extras 100%')
           GROUP BY CARGO
         `;
 
@@ -606,6 +607,7 @@ exports.obterResumoExecutado = async (req, res) => {
         SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabelaFrequencia}
       WHERE GERENTE_IMEDIATO IN (${placeholders}) AND MONTH(DATA) = ?
+        AND EVENTO IN ('Hora Extra 50%', 'Horas extras 100%')
       GROUP BY NOME, CARGO
     `;
 
@@ -749,6 +751,7 @@ exports.obterDetalhesExecutado = async (req, res) => {
         SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabelaFrequencia}
       WHERE GERENTE_IMEDIATO IN (${placeholders}) AND MONTH(DATA) = ?
+        AND EVENTO IN ('Hora Extra 50%', 'Horas extras 100%')
       GROUP BY NOME, CARGO
       ORDER BY NOME
     `;
@@ -1976,6 +1979,7 @@ exports.obterDadosUltimos3Meses = async (req, res) => {
         SUM(CASE WHEN EVENTO = 'Horas extras 100%' THEN QTD_HORAS ELSE 0 END) as executado_100
       FROM ${nomeTabelaFrequencia}
       WHERE DATA >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+        AND EVENTO IN ('Hora Extra 50%', 'Horas extras 100%')
       GROUP BY YEAR(DATA), MONTH(DATA)
       ORDER BY YEAR(DATA) ASC, MONTH(DATA) ASC
     `;
@@ -2014,5 +2018,71 @@ exports.obterDadosUltimos3Meses = async (req, res) => {
       error
     );
     res.status(500).json({ erro: "Erro ao buscar dados dos últimos 3 meses." });
+  }
+};
+
+
+// Função para obter dados por tipo_posicao2 nos últimos 3 meses
+exports.obterDadosPorTipoPosicao2 = async (req, res) => {
+  const conexao = db.mysqlPool;
+  const user = req.session.usuario;
+  const ip = req.ip;
+
+  try {
+    // Verifica se a tabela FREQUENCIA existe e é válida
+    const gastoPrevController = require("./gastoPrevController.js");
+    const tabelaValida = await gastoPrevController.validarTabelaFrequencia(conexao);
+
+    if (!tabelaValida) {
+      return res.status(400).json({
+        erro: "Tabela FREQUENCIA não encontrada ou com estrutura incorreta. Verifique se as colunas NOME, CARGO, EVENTO, GERENTE_IMEDIATO, QTD_HORAS, DATA e TIPO_POSICAO2 existem."
+      });
+    }
+
+    // Query para obter os dados por tipo_posicao2 nos últimos 3 meses
+    const query = `
+      SELECT
+        MONTH(DATA) as mes_numero,
+        YEAR(DATA) as ano,
+        TIPO_POSICAO2,
+        SUM(QTD_HORAS) as total_horas
+      FROM FREQUENCIA
+      WHERE DATA >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+        AND TIPO_POSICAO2 IN ('STAFF', 'TECNICO', 'CAMPO', 'ATENDIMENTO')
+        AND EVENTO IN ('Hora Extra 50%', 'Horas extras 100%')
+      GROUP BY YEAR(DATA), MONTH(DATA), TIPO_POSICAO2
+      ORDER BY YEAR(DATA) ASC, MONTH(DATA) ASC, TIPO_POSICAO2 ASC
+    `;
+
+    const [rows] = await conexao.query(query);
+
+    // Mapeia o número do mês para o nome do mês
+    const mesesNomes = {
+      1: "Janeiro",
+      2: "Fevereiro",
+      3: "Março",
+      4: "Abril",
+      5: "Maio",
+      6: "Junho",
+      7: "Julho",
+      8: "Agosto",
+      9: "Setembro",
+      10: "Outubro",
+      11: "Novembro",
+      12: "Dezembro"
+    };
+
+    // Transforma os dados para o formato necessário para o gráfico
+    const dadosFormatados = rows.map(row => ({
+      mes: mesesNomes[row.mes_numero],
+      ano: row.ano,
+      tipo_posicao2: row.TIPO_POSICAO2,
+      total_horas: parseFloat(row.total_horas) || 0
+    }));
+
+    res.json({ dados: dadosFormatados });
+  } catch (error) {
+    console.error("Erro ao obter dados por tipo_posicao2:", error);
+    res.status(500).json({ erro: "Erro ao obter dados por tipo_posicao2" });
   }
 };

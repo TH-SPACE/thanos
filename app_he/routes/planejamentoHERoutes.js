@@ -436,4 +436,13 @@ router.use('/', gastoPrevRoutes);
  */
 router.get("/api/ultimos-3-meses", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.obterDadosUltimos3Meses);
 
+/**
+ * GET /api/dados-por-tipo-posicao2
+ * Retorna dados de horas executadas por tipo_posicao2 dos últimos 3 meses para exibir em gráfico
+ *
+ * Middlewares: requireHEAuth, requireAnyHEDiretoria
+ * Filtro: Utiliza a tabela FREQUENCIA e retorna os dados dos últimos 3 meses por tipo_posicao2 (STAFF, TECNICO, CAMPO, ATENDIMENTO)
+ */
+router.get("/api/dados-por-tipo-posicao2", heAuth.requireHEAuth, heDiretoriaAuth.requireAnyHEDiretoria, planejamentoHE.obterDadosPorTipoPosicao2);
+
 module.exports = router;

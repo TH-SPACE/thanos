@@ -428,9 +428,22 @@ document.addEventListener("DOMContentLoaded", () => {
                   return label;
                 }
               }
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              formatter: function(value) {
+                return value !== 0 ? value.toFixed(1) + 'h' : '';
+              },
+              font: {
+                weight: 'bold',
+                size: 12
+              },
+              color: '#333'
             }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
 
     } catch (error) {
@@ -448,6 +461,181 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Carrega o gráfico ao inicializar o dashboard
   carregarGraficoUltimos3Meses();
+
+  /**
+   * Carrega os dados por tipo_posicao2 dos últimos 3 meses e exibe no gráfico
+   */
+  async function carregarGraficoPorTipoPosicao2() {
+    try {
+      // Exibe mensagem de carregamento
+      const chartContainer = document.getElementById('graficoHorasPorTipoChart');
+      if (!chartContainer) return;
+
+      // Atualiza o contexto do canvas
+      const ctx = chartContainer.getContext('2d');
+
+      // Mostra mensagem de carregamento
+      ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+      ctx.font = "14px Arial";
+      ctx.fillStyle = "#6c757d";
+      ctx.textAlign = "center";
+      ctx.fillText("Carregando dados por tipo de posição...", chartContainer.width / 2, chartContainer.height / 2);
+
+      // Faz a requisição para a API
+      const response = await fetch('/planejamento-he/api/dados-por-tipo-posicao2');
+      const result = await response.json();
+
+      if (!result.dados || !Array.isArray(result.dados) || result.dados.length === 0) {
+        ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+        ctx.fillText("Nenhum dado encontrado por tipo de posição.", chartContainer.width / 2, chartContainer.height / 2);
+        return;
+      }
+
+      const dados = result.dados;
+
+      // Agrupa os dados por tipo_posicao2
+      const dadosAgrupados = {};
+      dados.forEach(item => {
+        if (!dadosAgrupados[item.tipo_posicao2]) {
+          dadosAgrupados[item.tipo_posicao2] = [];
+        }
+        dadosAgrupados[item.tipo_posicao2].push({
+          mes: `${item.mes}/${item.ano}`,
+          total_horas: item.total_horas
+        });
+      });
+
+      // Prepara os labels (meses/anos únicos) e os dados para o gráfico
+      const ordemMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                          'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+      const mesesAnosUnicos = [...new Set(dados.map(item => `${item.mes}/${item.ano}`))].sort((a, b) => {
+        // Extrai o mês e ano de cada string "Mes/Ano"
+        const [mesA, anoA] = a.split('/');
+        const [mesB, anoB] = b.split('/');
+
+        // Compara os anos primeiro
+        if (parseInt(anoA) !== parseInt(anoB)) {
+          return parseInt(anoA) - parseInt(anoB);
+        }
+
+        // Se os anos são iguais, compara os meses pela ordem cronológica
+        return ordemMeses.indexOf(mesA) - ordemMeses.indexOf(mesB);
+      });
+
+      // Define cores para os diferentes tipos de posição
+      const cores = {
+        'STAFF': 'rgba(0, 123, 255, 0.6)', // Azul
+        'TECNICO': 'rgba(255, 193, 7, 0.6)', // Amarelo
+        'CAMPO': 'rgba(40, 167, 69, 0.6)', // Verde
+        'ATENDIMENTO': 'rgba(220, 53, 69, 0.6)' // Vermelho
+      };
+
+      // Prepara os datasets para o gráfico
+      const datasets = Object.keys(dadosAgrupados).map(tipo => {
+        // Para cada tipo, cria um array de valores correspondentes a cada mês/ano
+        const data = mesesAnosUnicos.map(mesAno => {
+          const item = dadosAgrupados[tipo].find(d => d.mes === mesAno);
+          return item ? item.total_horas : 0;
+        });
+
+        return {
+          label: tipo,
+          data: data,
+          backgroundColor: cores[tipo] || 'rgba(108, 117, 125, 0.6)', // Cinza padrão se não tiver cor definida
+          borderColor: cores[tipo] ? cores[tipo].replace('0.6', '1') : 'rgba(108, 117, 125, 1)',
+          borderWidth: 1
+        };
+      });
+
+      // Destroi o gráfico anterior se existir
+      if (window.graficoHorasPorTipo && typeof window.graficoHorasPorTipo.destroy === 'function') {
+        try {
+          window.graficoHorasPorTipo.destroy();
+        } catch (e) {
+          console.warn('Erro ao destruir gráfico anterior:', e);
+        }
+      }
+
+      // Cria o novo gráfico
+      window.graficoHorasPorTipo = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: mesesAnosUnicos,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Horas'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Mês/Ano'
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Horas Executadas por Tipo (Últimos 3 Meses)'
+            },
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y.toFixed(2) + 'h';
+                  }
+                  return label;
+                }
+              }
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              formatter: function(value) {
+                return value !== 0 ? value.toFixed(1) + 'h' : '';
+              },
+              font: {
+                weight: 'bold',
+                size: 10
+              },
+              color: '#333'
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+
+    } catch (error) {
+      console.error('Erro ao carregar dados do gráfico por tipo de posição:', error);
+      const chartContainer = document.getElementById('graficoHorasPorTipoChart');
+      if (!chartContainer) return;
+      const ctx = chartContainer.getContext('2d');
+      ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+      ctx.font = "14px Arial";
+      ctx.fillStyle = "#dc3545";
+      ctx.textAlign = "center";
+      ctx.fillText("Erro ao carregar os dados do gráfico.", chartContainer.width / 2, chartContainer.height / 2);
+    }
+  }
+
+  // Carrega o gráfico por tipo_posicao2 ao inicializar o dashboard
+  carregarGraficoPorTipoPosicao2();
 
   // ================================================================================
   // 📈 Atualização de KPIs (Indicadores)
