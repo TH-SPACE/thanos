@@ -384,17 +384,17 @@ document.addEventListener("DOMContentLoaded", () => {
               label: 'Total de Horas Executadas',
               data: dataTotal,
               backgroundColor: [
-                'rgba(54, 162, 235, 0.7)',
-                'rgba(54, 162, 235, 0.7)',
-                'rgba(54, 162, 235, 0.7)'
+                'rgba(99, 102, 241, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(168, 85, 247, 0.8)'
               ],
               borderColor: [
-                'rgba(54, 162, 235, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(54, 162, 235, 1)'
+                'rgba(99, 102, 241, 1)',
+                'rgba(139, 92, 246, 1)',
+                'rgba(168, 85, 247, 1)'
               ],
-              borderWidth: 1,
-              borderRadius: 6,
+              borderWidth: 2,
+              borderRadius: 12,
               borderSkipped: false,
             }
           ]
@@ -406,87 +406,44 @@ document.addEventListener("DOMContentLoaded", () => {
             legend: {
               display: false
             },
-            title: {
-              display: true,
-              text: 'Horas Executadas',
-              font: {
-                size: 16,
-                weight: 'bold'
-              },
-              padding: {
-                top: 10,
-                bottom: 20
-              }
-            },
             tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              backgroundColor: 'rgba(15, 23, 42, 0.95)',
               titleColor: '#fff',
               bodyColor: '#fff',
-              borderColor: '#333',
-              borderWidth: 1,
-              cornerRadius: 6,
+              padding: 12,
+              cornerRadius: 8,
               displayColors: false,
               callbacks: {
-                label: function(context) {
-                  if (context.parsed.y !== null) {
-                    return `Total: ${context.parsed.y.toFixed(1)}h`;
-                  }
+                label: function (context) {
+                  return `Total: ${context.parsed.y.toFixed(1)}h`;
                 }
               }
             },
             datalabels: {
               anchor: 'end',
               align: 'top',
-              formatter: function(value) {
-                return value !== 0 ? value.toFixed(1) + 'h' : '';
-              },
-              font: {
-                weight: 'bold',
-                size: 12
-              },
-              color: '#333',
-              textStrokeColor: '#fff',
-              textStrokeWidth: 2
+              formatter: (value) => value.toFixed(1) + 'h',
+              font: { weight: 'bold', size: 14 },
+              color: '#1e293b',
+              offset: 4
             }
           },
           scales: {
             y: {
               beginAtZero: true,
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
-              },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' },
               title: {
                 display: true,
                 text: 'Horas',
-                font: {
-                  weight: 'bold'
-                }
-              },
-              ticks: {
-                font: {
-                  size: 11
-                }
+                font: { weight: 'bold', size: 13 }
               }
             },
             x: {
-              grid: {
-                display: false
-              },
-              title: {
-                display: false
-              },
-              ticks: {
-                font: {
-                  size: 11,
-                  weight: 'bold'
-                }
-              }
+              grid: { display: false },
+              ticks: { font: { weight: '600', size: 12 } }
             }
           },
-          animation: {
-            duration: 1000,
-            easing: 'easeOutQuart'
-          }
+          animation: false
         },
         plugins: [ChartDataLabels]
       });
@@ -608,26 +565,26 @@ document.addEventListener("DOMContentLoaded", () => {
         data: {
           labels: mesesAnosUnicos,
           datasets: datasets.map((dataset, index) => {
-            // Define cores mais profissionais para cada tipo
-            const cores = [
-              'rgba(54, 162, 235, 0.7)', // Azul
-              'rgba(255, 193, 7, 0.7)',  // Amarelo
-              'rgba(40, 167, 69, 0.7)',  // Verde
-              'rgba(220, 53, 69, 0.7)'   // Vermelho
-            ];
-            const bordas = [
-              'rgba(54, 162, 235, 1)', // Azul
-              'rgba(255, 193, 7, 1)',  // Amarelo
-              'rgba(40, 167, 69, 1)',  // Verde
-              'rgba(220, 53, 69, 1)'   // Vermelho
-            ];
+            // Define cores correspondentes ao dashtest.html
+            const cores = {
+              'STAFF': 'rgba(99, 102, 241, 0.8)',
+              'TÉCNICO': 'rgba(245, 158, 11, 0.8)',
+              'CAMPO': 'rgba(16, 185, 129, 0.8)',
+              'ATENDIMENTO': 'rgba(239, 68, 68, 0.8)'
+            };
+            const bordas = {
+              'STAFF': 'rgba(99, 102, 241, 1)',
+              'TÉCNICO': 'rgba(245, 158, 11, 1)',
+              'CAMPO': 'rgba(16, 185, 129, 1)',
+              'ATENDIMENTO': 'rgba(239, 68, 68, 1)'
+            };
 
             return {
               ...dataset,
-              backgroundColor: dataset.data.map(() => cores[index % cores.length]),
-              borderColor: dataset.data.map(() => bordas[index % bordas.length]),
-              borderWidth: 1,
-              borderRadius: 6,
+              backgroundColor: dataset.data.map(() => cores[dataset.label] || `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.8)`),
+              borderColor: dataset.data.map(() => bordas[dataset.label] || `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`),
+              borderWidth: 2,
+              borderRadius: 8,
               borderSkipped: false,
             };
           })
@@ -639,92 +596,49 @@ document.addEventListener("DOMContentLoaded", () => {
             legend: {
               position: 'top',
               labels: {
-                font: {
-                  size: 11
-                },
-                padding: 15
-              }
-            },
-            title: {
-              display: true,
-              text: 'Por Tipo de Posição',
-              font: {
-                size: 16,
-                weight: 'bold'
-              },
-              padding: {
-                top: 10,
-                bottom: 20
+                font: { size: 12, weight: '600' },
+                padding: 15,
+                usePointStyle: true,
+                pointStyle: 'circle'
               }
             },
             tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              backgroundColor: 'rgba(15, 23, 42, 0.95)',
               titleColor: '#fff',
               bodyColor: '#fff',
-              borderColor: '#333',
-              borderWidth: 1,
-              cornerRadius: 6,
+              padding: 12,
+              cornerRadius: 8,
               callbacks: {
-                label: function(context) {
-                  if (context.parsed.y !== null) {
-                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}h`;
-                  }
+                label: function (context) {
+                  return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}h`;
                 }
               }
             },
             datalabels: {
               anchor: 'end',
               align: 'top',
-              formatter: function(value) {
-                return value !== 0 ? value.toFixed(1) + 'h' : '';
-              },
-              font: {
-                weight: 'bold',
-                size: 10
-              },
-              color: '#333',
-              textStrokeColor: '#fff',
-              textStrokeWidth: 2
+              formatter: (value) => value !== 0 ? value.toFixed(1) + 'h' : '',
+              font: { weight: 'bold', size: 10 },
+              color: '#1e293b',
+              offset: 2
             }
           },
           scales: {
             y: {
               beginAtZero: true,
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
-              },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' },
               title: {
                 display: true,
                 text: 'Horas',
-                font: {
-                  weight: 'bold'
-                }
-              },
-              ticks: {
-                font: {
-                  size: 11
-                }
+                font: { weight: 'bold', size: 13 }
               }
             },
             x: {
-              grid: {
-                display: false
-              },
-              title: {
-                display: false
-              },
-              ticks: {
-                font: {
-                  size: 11,
-                  weight: 'bold'
-                }
-              }
+              grid: { display: false },
+              ticks: { font: { weight: '600', size: 12 } }
             }
           },
-          animation: {
-            duration: 1000,
-            easing: 'easeOutQuart'
-          }
+          animation: false
         },
         plugins: [ChartDataLabels]
       });
@@ -744,6 +658,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Carrega o gráfico por tipo_posicao2 ao inicializar o dashboard
   carregarGraficoPorTipoPosicao2();
+
+  // Funções para atualizar os gráficos
+  window.atualizarGraficoHoras = function() {
+    if (window.graficoHorasExecutadas) {
+      window.graficoHorasExecutadas.update('active');
+    }
+  };
+
+  window.atualizarGraficoPorTipo = function() {
+    if (window.graficoHorasPorTipo) {
+      window.graficoHorasPorTipo.update('active');
+    }
+  };
 
   // ================================================================================
   // 📈 Atualização de KPIs (Indicadores)
