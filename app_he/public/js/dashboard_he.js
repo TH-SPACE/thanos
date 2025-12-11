@@ -383,49 +383,54 @@ document.addEventListener("DOMContentLoaded", () => {
             {
               label: 'Total de Horas Executadas',
               data: dataTotal,
-              backgroundColor: 'rgba(0, 123, 255, 0.6)', // Azul
-              borderColor: 'rgba(0, 123, 255, 1)',
-              borderWidth: 1
+              backgroundColor: [
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(54, 162, 235, 0.7)'
+              ],
+              borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)'
+              ],
+              borderWidth: 1,
+              borderRadius: 6,
+              borderSkipped: false,
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Horas'
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Mês/Ano'
-              }
-            }
-          },
           plugins: {
+            legend: {
+              display: false
+            },
             title: {
               display: true,
-              text: 'Horas Executadas nos Últimos 3 Meses'
-            },
-            legend: {
-              position: 'top',
+              text: 'Horas Executadas',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              padding: {
+                top: 10,
+                bottom: 20
+              }
             },
             tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: '#333',
+              borderWidth: 1,
+              cornerRadius: 6,
+              displayColors: false,
               callbacks: {
                 label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) {
-                    label += ': ';
-                  }
                   if (context.parsed.y !== null) {
-                    label += context.parsed.y.toFixed(2) + 'h';
+                    return `Total: ${context.parsed.y.toFixed(1)}h`;
                   }
-                  return label;
                 }
               }
             },
@@ -439,8 +444,48 @@ document.addEventListener("DOMContentLoaded", () => {
                 weight: 'bold',
                 size: 12
               },
-              color: '#333'
+              color: '#333',
+              textStrokeColor: '#fff',
+              textStrokeWidth: 2
             }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: 'Horas',
+                font: {
+                  weight: 'bold'
+                }
+              },
+              ticks: {
+                font: {
+                  size: 11
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              title: {
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 11,
+                  weight: 'bold'
+                }
+              }
+            }
+          },
+          animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
           }
         },
         plugins: [ChartDataLabels]
@@ -562,45 +607,68 @@ document.addEventListener("DOMContentLoaded", () => {
         type: 'bar',
         data: {
           labels: mesesAnosUnicos,
-          datasets: datasets
+          datasets: datasets.map((dataset, index) => {
+            // Define cores mais profissionais para cada tipo
+            const cores = [
+              'rgba(54, 162, 235, 0.7)', // Azul
+              'rgba(255, 193, 7, 0.7)',  // Amarelo
+              'rgba(40, 167, 69, 0.7)',  // Verde
+              'rgba(220, 53, 69, 0.7)'   // Vermelho
+            ];
+            const bordas = [
+              'rgba(54, 162, 235, 1)', // Azul
+              'rgba(255, 193, 7, 1)',  // Amarelo
+              'rgba(40, 167, 69, 1)',  // Verde
+              'rgba(220, 53, 69, 1)'   // Vermelho
+            ];
+
+            return {
+              ...dataset,
+              backgroundColor: dataset.data.map(() => cores[index % cores.length]),
+              borderColor: dataset.data.map(() => bordas[index % bordas.length]),
+              borderWidth: 1,
+              borderRadius: 6,
+              borderSkipped: false,
+            };
+          })
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Horas'
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Mês/Ano'
-              }
-            }
-          },
           plugins: {
-            title: {
-              display: true,
-              text: 'Horas Executadas por Tipo (Últimos 3 Meses)'
-            },
             legend: {
               position: 'top',
+              labels: {
+                font: {
+                  size: 11
+                },
+                padding: 15
+              }
+            },
+            title: {
+              display: true,
+              text: 'Por Tipo de Posição',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              padding: {
+                top: 10,
+                bottom: 20
+              }
             },
             tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: '#333',
+              borderWidth: 1,
+              cornerRadius: 6,
               callbacks: {
                 label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) {
-                    label += ': ';
-                  }
                   if (context.parsed.y !== null) {
-                    label += context.parsed.y.toFixed(2) + 'h';
+                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}h`;
                   }
-                  return label;
                 }
               }
             },
@@ -614,8 +682,48 @@ document.addEventListener("DOMContentLoaded", () => {
                 weight: 'bold',
                 size: 10
               },
-              color: '#333'
+              color: '#333',
+              textStrokeColor: '#fff',
+              textStrokeWidth: 2
             }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: 'Horas',
+                font: {
+                  weight: 'bold'
+                }
+              },
+              ticks: {
+                font: {
+                  size: 11
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              title: {
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 11,
+                  weight: 'bold'
+                }
+              }
+            }
+          },
+          animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
           }
         },
         plugins: [ChartDataLabels]
