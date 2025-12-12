@@ -489,10 +489,10 @@ document.addEventListener("DOMContentLoaded", () => {
             datalabels: {
               anchor: "end",
               align: "top",
-              formatter: (value) => value.toFixed(1) + "h",
-              font: { weight: "bold", size: 14 },
+              formatter: (value) => (value !== 0 ? value.toFixed(1) + "h" : ""),
+              font: { weight: "bold", size: 10 },
               color: "#1e293b",
-              offset: 4,
+              offset: 2,
             },
           },
           scales: {
@@ -507,9 +507,9 @@ document.addEventListener("DOMContentLoaded", () => {
               },
             },
             x: {
-              display: false, // Esconde o eixo X, incluindo números e rótulos
+              display: true, // Esconde o eixo X, incluindo números e rótulos
               grid: { display: false },
-              ticks: { display: false }, // Esconde os ticks do eixo X
+              ticks: { display: true }, // Esconde os ticks do eixo X
             },
           },
           animation: false,
@@ -673,7 +673,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Cria o novo gráfico
       window.graficoHorasPorTipo = new Chart(ctx, {
-        type: "bar",
+        type: "bar", // os tipo de graficos são: bar, line, pie, doughnut, radar, polarArea, bubble, scatter
         data: {
           labels: mesesAnosUnicos,
           datasets: datasets.map((dataset, index) => {
@@ -734,12 +734,12 @@ document.addEventListener("DOMContentLoaded", () => {
               position: "top",
               align: "start",
               labels: {
-                font: { size: 12, weight: "600" },
-                padding: 15,
+                font: { size: 9, weight: "600" },
+                padding: 5,
                 usePointStyle: true,
-                pointStyle: "circle",
-                boxWidth: 12,
-                boxHeight: 12,
+                pointStyle: "rect", //os tipos são: circle, rect, rectRounded, rectRot, cross, star, line, dash
+                boxWidth: 9,
+                boxHeight: 9,
               },
               display: true,
               fullWidth: false,
@@ -781,9 +781,9 @@ document.addEventListener("DOMContentLoaded", () => {
               },
             },
             x: {
-              display: false, // Esconde o eixo X, incluindo números e rótulos
+              display: true, // Esconde o eixo X, incluindo números e rótulos
               grid: { display: false },
-              ticks: { display: false }, // Esconde os ticks do eixo X
+              ticks: { display: true }, // Esconde os ticks do eixo X
             },
           },
           animation: false,

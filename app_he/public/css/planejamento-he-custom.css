@@ -1052,9 +1052,9 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
 #dashboard .chart-card {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
-    padding: 30px;
+    padding: 10px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
 }
@@ -1067,14 +1067,14 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 5px;
 }
 
 #dashboard .chart-title {
-    font-size: 1.4rem;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: 700; 
     color: #1e293b;
     display: flex;
     align-items: center;
@@ -1108,10 +1108,10 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
 
 #dashboard .chart-wrapper {
     position: relative;
-    height: 380px;
+    height: 300px;  /* Reduzi a altura dos gráficos */
     background: #ffffff;
     border-radius: 12px;
-    padding: 20px;
+    padding: 5px;
 }
 
 /* Esconder os ticks e labels dos eixos dos gráficos */
@@ -1131,8 +1131,5 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
         grid-template-columns: 1fr;
     }
 
-    #dashboard .chart-wrapper {
-        height: 300px;
-    }
 }
 
