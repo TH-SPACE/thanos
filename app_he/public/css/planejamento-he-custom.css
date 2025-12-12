@@ -1048,45 +1048,45 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
     color: #6a1b9a !important;
 }
 
-/* Estilos para gráficos do dashboard baseados no dashtest.html - Apenas para o dashboard */
-#dashboard .chart-card {
+
+/* Estilos para gráficos no painel de Gasto vs Previsto */
+#painelGastoPrev .chart-card {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 10px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
 }
 
-#dashboard .chart-card:hover {
+#painelGastoPrev .chart-card:hover {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
-#dashboard .chart-header {
+#painelGastoPrev .chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
     flex-wrap: wrap;
     gap: 5px;
 }
 
-#dashboard .chart-title {
+#painelGastoPrev .chart-title {
     font-size: 1rem;
-    font-weight: 700; 
+    font-weight: 700;
     color: #1e293b;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-#dashboard .chart-actions {
+#painelGastoPrev .chart-actions {
     display: flex;
     gap: 10px;
 }
 
-#dashboard .btn-action {
+#painelGastoPrev .btn-action {
     background: rgba(99, 102, 241, 0.1);
     border: none;
     color: #6366f1;  /* Cor primária sem usar variáveis CSS para não afetar o resto */
@@ -1100,36 +1100,29 @@ AJUSTE VISUAL - DASHBOARD ANALÍTICA (KPI + TABELA)
     gap: 6px;
 }
 
-#dashboard .btn-action:hover {
+#painelGastoPrev .btn-action:hover {
     background: #6366f1;
     color: white;
     transform: translateY(-2px);
 }
 
-#dashboard .chart-wrapper {
+#painelGastoPrev .chart-wrapper {
     position: relative;
-    height: 300px;  /* Reduzi a altura dos gráficos */
+    height: 200px;  /* Reduzi a altura dos gráficos */
     background: #ffffff;
     border-radius: 12px;
     padding: 5px;
 }
 
-/* Esconder os ticks e labels dos eixos dos gráficos */
-#dashboard .chartjs-render-monitor {
-    outline: none;
-}
-
-#dashboard .charts-grid {
+#painelGastoPrev .charts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
     gap: 30px;
 }
 
-
 @media (max-width: 768px) {
-    #dashboard .charts-grid {
+    #painelGastoPrev .charts-grid {
         grid-template-columns: 1fr;
     }
-
 }
 

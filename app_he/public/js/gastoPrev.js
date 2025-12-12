@@ -589,8 +589,8 @@ function inicializarPainelGastoPrev() {
 
       if (mesesDisponiveis && mesesDisponiveis.length > 0) {
         // Agrupa os meses por ano para preencher o dropdown de anos
-        const anos = [...new Set(mesesDisponiveis.map(m => m.ano))];
-        anos.forEach(ano => {
+        const anos = [...new Set(mesesDisponiveis.map((m) => m.ano))];
+        anos.forEach((ano) => {
           const option = document.createElement("option");
           option.value = ano;
           option.textContent = ano;
@@ -599,7 +599,10 @@ function inicializarPainelGastoPrev() {
 
         // Popula o select de meses com os meses retornados pela API
         mesSelect.innerHTML = mesesDisponiveis
-          .map((m) => `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`)
+          .map(
+            (m) =>
+              `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`
+          )
           .join("");
 
         // Lógica para definir o mês e ano padrão
@@ -632,6 +635,10 @@ function inicializarPainelGastoPrev() {
       // Carregar também a nova tabela com os dados iniciais
       preencherFiltroGerenciaColaborador();
       carregarComparativoColaborador(mesSelect.value, anoSelect.value);
+
+      // Carrega os gráficos adicionais
+      carregarGraficoHorasExecutadasGP();
+      carregarGraficoHorasPorTipoGP();
     })
     .catch((err) => {
       console.error("Erro ao buscar meses disponíveis:", err);
@@ -700,17 +707,20 @@ function inicializarPainelGastoPrev() {
         .then((mesesDisponiveis) => {
           const mesSelect = document.getElementById("filtroMesComparativo");
           const anoSelect = document.getElementById("filtroAnoComparativo");
-          const gerenteSelect = document.getElementById("filtroGerenciaColaborador");
+          const gerenteSelect = document.getElementById(
+            "filtroGerenciaColaborador"
+          );
 
           // Limpa os selects e os re-popula
           mesSelect.innerHTML = "";
           anoSelect.innerHTML = '<option value="">Todos os anos</option>';
-          gerenteSelect.innerHTML = '<option value="">Todas as Gerências</option>';
+          gerenteSelect.innerHTML =
+            '<option value="">Todas as Gerências</option>';
 
           if (mesesDisponiveis && mesesDisponiveis.length > 0) {
             // Agrupa os meses por ano para preencher o dropdown de anos
-            const anos = [...new Set(mesesDisponiveis.map(m => m.ano))];
-            anos.forEach(ano => {
+            const anos = [...new Set(mesesDisponiveis.map((m) => m.ano))];
+            anos.forEach((ano) => {
               const option = document.createElement("option");
               option.value = ano;
               option.textContent = ano;
@@ -719,7 +729,10 @@ function inicializarPainelGastoPrev() {
 
             // Popula o select de meses
             mesSelect.innerHTML = mesesDisponiveis
-              .map((m) => `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`)
+              .map(
+                (m) =>
+                  `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`
+              )
               .join("");
 
             // Define o mês e ano padrão (o mais recente da lista)
@@ -735,9 +748,12 @@ function inicializarPainelGastoPrev() {
             preencherFiltroGerenciaColaborador();
             carregarComparativoColaborador(mesPadrao, anoPadrao);
           } else {
-            mesSelect.innerHTML = '<option value="" disabled>Nenhum mês com dados</option>';
-            anoSelect.innerHTML = '<option value="" disabled>Nenhum ano com dados</option>';
-            gerenteSelect.innerHTML = '<option value="">Nenhuma gerência disponível</option>';
+            mesSelect.innerHTML =
+              '<option value="" disabled>Nenhum mês com dados</option>';
+            anoSelect.innerHTML =
+              '<option value="" disabled>Nenhum ano com dados</option>';
+            gerenteSelect.innerHTML =
+              '<option value="">Nenhuma gerência disponível</option>';
           }
         })
         .catch((err) => {
@@ -761,9 +777,12 @@ function atualizarMesesDropdown(ano) {
       if (mesesDisponiveis && mesesDisponiveis.length > 0) {
         if (ano && ano !== "") {
           // Filtra os meses apenas para o ano selecionado
-          const mesesDoAno = mesesDisponiveis.filter(m => m.ano === ano);
+          const mesesDoAno = mesesDisponiveis.filter((m) => m.ano === ano);
           mesSelect.innerHTML = mesesDoAno
-            .map((m) => `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}</option>`)
+            .map(
+              (m) =>
+                `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}</option>`
+            )
             .join("");
 
           // Define o primeiro mês do ano como padrão
@@ -773,7 +792,10 @@ function atualizarMesesDropdown(ano) {
         } else {
           // Se nenhum ano está selecionado, mostra todos os meses
           mesSelect.innerHTML = mesesDisponiveis
-            .map((m) => `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`)
+            .map(
+              (m) =>
+                `<option value="${m.nome}" data-ano="${m.ano}">${m.nome}/${m.ano}</option>`
+            )
             .join("");
         }
       }
@@ -950,7 +972,8 @@ function preencherFiltroGerenciaColaborador() {
   const ano = document.getElementById("filtroAnoComparativo").value;
 
   if (!mes) {
-    filtroSelect.innerHTML = '<option value="">Selecione um mês primeiro</option>';
+    filtroSelect.innerHTML =
+      '<option value="">Selecione um mês primeiro</option>';
     return;
   }
 
@@ -967,12 +990,14 @@ function preencherFiltroGerenciaColaborador() {
     })
     .then((dados) => {
       if (dados.erro) {
-        filtroSelect.innerHTML = '<option value="">Erro ao carregar gerentes</option>';
+        filtroSelect.innerHTML =
+          '<option value="">Erro ao carregar gerentes</option>';
         return;
       }
 
       if (!Array.isArray(dados) || dados.length === 0) {
-        filtroSelect.innerHTML = '<option value="">Nenhuma gerência encontrada</option>';
+        filtroSelect.innerHTML =
+          '<option value="">Nenhuma gerência encontrada</option>';
         return;
       }
 
@@ -987,7 +1012,8 @@ function preencherFiltroGerenciaColaborador() {
     })
     .catch((erro) => {
       console.error("Erro ao carregar gerências disponíveis:", erro);
-      filtroSelect.innerHTML = '<option value="">Erro ao carregar gerências</option>';
+      filtroSelect.innerHTML =
+        '<option value="">Erro ao carregar gerências</option>';
     });
 }
 
@@ -1033,7 +1059,10 @@ function carregarComparativoColaborador(mes, ano = null, gerente = null) {
       carregarComparativoColaboradorValor(mes, ano, gerente);
     })
     .catch((erro) => {
-      console.error("Erro ao carregar comparativo de Gasto vs Previsto por Colaborador:", erro);
+      console.error(
+        "Erro ao carregar comparativo de Gasto vs Previsto por Colaborador:",
+        erro
+      );
       container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados por colaborador. Tente novamente.</div>`;
     });
 }
@@ -1046,7 +1075,9 @@ function carregarComparativoColaborador(mes, ano = null, gerente = null) {
  * @param {string} gerente - Gerente para filtrar (opcional)
  */
 function carregarComparativoColaboradorValor(mes, ano = null, gerente = null) {
-  const container = document.getElementById("tabelaComparativoColaboradorValor");
+  const container = document.getElementById(
+    "tabelaComparativoColaboradorValor"
+  );
   container.innerHTML =
     '<p class="text-center text-muted">Carregando comparativo monetário por colaborador...</p>';
 
@@ -1077,7 +1108,10 @@ function carregarComparativoColaboradorValor(mes, ano = null, gerente = null) {
       container.innerHTML = criarTabelaComparativoColaboradorValor(dados);
     })
     .catch((erro) => {
-      console.error("Erro ao carregar comparativo monetário por colaborador:", erro);
+      console.error(
+        "Erro ao carregar comparativo monetário por colaborador:",
+        erro
+      );
       container.innerHTML = `<div class="alert alert-danger">Erro ao carregar dados monetários por colaborador. Tente novamente.</div>`;
     });
 }
@@ -1208,7 +1242,7 @@ function criarTabelaComparativoColaborador(dados) {
 
         html += `
         <tr>
-          <td class="text-left"><strong>${item.colaborador || '-'}</strong></td>
+          <td class="text-left"><strong>${item.colaborador || "-"}</strong></td>
           <td class="text-center autorizado-col" style="display: none;">${(
             item.autorizado_50 || 0
           ).toFixed(2)}</td>
@@ -1415,7 +1449,7 @@ function criarTabelaComparativoColaboradorValor(dados) {
 
         html += `
         <tr>
-          <td class="text-left"><strong>${item.colaborador || '-'}</strong></td>
+          <td class="text-left"><strong>${item.colaborador || "-"}</strong></td>
           <td class="text-center autorizado-col" style="display: none;">${formatarMoeda(
             item.autorizado_50 || 0
           )}</td>
@@ -1499,6 +1533,448 @@ function criarTabelaComparativoColaboradorValor(dados) {
 }
 
 // ================================================================================
+// 📊 Carregamento e Exibição dos Gráficos de Horas na Página de Gasto vs Previsto
+// ================================================================================
+
+// Função para carregar o gráfico de horas executadas no painel de Gasto vs Previsto
+async function carregarGraficoHorasExecutadasGP() {
+  try {
+    // Exibe mensagem de carregamento
+    const chartContainer = document.getElementById(
+      "graficoHorasExecutadasChartGP"
+    );
+    if (!chartContainer) return;
+
+    // Atualiza o contexto do canvas
+    const ctx = chartContainer.getContext("2d");
+
+    // Mostra mensagem de carregamento
+    ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "#6c757d";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "Carregando dados dos últimos 3 meses...",
+      chartContainer.width / 2,
+      chartContainer.height / 2
+    );
+
+    // Faz a requisição para a API
+    const response = await fetch("/planejamento-he/api/ultimos-3-meses");
+    const dados = await response.json();
+
+    if (!Array.isArray(dados) || dados.length === 0) {
+      ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+      ctx.fillText(
+        "Nenhum dado encontrado para os últimos 3 meses.",
+        chartContainer.width / 2,
+        chartContainer.height / 2
+      );
+      return;
+    }
+
+    // Configuração dos dados para o gráfico
+    const labels = dados.map((item) => `${item.mes}/${item.ano}`);
+    const dataExecutado50 = dados.map((item) => item.executado_50);
+    const dataExecutado100 = dados.map((item) => item.executado_100);
+    const dataTotal = dados.map((item) => item.total_horas);
+
+    // Destroi o gráfico anterior se existir
+    if (
+      window.graficoHorasExecutadasGP &&
+      typeof window.graficoHorasExecutadasGP.destroy === "function"
+    ) {
+      try {
+        window.graficoHorasExecutadasGP.destroy();
+      } catch (e) {
+        console.warn("Erro ao destruir gráfico anterior:", e);
+      }
+    }
+
+    // Cria o novo gráfico - agora com apenas o total de horas executadas
+    window.graficoHorasExecutadasGP = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Total de Horas Executadas",
+            data: dataTotal,
+            backgroundColor: [
+              "rgba(99, 102, 241, 0.8)",
+              "rgba(139, 92, 246, 0.8)",
+              "rgba(168, 85, 247, 0.8)",
+            ],
+            borderColor: [
+              "rgba(99, 102, 241, 1)",
+              "rgba(139, 92, 246, 1)",
+              "rgba(168, 85, 247, 1)",
+            ],
+            borderWidth: 2,
+            borderRadius: 12,
+            borderSkipped: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            backgroundColor: "rgba(15, 23, 42, 0.95)",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: false,
+            callbacks: {
+              label: function (context) {
+                return `Total: ${context.parsed.y.toFixed(1)}h`;
+              },
+            },
+          },
+          datalabels: {
+            anchor: "end",
+            align: "top",
+            formatter: (value) => (value !== 0 ? value.toFixed(1) + "h" : ""),
+            font: { weight: "bold", size: 10 },
+            color: "#1e293b",
+            offset: 5,
+            clamp: true, // Evita que os rótulos ultrapassem os limites do gráfico
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            display: false, // Esconde o eixo Y, incluindo números e rótulos
+            grid: {
+              display: false,
+            },
+            title: {
+              display: false, // Esconde o título do eixo Y
+            },
+            max: Math.max(...dataTotal) * 1.2, // Define um limite superior para o eixo Y para garantir que os rótulos fiquem visíveis
+          },
+          x: {
+            display: true, // Esconde o eixo X, incluindo números e rótulos
+            grid: { display: false },
+            ticks: { display: true }, // Esconde os ticks do eixo X
+          },
+        },
+        animation: false,
+      },
+      plugins: [ChartDataLabels],
+    });
+  } catch (error) {
+    console.error(
+      "Erro ao carregar dados do gráfico de horas executadas (GP):",
+      error
+    );
+    const chartContainer = document.getElementById(
+      "graficoHorasExecutadasChartGP"
+    );
+    if (!chartContainer) return;
+    const ctx = chartContainer.getContext("2d");
+    ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "#dc3545";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "Erro ao carregar os dados do gráfico.",
+      chartContainer.width / 2,
+      chartContainer.height / 2
+    );
+  }
+}
+
+// Função para carregar o gráfico por tipo_posicao2 no painel de Gasto vs Previsto
+async function carregarGraficoHorasPorTipoGP() {
+  try {
+    // Exibe mensagem de carregamento
+    const chartContainer = document.getElementById(
+      "graficoHorasPorTipoChartGP"
+    );
+    if (!chartContainer) return;
+
+    // Atualiza o contexto do canvas
+    const ctx = chartContainer.getContext("2d");
+
+    // Mostra mensagem de carregamento
+    ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "#6c757d";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "Carregando dados por tipo de posição...",
+      chartContainer.width / 2,
+      chartContainer.height / 2
+    );
+
+    // Faz a requisição para a API
+    const response = await fetch(
+      "/planejamento-he/api/dados-por-tipo-posicao2"
+    );
+    const result = await response.json();
+
+    if (
+      !result.dados ||
+      !Array.isArray(result.dados) ||
+      result.dados.length === 0
+    ) {
+      ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+      ctx.fillText(
+        "Nenhum dado encontrado por tipo de posição.",
+        chartContainer.width / 2,
+        chartContainer.height / 2
+      );
+      return;
+    }
+
+    const dados = result.dados;
+
+    // Agrupa os dados por tipo_posicao2
+    const dadosAgrupados = {};
+    dados.forEach((item) => {
+      if (!dadosAgrupados[item.tipo_posicao2]) {
+        dadosAgrupados[item.tipo_posicao2] = [];
+      }
+      dadosAgrupados[item.tipo_posicao2].push({
+        mes: `${item.mes}/${item.ano}`,
+        total_horas: item.total_horas,
+      });
+    });
+
+    // Prepara os labels (meses/anos únicos) e os dados para o gráfico
+    const ordemMeses = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
+    ];
+
+    const mesesAnosUnicos = [
+      ...new Set(dados.map((item) => `${item.mes}/${item.ano}`)),
+    ].sort((a, b) => {
+      // Extrai o mês e ano de cada string "Mes/Ano"
+      const [mesA, anoA] = a.split("/");
+      const [mesB, anoB] = b.split("/");
+
+      // Compara os anos primeiro
+      if (parseInt(anoA) !== parseInt(anoB)) {
+        return parseInt(anoA) - parseInt(anoB);
+      }
+
+      // Se os anos são iguais, compara os meses pela ordem cronológica
+      return ordemMeses.indexOf(mesA) - ordemMeses.indexOf(mesB);
+    });
+
+    // Define cores para os diferentes tipos de posição
+    const cores = {
+      STAFF: "rgba(0, 123, 255, 0.6)", // Azul
+      TECNICO: "rgba(255, 193, 7, 0.6)", // Amarelo
+      CAMPO: "rgba(40, 167, 69, 0.6)", // Verde
+      ATENDIMENTO: "rgba(220, 53, 69, 0.6)", // Vermelho
+    };
+
+    // Prepara os datasets para o gráfico
+    const datasets = Object.keys(dadosAgrupados).map((tipo) => {
+      // Para cada tipo, cria um array de valores correspondentes a cada mês/ano
+      const data = mesesAnosUnicos.map((mesAno) => {
+        const item = dadosAgrupados[tipo].find((d) => d.mes === mesAno);
+        return item ? item.total_horas : 0;
+      });
+
+      return {
+        label: tipo,
+        data: data,
+        backgroundColor: cores[tipo] || "rgba(108, 117, 125, 0.6)", // Cinza padrão se não tiver cor definida
+        borderColor: cores[tipo]
+          ? cores[tipo].replace("0.6", "1")
+          : "rgba(108, 117, 125, 1)",
+        borderWidth: 1,
+      };
+    });
+
+    // Destroi o gráfico anterior se existir
+    if (
+      window.graficoHorasPorTipoGP &&
+      typeof window.graficoHorasPorTipoGP.destroy === "function"
+    ) {
+      try {
+        window.graficoHorasPorTipoGP.destroy();
+      } catch (e) {
+        console.warn("Erro ao destruir gráfico anterior:", e);
+      }
+    }
+
+    // Cria o novo gráfico
+    window.graficoHorasPorTipoGP = new Chart(ctx, {
+      type: "bar", // os tipo de graficos são: bar, line, pie, doughnut, radar, polarArea, bubble, scatter
+      data: {
+        labels: mesesAnosUnicos,
+        datasets: datasets.map((dataset, index) => {
+          // Define cores correspondentes ao dashtest.html
+          // Função para normalizar o nome do tipo (remover acentos e converter para maiúsculas)
+          const normalizeTipo = (tipo) => {
+            if (!tipo) return "";
+            return tipo
+              .toUpperCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "");
+          };
+
+          const cores = {
+            STAFF: "rgba(99, 102, 241, 0.8)",
+            TECNICO: "rgba(245, 158, 11, 0.8)",
+            CAMPO: "rgba(16, 185, 129, 0.8)",
+            ATENDIMENTO: "rgba(185, 68, 239, 0.8)",
+          };
+
+          const bordas = {
+            STAFF: "rgba(99, 102, 241, 1)",
+            TECNICO: "rgba(245, 158, 11, 1)",
+            CAMPO: "rgba(16, 185, 129, 1)",
+            ATENDIMENTO: "rgba(185, 68, 239, 0.8)",
+          };
+
+          // Normaliza o label do dataset para comparar com as chaves
+          const normalizedLabel = normalizeTipo(dataset.label);
+
+          return {
+            ...dataset,
+            backgroundColor: dataset.data.map(
+              () =>
+                cores[normalizedLabel] ||
+                `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+                  Math.random() * 255
+                )}, ${Math.floor(Math.random() * 255)}, 0.8)`
+            ),
+            borderColor: dataset.data.map(
+              () =>
+                bordas[normalizedLabel] ||
+                `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+                  Math.random() * 255
+                )}, ${Math.floor(Math.random() * 255)}, 1)`
+            ),
+            borderWidth: 2,
+            borderRadius: false,
+            borderSkipped: false,
+          };
+        }),
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+            align: "start",
+            labels: {
+              font: { size: 9, weight: "600" },
+              padding: 5,
+              usePointStyle: true,
+              pointStyle: "rect", //os tipos são: circle, rect, rectRounded, rectRot, cross, star, line, dash
+              boxWidth: 9,
+              boxHeight: 9,
+            },
+            display: true,
+            fullWidth: false,
+            reverse: false,
+          },
+          tooltip: {
+            backgroundColor: "rgba(15, 23, 42, 0.95)",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            padding: 12,
+            cornerRadius: 8,
+            callbacks: {
+              label: function (context) {
+                return `${context.dataset.label}: ${context.parsed.y.toFixed(
+                  1
+                )}h`;
+              },
+            },
+          },
+          datalabels: {
+            anchor: "end",
+            align: "top",
+            formatter: (value) => (value !== 0 ? value.toFixed(1) + "h" : ""),
+            font: { weight: "bold", size: 10 },
+            color: "#1e293b",
+            offset: 5,
+            clamp: true, // Evita que os rótulos ultrapassem os limites do gráfico
+          },
+        },
+
+        scales: {
+          y: {
+            beginAtZero: true,
+            display: false, // Esconde o eixo Y, incluindo números e rótulos
+            grid: {
+              display: false,
+            },
+            title: {
+              display: false, // Esconde o título do eixo Y
+            },
+            max: Math.max(...datasets.flatMap(d => d.data)) * 1.2, // Define um limite superior para o eixo Y para garantir que os rótulos fiquem visíveis
+          },
+          x: {
+            display: true, // Esconde o eixo X, incluindo números e rótulos
+            grid: { display: false },
+            ticks: { display: true }, // Esconde os ticks do eixo X
+          },
+        },
+        animation: false,
+      },
+      plugins: [ChartDataLabels],
+    });
+  } catch (error) {
+    console.error(
+      "Erro ao carregar dados do gráfico por tipo de posição (GP):",
+      error
+    );
+    const chartContainer = document.getElementById(
+      "graficoHorasPorTipoChartGP"
+    );
+    if (!chartContainer) return;
+    const ctx = chartContainer.getContext("2d");
+    ctx.clearRect(0, 0, chartContainer.width, chartContainer.height);
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "#dc3545";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "Erro ao carregar os dados do gráfico.",
+      chartContainer.width / 2,
+      chartContainer.height / 2
+    );
+  }
+}
+
+// Funções para atualizar os gráficos no painel de Gasto vs Previsto
+window.atualizarGraficoHorasGP = function () {
+  if (window.graficoHorasExecutadasGP) {
+    window.graficoHorasExecutadasGP.update("active");
+  }
+};
+
+window.atualizarGraficoPorTipoGP = function () {
+  if (window.graficoHorasPorTipoGP) {
+    window.graficoHorasPorTipoGP.update("active");
+  }
+};
+
+// ================================================================================
 // 🔘 Funções para alternar visibilidade das colunas de execução para a nova tabela
 // ================================================================================
 
@@ -1531,15 +2007,21 @@ function alternarColunasExecucaoColaborador() {
 
   // Alterna a visibilidade das colunas
   colunasExecutado.forEach((coluna) => {
-    coluna.style.display = colunasExecucaoColaboradorExpandidas ? "table-cell" : "none";
+    coluna.style.display = colunasExecucaoColaboradorExpandidas
+      ? "table-cell"
+      : "none";
   });
 
   colunasAutorizado.forEach((coluna) => {
-    coluna.style.display = colunasExecucaoColaboradorExpandidas ? "table-cell" : "none";
+    coluna.style.display = colunasExecucaoColaboradorExpandidas
+      ? "table-cell"
+      : "none";
   });
 
   colunasNaoAutorizado.forEach((coluna) => {
-    coluna.style.display = colunasExecucaoColaboradorExpandidas ? "table-cell" : "none";
+    coluna.style.display = colunasExecucaoColaboradorExpandidas
+      ? "table-cell"
+      : "none";
   });
 }
 
@@ -1553,7 +2035,9 @@ function alterarVisualizacaoColaborador(tipo) {
     "tabelaComparativoColaboradorValor"
   );
   const btnHoras = document.getElementById("btnVisualizacaoHorasColaborador");
-  const btnValores = document.getElementById("btnVisualizacaoValoresColaborador");
+  const btnValores = document.getElementById(
+    "btnVisualizacaoValoresColaborador"
+  );
 
   if (tipo === "horas") {
     tabelaHoras.style.display = "block";
@@ -1589,5 +2073,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("page-load:painelGastoPrev", function () {
     // Nome do evento personalizado
     inicializarPainelGastoPrev();
+
+    // Carrega os gráficos adicionais
+    carregarGraficoHorasExecutadasGP();
+    carregarGraficoHorasPorTipoGP();
   });
 });
