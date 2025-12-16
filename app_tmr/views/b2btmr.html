@@ -20,7 +20,7 @@
                     <p class="text-muted">Sistema para cálculo do tempo médio dos reparos B2B</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <span class="badge bg-primary">Usuário: {{user.nome}}</span>
+                    <span class="badge bg-primary">Usuário: <%= user ? user.nome : 'Não identificado' %></span>
                 </div>
             </div>
         </header>

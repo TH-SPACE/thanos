@@ -9,7 +9,7 @@ const tmrAuth = require('../middleware/tmrAuth');
 router.get('/', tmrAuth, (req, res) => {
     res.render('b2btmr', {
         title: 'TMR - Tempo Médio de Reparos',
-        user: req.session.user
+        user: req.session.usuario
     });
 });
 
