@@ -27,15 +27,15 @@ $(document).ready(function () {
 
 // Função para atualizar os cabeçalhos das tabelas com os meses dos dados
 function atualizarCabecalhoTabela(meses) {
-  // Atualizar cabeçalho da tabela de cluster
-  let headerClusterHtml = '<th>Cluster</th>';
+  // Atualizar cabeçalho da tabela de cluster (com rowspan)
+  let headerClusterHtml = '<th rowspan="2">Cluster</th>';
   meses.forEach((mes) => {
     headerClusterHtml += `<th colspan="5">${mes}</th>`;
   });
   $("#headerCluster").html(headerClusterHtml);
 
   // Atualizar subcabeçalho da tabela de cluster com rótulos das colunas
-  let subheaderClusterHtml = '<th></th>'; // Célula vazia para alinhar com 'Cluster'
+  let subheaderClusterHtml = '';
   meses.forEach((mes) => {
     subheaderClusterHtml += `
             <th>&lt;4h</th>
@@ -47,15 +47,15 @@ function atualizarCabecalhoTabela(meses) {
   });
   $("#subheaderCluster").html(subheaderClusterHtml);
 
-  // Atualizar cabeçalho da tabela de regional
-  let headerRegionalHtml = '<th>Regional</th>';
+  // Atualizar cabeçalho da tabela de regional (com rowspan)
+  let headerRegionalHtml = '<th rowspan="2">Regional</th>';
   meses.forEach((mes) => {
     headerRegionalHtml += `<th colspan="5">${mes}</th>`;
   });
   $("#headerRegional").html(headerRegionalHtml);
 
   // Atualizar subcabeçalho da tabela de regional com rótulos das colunas
-  let subheaderRegionalHtml = '<th></th>'; // Célula vazia para alinhar com 'Regional'
+  let subheaderRegionalHtml = '';
   meses.forEach((mes) => {
     subheaderRegionalHtml += `
             <th>&lt;4h</th>
@@ -149,159 +149,211 @@ function carregarDadosRegional() {
 }
 
 function atualizarTabelaCluster(dados, meses) {
-  // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
-  let tableHtml = "";
+    // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
+    let tableHtml = '';
+    let totalCells = '<td class="fw-bold">TOTAL</td>'; // Célula do total para a coluna de agrupamento
 
-  // Agrupar dados por cluster
-  const dadosPorCluster = agruparPorCluster(dados);
+    // Agrupar dados por cluster
+    const dadosPorCluster = agruparPorCluster(dados);
 
-  // Preencher a tabela com os dados
-  for (const cluster in dadosPorCluster) {
-    const clusterData = dadosPorCluster[cluster];
-
-    // Calcular métricas para cada mês individualmente
-    // Primeiro, vamos organizar os dados por mês
-    const dadosPorMes = {};
+    // Calcular totais por mês
+    const totaisPorMes = {};
 
     // Inicializar os meses
-    meses.forEach((mes) => {
-      dadosPorMes[mes] = [];
+    meses.forEach(mes => {
+        totaisPorMes[mes] = {
+            dentroPrazo: 0,
+            foraPrazo: 0,
+            total: 0,
+            tmrTotal: 0,
+            tmrCount: 0
+        };
     });
 
-    // Agrupar os dados por mês
-    clusterData.forEach((item) => {
-      // Usar o mês calculado no backend
-      const mes = item.mes;
+    // Preencher a tabela com os dados
+    for (const cluster in dadosPorCluster) {
+        const clusterData = dadosPorCluster[cluster];
 
-      // Se o mês fizer parte dos meses encontrados, adicionar ao array
-      if (meses.includes(mes)) {
-        dadosPorMes[mes].push(item);
-      }
-    });
+        // Calcular métricas para cada mês individualmente
+        // Primeiro, vamos organizar os dados por mês
+        const dadosPorMes = {};
 
-    // Para cada mês, calcular as métricas
-    let allMesesCells = "";
-    for (const mes of meses) {
-      const dadosMes = dadosPorMes[mes] || [];
+        // Inicializar os meses
+        meses.forEach(mes => {
+            dadosPorMes[mes] = [];
+        });
 
-      // Calcular métricas para este mês específico
-      const dentroPrazo = dadosMes.filter(
-        (item) => item.tmr_total !== null && parseFloat(item.tmr_total) < 4
-      ).length;
-      const foraPrazo = dadosMes.filter(
-        (item) => item.tmr_total !== null && parseFloat(item.tmr_total) >= 4
-      ).length;
-      const total = dadosMes.length;
-      const percDentroPrazo =
-        total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+        // Agrupar os dados por mês
+        clusterData.forEach(item => {
+            // Usar o mês calculado no backend
+            const mes = item.mes;
 
-      // Calcular TMR médio (agora cada item já representa um reparo único com tmr_total somado)
-      const tmrMedio =
-        total > 0
-          ? (
-              dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
-              total
-            ).toFixed(2)
-          : 0;
+            // Se o mês fizer parte dos meses encontrados, adicionar ao array
+            if (meses.includes(mes)) {
+                dadosPorMes[mes].push(item);
+            }
+        });
 
-      // Adicionar as 5 colunas para este mês
-      allMesesCells += `
+        // Para cada mês, calcular as métricas
+        let allMesesCells = '';
+        for (const mes of meses) {
+            const dadosMes = dadosPorMes[mes] || [];
+
+            // Calcular métricas para este mês específico
+            const dentroPrazo = dadosMes.filter(item => item.tmr_total !== null && parseFloat(item.tmr_total) < 4).length;
+            const foraPrazo = dadosMes.filter(item => item.tmr_total !== null && parseFloat(item.tmr_total) >= 4).length;
+            const total = dadosMes.length;
+            const percDentroPrazo = total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+            const tmrMedio = total > 0 ? (dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) / total).toFixed(2) : 0;
+
+            // Atualizar totais por mês
+            totaisPorMes[mes].dentroPrazo += dentroPrazo;
+            totaisPorMes[mes].foraPrazo += foraPrazo;
+            totaisPorMes[mes].total += total;
+            totaisPorMes[mes].tmrTotal += dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0);
+            totaisPorMes[mes].tmrCount += dadosMes.length;
+
+            // Adicionar as 5 colunas para este mês
+            allMesesCells += `
                 <td class="text-center value-within">${dentroPrazo}</td>
                 <td class="text-center value-over">${foraPrazo}</td>
                 <td class="text-center perc-dentro-prazo">${percDentroPrazo}%</td>
                 <td class="text-center">${total}</td>
                 <td class="text-center tmr-value">${tmrMedio}h</td>
             `;
-    }
+        }
 
-    tableHtml += `
+        tableHtml += `
             <tr>
                 <td class="fw-bold">${cluster}</td>
                 ${allMesesCells}
             </tr>
         `;
-  }
+    }
 
-  // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
-  $("#tabelaCluster tbody").html(tableHtml);
+    // Calcular e adicionar linha de totais
+    for (const mes of meses) {
+        const mesTotais = totaisPorMes[mes];
+        const tmrMedioTotal = mesTotais.tmrCount > 0 ? (mesTotais.tmrTotal / mesTotais.tmrCount).toFixed(2) : 0;
+        const percDentroPrazoTotal = mesTotais.total > 0 ? ((mesTotais.dentroPrazo / mesTotais.total) * 100).toFixed(2) : 0;
+
+        totalCells += `
+            <td class="text-center value-within fw-bold">${mesTotais.dentroPrazo}</td>
+            <td class="text-center value-over fw-bold">${mesTotais.foraPrazo}</td>
+            <td class="text-center perc-dentro-prazo fw-bold">${percDentroPrazoTotal}%</td>
+            <td class="text-center fw-bold">${mesTotais.total}</td>
+            <td class="text-center tmr-value fw-bold">${tmrMedioTotal}h</td>
+        `;
+    }
+
+    tableHtml += `<tr id="totalCluster" class="table-info">${totalCells}</tr>`;
+
+    // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
+    $('#tabelaCluster tbody').html(tableHtml);
 }
 
 function atualizarTabelaRegional(dados, meses) {
-  // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
-  let tableHtml = "";
+    // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
+    let tableHtml = '';
+    let totalCells = '<td class="fw-bold">TOTAL</td>'; // Célula do total para a coluna de agrupamento
 
-  // Agrupar dados por regional
-  const dadosPorRegional = agruparPorRegional(dados);
+    // Agrupar dados por regional
+    const dadosPorRegional = agruparPorRegional(dados);
 
-  // Preencher a tabela com os dados
-  for (const regional in dadosPorRegional) {
-    const regionalData = dadosPorRegional[regional];
-
-    // Calcular métricas para cada mês individualmente
-    // Primeiro, vamos organizar os dados por mês
-    const dadosPorMes = {};
+    // Calcular totais por mês
+    const totaisPorMes = {};
 
     // Inicializar os meses
-    meses.forEach((mes) => {
-      dadosPorMes[mes] = [];
+    meses.forEach(mes => {
+        totaisPorMes[mes] = {
+            dentroPrazo: 0,
+            foraPrazo: 0,
+            total: 0,
+            tmrTotal: 0,
+            tmrCount: 0
+        };
     });
 
-    // Agrupar os dados por mês
-    regionalData.forEach((item) => {
-      // Usar o mês calculado no backend
-      const mes = item.mes;
+    // Preencher a tabela com os dados
+    for (const regional in dadosPorRegional) {
+        const regionalData = dadosPorRegional[regional];
 
-      // Se o mês fizer parte dos meses encontrados, adicionar ao array
-      if (meses.includes(mes)) {
-        dadosPorMes[mes].push(item);
-      }
-    });
+        // Calcular métricas para cada mês individualmente
+        // Primeiro, vamos organizar os dados por mês
+        const dadosPorMes = {};
 
-    // Para cada mês, calcular as métricas
-    let allMesesCells = "";
-    for (const mes of meses) {
-      const dadosMes = dadosPorMes[mes] || [];
+        // Inicializar os meses
+        meses.forEach(mes => {
+            dadosPorMes[mes] = [];
+        });
 
-      // Calcular métricas para este mês específico
-      const dentroPrazo = dadosMes.filter(
-        (item) => item.tmr_total !== null && parseFloat(item.tmr_total) < 4
-      ).length;
-      const foraPrazo = dadosMes.filter(
-        (item) => item.tmr_total !== null && parseFloat(item.tmr_total) >= 4
-      ).length;
-      const total = dadosMes.length;
-      const percDentroPrazo =
-        total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+        // Agrupar os dados por mês
+        regionalData.forEach(item => {
+            // Usar o mês calculado no backend
+            const mes = item.mes;
 
-      // Calcular TMR médio (agora cada item já representa um reparo único com tmr_total somado)
-      const tmrMedio =
-        total > 0
-          ? (
-              dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
-              total
-            ).toFixed(2)
-          : 0;
+            // Se o mês fizer parte dos meses encontrados, adicionar ao array
+            if (meses.includes(mes)) {
+                dadosPorMes[mes].push(item);
+            }
+        });
 
-      // Adicionar as 5 colunas para este mês
-      allMesesCells += `
+        // Para cada mês, calcular as métricas
+        let allMesesCells = '';
+        for (const mes of meses) {
+            const dadosMes = dadosPorMes[mes] || [];
+
+            // Calcular métricas para este mês específico
+            const dentroPrazo = dadosMes.filter(item => item.tmr_total !== null && parseFloat(item.tmr_total) < 4).length;
+            const foraPrazo = dadosMes.filter(item => item.tmr_total !== null && parseFloat(item.tmr_total) >= 4).length;
+            const total = dadosMes.length;
+            const percDentroPrazo = total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+            const tmrMedio = total > 0 ? (dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) / total).toFixed(2) : 0;
+
+            // Atualizar totais por mês
+            totaisPorMes[mes].dentroPrazo += dentroPrazo;
+            totaisPorMes[mes].foraPrazo += foraPrazo;
+            totaisPorMes[mes].total += total;
+            totaisPorMes[mes].tmrTotal += dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0);
+            totaisPorMes[mes].tmrCount += dadosMes.length;
+
+            // Adicionar as 5 colunas para este mês
+            allMesesCells += `
                 <td class="text-center value-within">${dentroPrazo}</td>
                 <td class="text-center value-over">${foraPrazo}</td>
                 <td class="text-center perc-dentro-prazo">${percDentroPrazo}%</td>
                 <td class="text-center">${total}</td>
                 <td class="text-center tmr-value">${tmrMedio}h</td>
             `;
-    }
+        }
 
-    tableHtml += `
+        tableHtml += `
             <tr>
                 <td class="fw-bold">${regional}</td>
                 ${allMesesCells}
             </tr>
         `;
-  }
+    }
 
-  // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
-  $("#tabelaRegional tbody").html(tableHtml);
+    // Calcular e adicionar linha de totais
+    for (const mes of meses) {
+        const mesTotais = totaisPorMes[mes];
+        const tmrMedioTotal = mesTotais.tmrCount > 0 ? (mesTotais.tmrTotal / mesTotais.tmrCount).toFixed(2) : 0;
+        const percDentroPrazoTotal = mesTotais.total > 0 ? ((mesTotais.dentroPrazo / mesTotais.total) * 100).toFixed(2) : 0;
+
+        totalCells += `
+            <td class="text-center value-within fw-bold">${mesTotais.dentroPrazo}</td>
+            <td class="text-center value-over fw-bold">${mesTotais.foraPrazo}</td>
+            <td class="text-center perc-dentro-prazo fw-bold">${percDentroPrazoTotal}%</td>
+            <td class="text-center fw-bold">${mesTotais.total}</td>
+            <td class="text-center tmr-value fw-bold">${tmrMedioTotal}h</td>
+        `;
+    }
+
+    tableHtml += `<tr id="totalRegional" class="table-info">${totalCells}</tr>`;
+
+    // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
+    $('#tabelaRegional tbody').html(tableHtml);
 }
 
 function agruparPorCluster(dados) {
