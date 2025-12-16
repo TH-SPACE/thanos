@@ -28,15 +28,14 @@ $(document).ready(function () {
 // Função para atualizar os cabeçalhos das tabelas com os meses dos dados
 function atualizarCabecalhoTabela(meses) {
   // Atualizar cabeçalho da tabela de cluster
-  // Atualizar cabeçalho da tabela de cluster com mesclagem
-  let headerClusterHtml = '<th rowspan="2">Cluster</th>';
+  let headerClusterHtml = '<th>Cluster</th>';
   meses.forEach((mes) => {
     headerClusterHtml += `<th colspan="5">${mes}</th>`;
   });
   $("#headerCluster").html(headerClusterHtml);
 
   // Atualizar subcabeçalho da tabela de cluster com rótulos das colunas
-  let subheaderClusterHtml = '';
+  let subheaderClusterHtml = '<th></th>'; // Célula vazia para alinhar com 'Cluster'
   meses.forEach((mes) => {
     subheaderClusterHtml += `
             <th>&lt;4h</th>
@@ -48,15 +47,15 @@ function atualizarCabecalhoTabela(meses) {
   });
   $("#subheaderCluster").html(subheaderClusterHtml);
 
-  // Atualizar cabeçalho da tabela de regional com mesclagem
-  let headerRegionalHtml = '<th rowspan="2">Regional</th>';
+  // Atualizar cabeçalho da tabela de regional
+  let headerRegionalHtml = '<th>Regional</th>';
   meses.forEach((mes) => {
     headerRegionalHtml += `<th colspan="5">${mes}</th>`;
   });
   $("#headerRegional").html(headerRegionalHtml);
 
   // Atualizar subcabeçalho da tabela de regional com rótulos das colunas
-  let subheaderRegionalHtml = '';
+  let subheaderRegionalHtml = '<th></th>'; // Célula vazia para alinhar com 'Regional'
   meses.forEach((mes) => {
     subheaderRegionalHtml += `
             <th>&lt;4h</th>
