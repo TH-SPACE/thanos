@@ -28,14 +28,15 @@ $(document).ready(function () {
 // Função para atualizar os cabeçalhos das tabelas com os meses dos dados
 function atualizarCabecalhoTabela(meses) {
   // Atualizar cabeçalho da tabela de cluster
-  let headerClusterHtml = "<th>Cluster</th>";
+  // Atualizar cabeçalho da tabela de cluster com mesclagem
+  let headerClusterHtml = '<th rowspan="2">Cluster</th>';
   meses.forEach((mes) => {
     headerClusterHtml += `<th colspan="5">${mes}</th>`;
   });
   $("#headerCluster").html(headerClusterHtml);
 
-  // Atualizar subcabeçalho da tabela de cluster
-  let subheaderClusterHtml = '<th colspan="1"></th>'; // Célula vazia para alinhar com 'Cluster'
+  // Atualizar subcabeçalho da tabela de cluster com rótulos das colunas
+  let subheaderClusterHtml = '';
   meses.forEach((mes) => {
     subheaderClusterHtml += `
             <th>&lt;4h</th>
@@ -47,15 +48,15 @@ function atualizarCabecalhoTabela(meses) {
   });
   $("#subheaderCluster").html(subheaderClusterHtml);
 
-  // Atualizar cabeçalho da tabela de regional
-  let headerRegionalHtml = "<th>Regional</th>";
+  // Atualizar cabeçalho da tabela de regional com mesclagem
+  let headerRegionalHtml = '<th rowspan="2">Regional</th>';
   meses.forEach((mes) => {
     headerRegionalHtml += `<th colspan="5">${mes}</th>`;
   });
   $("#headerRegional").html(headerRegionalHtml);
 
-  // Atualizar subcabeçalho da tabela de regional
-  let subheaderRegionalHtml = "<th></th>"; // Célula vazia para alinhar com 'Regional'
+  // Atualizar subcabeçalho da tabela de regional com rótulos das colunas
+  let subheaderRegionalHtml = '';
   meses.forEach((mes) => {
     subheaderRegionalHtml += `
             <th>&lt;4h</th>
@@ -194,6 +195,8 @@ function atualizarTabelaCluster(dados, meses) {
       const total = dadosMes.length;
       const percDentroPrazo =
         total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+
+      // Calcular TMR médio (agora cada item já representa um reparo único com tmr_total somado)
       const tmrMedio =
         total > 0
           ? (
@@ -270,6 +273,8 @@ function atualizarTabelaRegional(dados, meses) {
       const total = dadosMes.length;
       const percDentroPrazo =
         total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+
+      // Calcular TMR médio (agora cada item já representa um reparo único com tmr_total somado)
       const tmrMedio =
         total > 0
           ? (

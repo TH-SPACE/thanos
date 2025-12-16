@@ -47,22 +47,53 @@ async function getDadosTMR() {
             'SELECT * FROM reparos_b2b_tmr WHERE vdi_data_inicio >= DATE_SUB(NOW(), INTERVAL 3 MONTH) OR tqi_abertura >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ORDER BY vdi_data_inicio DESC'
         );
 
-        // Converter tmr_total para número para cálculos no frontend e adicionar campo de mês
-        const dadosProcessados = rows.map(row => {
-            // Extrair o mês da data de início da vida
-            let mes = '';
+        // Agrupar dados por tqi_codigo para somar tmr_total por reparo (não por vida)
+        const reparosAgrupados = {};
+
+        for (const row of rows) {
+            const codigo = row.tqi_codigo;
+
+            if (!reparosAgrupados[codigo]) {
+                reparosAgrupados[codigo] = {
+                    ...row,
+                    tmr_total: row.tmr_total !== null ? parseFloat(row.tmr_total) : 0,
+                    // Armazenar datas relevantes para o reparo
+                    datas_reparo: [row.vdi_data_inicio],
+                    meses: new Set(),
+                };
+            } else {
+                // Somar tmr_total para o mesmo reparo (várias vidas do mesmo reparo)
+                reparosAgrupados[codigo].tmr_total += (row.tmr_total !== null ? parseFloat(row.tmr_total) : 0);
+
+                // Adicionar datas adicionais se necessário
+                if (row.vdi_data_inicio) {
+                    reparosAgrupados[codigo].datas_reparo.push(row.vdi_data_inicio);
+                }
+            }
+
+            // Adicionar mês à lista de meses do reparo
             if (row.vdi_data_inicio) {
                 const dataInicio = new Date(row.vdi_data_inicio);
                 const meses = [
                     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
                 ];
-                mes = meses[dataInicio.getMonth()];
+                const mes = meses[dataInicio.getMonth()];
+                reparosAgrupados[codigo].meses.add(mes);
             }
+        }
+
+        // Converter os reparos agrupados de volta para array
+        const dadosProcessados = Object.values(reparosAgrupados).map(reparo => {
+            // Usar o primeiro mês (ou podemos definir lógica mais específica)
+            const mesesArray = Array.from(reparo.meses);
+            const mes = mesesArray.length > 0 ? mesesArray[0] : '';
+
+            // Remover propriedades auxiliares
+            const { datas_reparo, meses: _meses, ...dadosLimpos } = reparo;
 
             return {
-                ...row,
-                tmr_total: row.tmr_total !== null ? parseFloat(row.tmr_total) : null,
+                ...dadosLimpos,
                 mes: mes
             };
         });
