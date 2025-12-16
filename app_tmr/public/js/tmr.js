@@ -34,12 +34,38 @@ function atualizarCabecalhoTabela(meses) {
     });
     $('#headerCluster').html(headerClusterHtml);
 
+    // Atualizar subcabeçalho da tabela de cluster
+    let subheaderClusterHtml = '<th></th>'; // Célula vazia para alinhar com 'Cluster'
+    meses.forEach(mes => {
+        subheaderClusterHtml += `
+            <th>&lt;4h</th>
+            <th>&gt;4h</th>
+            <th>% Dentro</th>
+            <th>Total</th>
+            <th>TMR</th>
+        `;
+    });
+    $('#subheaderCluster').html(subheaderClusterHtml);
+
     // Atualizar cabeçalho da tabela de regional
     let headerRegionalHtml = '<th>Regional</th>';
     meses.forEach(mes => {
         headerRegionalHtml += `<th colspan="5">${mes}</th>`;
     });
     $('#headerRegional').html(headerRegionalHtml);
+
+    // Atualizar subcabeçalho da tabela de regional
+    let subheaderRegionalHtml = '<th></th>'; // Célula vazia para alinhar com 'Regional'
+    meses.forEach(mes => {
+        subheaderRegionalHtml += `
+            <th>&lt;4h</th>
+            <th>&gt;4h</th>
+            <th>% Dentro</th>
+            <th>Total</th>
+            <th>TMR</th>
+        `;
+    });
+    $('#subheaderRegional').html(subheaderRegionalHtml);
 }
 
 // Função para sincronizar dados manualmente
@@ -72,6 +98,9 @@ function carregarDadosTMR() {
 }
 
 function carregarDadosCluster() {
+    // Mostrar indicador de carregamento
+    $('#tabelaCluster tbody').html('<tr><td colspan="100" class="text-center p-4">Carregando dados do cluster...</td></tr>');
+
     $.get('/tmr/data', function(dados) {
         // Obter os últimos 3 meses únicos dos dados recebidos
         const meses = obterUltimos3MesesDosDados(dados);
@@ -81,27 +110,32 @@ function carregarDadosCluster() {
 
         atualizarTabelaCluster(dados, meses);
     }).fail(function() {
+        $('#tabelaCluster tbody').html('<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>');
         alert('Erro ao carregar dados de cluster');
     });
 }
 
 function carregarDadosRegional() {
+    // Mostrar indicador de carregamento
+    $('#tabelaRegional tbody').html('<tr><td colspan="100" class="text-center p-4">Carregando dados da regional...</td></tr>');
+
     $.get('/tmr/data', function(dados) {
-        // Obter os últimos 3 meses únicos dos dados recebidos
+        // Obter os últimos 3 meses únicos dos dados recebidos (já feito na função de cluster)
         const meses = obterUltimos3MesesDosDados(dados);
 
-        // Atualizar cabeçalhos com os meses encontrados (se ainda não foram atualizados)
-        atualizarCabecalhoTabela(meses);
+        // Atualizar cabeçalhos com os meses encontrados (já deve ter sido feito)
+        // atualizarCabecalhoTabela(meses); // Comentado para evitar sobreposição
 
         atualizarTabelaRegional(dados, meses);
     }).fail(function() {
+        $('#tabelaRegional tbody').html('<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>');
         alert('Erro ao carregar dados de regional');
     });
 }
 
 function atualizarTabelaCluster(dados, meses) {
-    const tbody = $('#tabelaCluster tbody');
-    tbody.empty();
+    // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
+    let tableHtml = '';
 
     // Agrupar dados por cluster
     const dadosPorCluster = agruparPorCluster(dados);
@@ -144,28 +178,29 @@ function atualizarTabelaCluster(dados, meses) {
 
             // Adicionar as 5 colunas para este mês
             allMesesCells += `
-                <td class="value-within">${dentroPrazo}</td>
-                <td class="value-over">${foraPrazo}</td>
-                <td class="perc-dentro-prazo">${percDentroPrazo}%</td>
-                <td>${total}</td>
-                <td class="tmr-value">${tmrMedio}h</td>
+                <td class="text-center value-within">${dentroPrazo}</td>
+                <td class="text-center value-over">${foraPrazo}</td>
+                <td class="text-center perc-dentro-prazo">${percDentroPrazo}%</td>
+                <td class="text-center">${total}</td>
+                <td class="text-center tmr-value">${tmrMedio}h</td>
             `;
         }
 
-        const row = `
+        tableHtml += `
             <tr>
-                <td>${cluster}</td>
+                <td class="fw-bold">${cluster}</td>
                 ${allMesesCells}
             </tr>
         `;
-
-        tbody.append(row);
     }
+
+    // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
+    $('#tabelaCluster tbody').html(tableHtml);
 }
 
 function atualizarTabelaRegional(dados, meses) {
-    const tbody = $('#tabelaRegional tbody');
-    tbody.empty();
+    // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
+    let tableHtml = '';
 
     // Agrupar dados por regional
     const dadosPorRegional = agruparPorRegional(dados);
@@ -208,23 +243,24 @@ function atualizarTabelaRegional(dados, meses) {
 
             // Adicionar as 5 colunas para este mês
             allMesesCells += `
-                <td class="value-within">${dentroPrazo}</td>
-                <td class="value-over">${foraPrazo}</td>
-                <td class="perc-dentro-prazo">${percDentroPrazo}%</td>
-                <td>${total}</td>
-                <td class="tmr-value">${tmrMedio}h</td>
+                <td class="text-center value-within">${dentroPrazo}</td>
+                <td class="text-center value-over">${foraPrazo}</td>
+                <td class="text-center perc-dentro-prazo">${percDentroPrazo}%</td>
+                <td class="text-center">${total}</td>
+                <td class="text-center tmr-value">${tmrMedio}h</td>
             `;
         }
 
-        const row = `
+        tableHtml += `
             <tr>
-                <td>${regional}</td>
+                <td class="fw-bold">${regional}</td>
                 ${allMesesCells}
             </tr>
         `;
-
-        tbody.append(row);
     }
+
+    // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
+    $('#tabelaRegional tbody').html(tableHtml);
 }
 
 function agruparPorCluster(dados) {
