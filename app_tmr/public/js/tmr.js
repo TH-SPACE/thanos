@@ -1,14 +1,8 @@
 // Funções JavaScript para o sistema de TMR
 
 $(document).ready(function() {
-    // Carregar dados iniciais
+    // Carregar dados iniciais e atualizar cabeçalhos
     carregarDadosTMR();
-
-    // Atualizar dados quando mudar o filtro de mês
-    $('#mesReferencia').change(function() {
-        atualizarCabecalhoTabela();
-        carregarDadosTMR();
-    });
 
     // Botão de atualizar na aba de cluster
     $('#atualizarCluster').click(function() {
@@ -29,9 +23,6 @@ $(document).ready(function() {
     $('#sincronizarManualRegional').click(function() {
         sincronizarDadosManually();
     });
-
-    // Carregar dados iniciais e atualizar cabeçalhos
-    carregarDadosTMR();
 });
 
 // Função para atualizar os cabeçalhos das tabelas com os meses dos dados
