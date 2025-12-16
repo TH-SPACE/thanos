@@ -1,30 +1,32 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const db = require('../../db/db');
+const db = require("../../db/db");
 
 // Middleware de autenticação
-const tmrAuth = require('../middleware/tmrAuth');
+const tmrAuth = require("../middleware/tmrAuth");
 
 // Função para obter dados dos últimos 3 meses do Oracle
 async function obterDadosOracle() {
-    try {
-        const connection = await db.getOracleConnection();
-        
-        // Alterar a sessão para português
-        await connection.execute(`ALTER SESSION SET NLS_DATE_LANGUAGE = 'PORTUGUESE'`);
-        
-        // Calcular datas para os últimos 3 meses
-        const dataFinal = new Date();
-        const dataInicio = new Date();
-        dataInicio.setMonth(dataFinal.getMonth() - 3);
-        
-        // Formatar datas para o formato Oracle
-        const dataInicioStr = dataInicio.toISOString().split('T')[0];
-        const dataFinalStr = dataFinal.toISOString().split('T')[0];
-        
-        const sqlQuery = `
+  try {
+    const connection = await db.getOracleConnection();
+
+    // Alterar a sessão para português
+    await connection.execute(
+      `ALTER SESSION SET NLS_DATE_LANGUAGE = 'PORTUGUESE'`
+    );
+
+    // Calcular datas para os últimos 3 meses
+    const dataFinal = new Date();
+    const dataInicio = new Date();
+    dataInicio.setMonth(dataFinal.getMonth() - 3);
+
+    // Formatar datas para o formato Oracle
+    const dataInicioStr = dataInicio.toISOString().split("T")[0];
+    const dataFinalStr = dataFinal.toISOString().split("T")[0];
+
+    const sqlQuery = `
             SELECT
-                UPPER(TRIM(TO_CHAR(ti.tqi_data_criacao, 'Month'))) AS mes_inicio,
+                UPPER(TRIM(TO_CHAR(vt.vdi_data_inicio, 'Month'))) AS mes_inicio,
                 vt.vdi_codigo,
                 ti.tqi_codigo,
                 ti.tqi_raiz,
@@ -143,48 +145,48 @@ async function obterDadosOracle() {
 
             WHERE
                 ti.tqi_estado_codigo IN ('MS','GO','MA','AM','MT','PA','AP','DF','TO','RO','AC','RR')
-                AND ti.tqi_data_criacao >= TO_DATE('${dataInicioStr}', 'YYYY-MM-DD')
-                AND ti.tqi_data_criacao < TO_DATE('${dataFinalStr}', 'YYYY-MM-DD') + 1
+                AND vt.vdi_data_inicio >= TO_DATE('${dataInicioStr}', 'YYYY-MM-DD')
+                AND vt.vdi_data_inicio < TO_DATE('${dataFinalStr}', 'YYYY-MM-DD') + 1
         `;
 
-        const result = await connection.execute(sqlQuery);
-        
-        const rows = result.rows;
-        const columns = result.metaData.map(col => col.name);
-        
-        // Converte para um array de objetos com chaves nomeadas
-        const formattedData = rows.map(row => {
-            const obj = {};
-            columns.forEach((col, i) => {
-                const value = row[i];
-                // Limpa null/undefined
-                obj[col] = value === null || value === undefined ? '' : value;
-            });
-            return obj;
-        });
-        
-        await connection.close();
-        
-        return formattedData;
-    } catch (err) {
-        console.error('Erro ao consultar dados do OracleDB:', err);
-        throw err;
-    }
+    const result = await connection.execute(sqlQuery);
+
+    const rows = result.rows;
+    const columns = result.metaData.map((col) => col.name);
+
+    // Converte para um array de objetos com chaves nomeadas
+    const formattedData = rows.map((row) => {
+      const obj = {};
+      columns.forEach((col, i) => {
+        const value = row[i];
+        // Limpa null/undefined
+        obj[col] = value === null || value === undefined ? "" : value;
+      });
+      return obj;
+    });
+
+    await connection.close();
+
+    return formattedData;
+  } catch (err) {
+    console.error("Erro ao consultar dados do OracleDB:", err);
+    throw err;
+  }
 }
 
 // Endpoint para obter dados do Oracle
-router.get('/oracle-data', tmrAuth, async (req, res) => {
-    try {
-        const dados = await obterDadosOracle();
-        res.json(dados);
-    } catch (error) {
-        console.error('Erro ao obter dados do Oracle:', error);
-        res.status(500).json({ error: 'Erro ao obter dados do Oracle' });
-    }
+router.get("/oracle-data", tmrAuth, async (req, res) => {
+  try {
+    const dados = await obterDadosOracle();
+    res.json(dados);
+  } catch (error) {
+    console.error("Erro ao obter dados do Oracle:", error);
+    res.status(500).json({ error: "Erro ao obter dados do Oracle" });
+  }
 });
 
 // Exportar a função para uso externo (ex: no serviço de sincronização)
 module.exports = {
-    router,
-    obterDadosOracle
+  router,
+  obterDadosOracle,
 };
