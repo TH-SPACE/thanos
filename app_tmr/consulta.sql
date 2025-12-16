@@ -3,8 +3,8 @@ SELECT
        TEMPO
        ===================================================== */
 
-    -- Mês de criação do reparo
-    UPPER(TRIM(TO_CHAR(ti.tqi_data_criacao, 'Month'))) AS mes_inicio,
+    -- Mês de início da vida do reparo
+    UPPER(TRIM(TO_CHAR(vt.vdi_data_inicio, 'Month'))) AS mes_inicio,
 
     /* =====================================================
        IDENTIFICAÇÃO
@@ -192,6 +192,6 @@ LEFT JOIN sigitm_1_2.tbl_diagnostico d
 
 WHERE
     ti.tqi_estado_codigo IN ('MS','GO','MA','AM','MT','PA','AP','DF','TO','RO','AC','RR')
-    --Exemplo filtro por data de criação do reparo
-    AND ti.tqi_data_criacao >= DATE '2025-07-01'
-    AND ti.tqi_data_criacao <  DATE '2025-08-01';
+    --Exemplo filtro por data de início da vida do reparo
+    AND vt.vdi_data_inicio >= DATE '2025-07-01'
+    AND vt.vdi_data_inicio <  DATE '2025-08-01';

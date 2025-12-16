@@ -44,7 +44,7 @@ async function getDadosTMR() {
     try {
         // Buscar dados dos últimos 3 meses com base na data de início da vida
         const [rows] = await connection.execute(
-            'SELECT * FROM reparos_b2b_tmr WHERE vdi_data_inicio >= DATE_SUB(NOW(), INTERVAL 3 MONTH) OR tqi_abertura >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ORDER BY vdi_data_inicio DESC'
+            'SELECT * FROM reparos_b2b_tmr WHERE vdi_data_inicio >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ORDER BY vdi_data_inicio DESC'
         );
 
         // Agrupar dados por tqi_codigo para somar tmr_total por reparo (não por vida)
