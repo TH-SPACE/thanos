@@ -25,6 +25,7 @@ const PORT = process.env.PORT || 3000;
 app.set("trust proxy", true);
 
 app.use(express.json());
+
 // 📁 Arquivos estáticos públicos
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/json", express.static(path.join(__dirname, "app_he", "json")));
@@ -33,6 +34,11 @@ app.use("/public", express.static(path.join(__dirname, "app_he", "public")));
 app.use(
   "/thanos",
   express.static(path.join(__dirname, "app_thanos", "public"))
+);
+// Serve a pasta app_tmr para arquivos estáticos do TMR
+app.use(
+  "/tmr",
+  express.static(path.join(__dirname, "app_tmr", "public"))
 );
 // Serve a pasta consulta_ad como estática para o script.js
 app.use("/consulta_ad", express.static(path.join(__dirname, "consulta_ad")));

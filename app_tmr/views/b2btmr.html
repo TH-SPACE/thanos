@@ -9,7 +9,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- CSS customizado -->
-    <link rel="stylesheet" href="/css/tmr-custom.css">
+    <link rel="stylesheet" href="/tmr/css/tmr-custom.css">
 </head>
 <body>
     <div class="container-fluid">
@@ -20,7 +20,7 @@
                     <p class="text-muted">Sistema para cálculo do tempo médio dos reparos B2B</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <span class="badge bg-primary">Usuário: <%= user ? user.nome : 'Não identificado' %></span>
+                    <span class="badge bg-primary">Usuário: <span id="nomeUsuario">Carregando...</span></span>
                 </div>
             </div>
         </header>
@@ -163,6 +163,21 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- JS customizado -->
-    <script src="/js/tmr.js"></script>
+    <script src="/tmr/js/tmr.js"></script>
+
+    <script>
+        // Carregar informações do usuário
+        $(document).ready(function() {
+            $.get('/auth/usuario', function(usuario) {
+                if (usuario && usuario.nome) {
+                    $('#nomeUsuario').text(usuario.nome);
+                } else {
+                    $('#nomeUsuario').text('Não identificado');
+                }
+            }).fail(function() {
+                $('#nomeUsuario').text('Não identificado');
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const db = require('../../db/db');
 
 // Middleware de autenticação (semelhante ao do app_he)
@@ -7,10 +8,7 @@ const tmrAuth = require('../middleware/tmrAuth');
 
 // Rota para acessar a página principal do TMR
 router.get('/', tmrAuth, (req, res) => {
-    res.render('b2btmr', {
-        title: 'TMR - Tempo Médio de Reparos',
-        user: req.session.usuario
-    });
+    res.sendFile(path.join(__dirname, '../views/b2btmr.html'));
 });
 
 // Rota para obter dados de TMR
