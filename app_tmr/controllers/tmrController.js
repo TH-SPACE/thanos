@@ -34,11 +34,23 @@ async function getDadosTMR() {
             'SELECT * FROM reparos_b2b_tmr WHERE data_registro >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ORDER BY data_registro DESC'
         );
 
-        // Converter tmr_total para número para cálculos no frontend
+        // Converter tmr_total para número para cálculos no frontend e adicionar campo de mês
         const dadosProcessados = rows.map(row => {
+            // Extrair o mês da data de início da vida
+            let mes = '';
+            if (row.vdi_data_inicio) {
+                const dataInicio = new Date(row.vdi_data_inicio);
+                const meses = [
+                    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+                ];
+                mes = meses[dataInicio.getMonth()];
+            }
+
             return {
                 ...row,
-                tmr_total: row.tmr_total !== null ? parseFloat(row.tmr_total) : null
+                tmr_total: row.tmr_total !== null ? parseFloat(row.tmr_total) : null,
+                mes: mes
             };
         });
 

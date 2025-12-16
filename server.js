@@ -64,6 +64,7 @@ app.use("/consulta-ad", require("./consulta_ad/consulta_route"));
 
 // 🎯 Rotas específicas
 app.use("/planejamento-he", require("./app_he/routes/planejamentoHERoutes"));
+app.use("/tmr", require("./app_tmr/routes/tmrRoutes"));
 
 // 📋 Rota da todo list
 app.use("/todo_th", require("./todo_th/todo_th"));
