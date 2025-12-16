@@ -15,7 +15,7 @@ async function syncDadosTmr() {
         }
         
         // Conectar ao banco MariaDB
-        const connection = await db.getConnection();
+        const connection = await db.mysqlPool.getConnection();
         
         try {
             // Remover dados antigos antes de inserir os novos
@@ -23,49 +23,89 @@ async function syncDadosTmr() {
             
             // Preparar dados para inserção
             const valores = dadosOracle.map(item => [
-                item.MES_INICIO,
-                item.VDI_CODIGO,
-                item.TQI_CODIGO,
-                item.TQI_RAZ,
-                item.ID_CIRCUITO,
-                item.STATUS_VIDA,
-                item.STATUS_REPARO,
-                item.PROCEDENCIA,
-                item.PRODUTO,
-                item.ORIGEM,
-                item.CIDADE,
-                item.UF,
-                item.ESTADO,
-                item.ENDERECO,
-                item.TIPO_CIDADE,
-                item.REGIONAL,
-                item.NOM_CLUSTER,
-                item.NOME_CLIENTE,
-                item.GRP_CODIGO,
-                item.GRP_NOME,
-                item.GRUPO_BAIXA,
-                item.TQI_DIAGNOSTICO,
-                item.DGN_DESCRICAO,
-                item.TQI_ABERTURA ? new Date(item.TQI_ABERTURA) : null,
-                item.TQI_ENCERRAMENTO ? new Date(item.TQI_ENCERRAMENTO) : null,
-                item.VDI_DATA_INICIO ? new Date(item.VDI_DATA_INICIO) : null,
-                item.VDI_DATA_FIM ? new Date(item.VDI_DATA_FIM) : null,
-                item.TMR_TOTAL !== null && item.TMR_TOTAL !== undefined ? parseFloat(item.TMR_TOTAL) : null,
+                item.MES_INICIO !== undefined && item.MES_INICIO !== '' ? item.MES_INICIO : null,
+                item.VDI_CODIGO !== undefined && item.VDI_CODIGO !== '' ? item.VDI_CODIGO : null,
+                item.TQI_CODIGO !== undefined && item.TQI_CODIGO !== '' ? item.TQI_CODIGO : null,
+                item.TQI_RAZ !== undefined && item.TQI_RAZ !== '' ? item.TQI_RAZ : null,
+                item.ID_CIRCUITO !== undefined && item.ID_CIRCUITO !== '' ? item.ID_CIRCUITO : null,
+                item.STATUS_VIDA !== undefined && item.STATUS_VIDA !== '' ? item.STATUS_VIDA : null,
+                item.STATUS_REPARO !== undefined && item.STATUS_REPARO !== '' ? item.STATUS_REPARO : null,
+                item.PROCEDENCIA !== undefined && item.PROCEDENCIA !== '' ? item.PROCEDENCIA : null,
+                item.PRODUTO !== undefined && item.PRODUTO !== '' ? item.PRODUTO : null,
+                item.ORIGEM !== undefined && item.ORIGEM !== '' ? item.ORIGEM : null,
+                item.CIDADE !== undefined && item.CIDADE !== '' ? item.CIDADE : null,
+                item.UF !== undefined && item.UF !== '' ? item.UF : null,
+                item.ESTADO !== undefined && item.ESTADO !== '' ? item.ESTADO : null,
+                item.ENDERECO !== undefined && item.ENDERECO !== '' ? item.ENDERECO : null,
+                item.TIPO_CIDADE !== undefined && item.TIPO_CIDADE !== '' ? item.TIPO_CIDADE : null,
+                item.REGIONAL !== undefined && item.REGIONAL !== '' ? item.REGIONAL : null,
+                item.NOM_CLUSTER !== undefined && item.NOM_CLUSTER !== '' ? item.NOM_CLUSTER : null,
+                item.NOME_CLIENTE !== undefined && item.NOME_CLIENTE !== '' ? item.NOME_CLIENTE : null,
+                item.GRP_CODIGO !== undefined && item.GRP_CODIGO !== '' ? item.GRP_CODIGO : null,
+                item.GRP_NOME !== undefined && item.GRP_NOME !== '' ? item.GRP_NOME : null,
+                item.GRUPO_BAIXA !== undefined && item.GRUPO_BAIXA !== '' ? item.GRUPO_BAIXA : null,
+                item.TQI_DIAGNOSTICO !== undefined && item.TQI_DIAGNOSTICO !== '' ?
+                    !isNaN(item.TQI_DIAGNOSTICO) ? parseInt(item.TQI_DIAGNOSTICO) : null : null,
+                item.DGN_DESCRICAO !== undefined && item.DGN_DESCRICAO !== '' ? item.DGN_DESCRICAO : null,
+                item.TQI_ABERTURA && item.TQI_ABERTURA !== '' ? parseOracleDate(item.TQI_ABERTURA) : null,
+                item.TQI_ENCERRAMENTO && item.TQI_ENCERRAMENTO !== '' ? parseOracleDate(item.TQI_ENCERRAMENTO) : null,
+                item.VDI_DATA_INICIO && item.VDI_DATA_INICIO !== '' ? parseOracleDate(item.VDI_DATA_INICIO) : null,
+                item.VDI_DATA_FIM && item.VDI_DATA_FIM !== '' ? parseOracleDate(item.VDI_DATA_FIM) : null,
+                item.TMR_TOTAL !== null && item.TMR_TOTAL !== undefined && item.TMR_TOTAL !== '' ? parseFloat(item.TMR_TOTAL) : null,
             ]);
-            
-            // Inserir novos dados
-            const query = `
-                INSERT INTO reparos_b2b_tmr (
-                    mes_inicio, vdi_codigo, tqi_codigo, tqi_raiz, id_circuito,
-                    status_vida, status_reparo, procedencia, produto, origem,
-                    cidade, uf, estado, endereco, tipo_cidade, regional,
-                    nom_cluster, nome_cliente, grp_codigo, grp_nome, grupo_baixa,
-                    tqi_diagnostico, dgn_descricao, tqi_abertura, tqi_encerramento,
-                    vdi_data_inicio, vdi_data_fim, tmr_total
-                ) VALUES ?
-            `;
-            
-            await connection.query(query, [valores]);
+
+            // Função para converter datas do formato Oracle para Date do JavaScript
+            function parseOracleDate(dateStr) {
+                if (!dateStr) return null;
+
+                // Verificar se já é um objeto Date
+                if (dateStr instanceof Date) return dateStr;
+
+                // Verificar se é um número (timestamp)
+                if (typeof dateStr === 'number') return new Date(dateStr);
+
+                // Converter string do formato DD/MM/YYYY HH24:MI:SS para formato ISO
+                const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/;
+                const match = dateStr.match(dateRegex);
+
+                if (match) {
+                    // Formato: DD/MM/YYYY HH24:MI:SS
+                    const [, day, month, year, hour, minute, second] = match;
+                    // Converter para formato ISO: YYYY-MM-DDTHH:mm:ss
+                    return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+                }
+
+                // Se não for o formato esperado, tentar parse direto
+                const parsedDate = new Date(dateStr);
+                return isNaN(parsedDate.getTime()) ? null : parsedDate;
+            }
+
+            // Inserir novos dados em blocos para evitar o limite de placeholders
+            const batchSize = 100; // Tamanho do lote menor para evitar o limite de placeholders
+
+            for (let i = 0; i < valores.length; i += batchSize) {
+                const batch = valores.slice(i, i + batchSize);
+
+                // Criar placeholders para cada registro no lote (28 valores por registro)
+                const placeholders = batch.map(() => '(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').join(',');
+                const query = `
+                    INSERT INTO reparos_b2b_tmr (
+                        mes_inicio, vdi_codigo, tqi_codigo, tqi_raiz, id_circuito,
+                        status_vida, status_reparo, procedencia, produto, origem,
+                        cidade, uf, estado, endereco, tipo_cidade, regional,
+                        nom_cluster, nome_cliente, grp_codigo, grp_nome, grupo_baixa,
+                        tqi_diagnostico, dgn_descricao, tqi_abertura, tqi_encerramento,
+                        vdi_data_inicio, vdi_data_fim, tmr_total
+                    ) VALUES ${placeholders}
+                `;
+
+                // Achatar o array de valores do lote para passar como argumento único
+                const flatValues = batch.flat();
+
+                await connection.execute(query, flatValues);
+
+                console.log(`Lote ${Math.floor(i / batchSize) + 1} de ${Math.ceil(valores.length / batchSize)} inserido com sucesso (${batch.length} registros)`);
+            }
             
             console.log(`Sincronização concluída. ${dadosOracle.length} registros transferidos.`);
         } finally {

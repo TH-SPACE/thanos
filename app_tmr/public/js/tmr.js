@@ -20,14 +20,22 @@ $(document).ready(function() {
         carregarDadosRegional();
     });
 
+    // Botão de sincronização manual de dados
+    $('#sincronizarManual').click(function() {
+        sincronizarDadosManually();
+    });
+
+    // Botão de sincronização manual de dados para regional
+    $('#sincronizarManualRegional').click(function() {
+        sincronizarDadosManually();
+    });
+
     // Atualizar cabeçalhos iniciais
     atualizarCabecalhoTabela();
 });
 
-// Função para atualizar os cabeçalhos das tabelas com os meses selecionados
-function atualizarCabecalhoTabela() {
-    const meses = obterUltimos3Meses();
-
+// Função para atualizar os cabeçalhos das tabelas com os meses dos dados
+function atualizarCabecalhoTabela(meses) {
     // Atualizar cabeçalho da tabela de cluster
     let headerClusterHtml = '<th>Cluster</th>';
     meses.forEach(mes => {
@@ -43,53 +51,69 @@ function atualizarCabecalhoTabela() {
     $('#headerRegional').html(headerRegionalHtml);
 }
 
+// Função para sincronizar dados manualmente
+function sincronizarDadosManually() {
+    // Mostrar mensagem de carregamento
+    const botao = $('#sincronizarManual, #sincronizarManualRegional');
+    const textoOriginal = botao.html();
+    botao.html('<i class="fas fa-spinner fa-spin"></i> Sincronizando...').prop('disabled', true);
+
+    $.post('/tmr/sincronizar', function(data) {
+        alert('Sincronização concluída com sucesso!');
+
+        // Atualizar os dados nas tabelas
+        carregarDadosTMR();
+    })
+    .fail(function(xhr, status, error) {
+        console.error('Erro na sincronização:', error);
+        alert('Erro ao sincronizar dados: ' + (xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : error));
+    })
+    .always(function() {
+        // Restaurar o botão
+        botao.html(textoOriginal).prop('disabled', false);
+    });
+}
+
 function carregarDadosTMR() {
-    // Obter o mês selecionado
-    const mesReferencia = $('#mesReferencia').val();
-
-    // Se nenhum mês for selecionado, usar o mês atual
-    if (!mesReferencia) {
-        const dataAtual = new Date();
-        const mesAtual = String(dataAtual.getMonth() + 1).padStart(2, '0');
-        $('#mesReferencia').val(mesAtual);
-    }
-
-    // Atualizar cabeçalhos e depois carregar dados
-    atualizarCabecalhoTabela();
-
-    // Aguardar um pouco para garantir que os cabeçalhos sejam atualizados
-    setTimeout(() => {
-        // Carregar dados de cluster e regional
-        carregarDadosCluster();
-        carregarDadosRegional();
-    }, 50);
+    // Carregar dados de cluster e regional
+    carregarDadosCluster();
+    carregarDadosRegional();
 }
 
 function carregarDadosCluster() {
-    $.get('/tmr/data', function(data) {
-        atualizarTabelaCluster(data);
+    $.get('/tmr/data', function(dados) {
+        // Obter os últimos 3 meses únicos dos dados recebidos
+        const meses = obterUltimos3MesesDosDados(dados);
+
+        // Atualizar cabeçalhos com os meses encontrados
+        atualizarCabecalhoTabela(meses);
+
+        atualizarTabelaCluster(dados, meses);
     }).fail(function() {
         alert('Erro ao carregar dados de cluster');
     });
 }
 
 function carregarDadosRegional() {
-    $.get('/tmr/data', function(data) {
-        atualizarTabelaRegional(data);
+    $.get('/tmr/data', function(dados) {
+        // Obter os últimos 3 meses únicos dos dados recebidos
+        const meses = obterUltimos3MesesDosDados(dados);
+
+        // Atualizar cabeçalhos com os meses encontrados (se ainda não foram atualizados)
+        atualizarCabecalhoTabela(meses);
+
+        atualizarTabelaRegional(dados, meses);
     }).fail(function() {
         alert('Erro ao carregar dados de regional');
     });
 }
 
-function atualizarTabelaCluster(dados) {
+function atualizarTabelaCluster(dados, meses) {
     const tbody = $('#tabelaCluster tbody');
     tbody.empty();
 
     // Agrupar dados por cluster
     const dadosPorCluster = agruparPorCluster(dados);
-
-    // Obter os últimos 3 meses para exibição
-    const meses = obterUltimos3Meses();
 
     // Preencher a tabela com os dados
     for (const cluster in dadosPorCluster) {
@@ -109,7 +133,7 @@ function atualizarTabelaCluster(dados) {
             // Usar o mês calculado no backend
             const mes = item.mes;
 
-            // Se o mês fizer parte dos 3 meses considerados, adicionar ao array
+            // Se o mês fizer parte dos meses encontrados, adicionar ao array
             if (meses.includes(mes)) {
                 dadosPorMes[mes].push(item);
             }
@@ -148,15 +172,12 @@ function atualizarTabelaCluster(dados) {
     }
 }
 
-function atualizarTabelaRegional(dados) {
+function atualizarTabelaRegional(dados, meses) {
     const tbody = $('#tabelaRegional tbody');
     tbody.empty();
 
     // Agrupar dados por regional
     const dadosPorRegional = agruparPorRegional(dados);
-
-    // Obter os últimos 3 meses para exibição
-    const meses = obterUltimos3Meses();
 
     // Preencher a tabela com os dados
     for (const regional in dadosPorRegional) {
@@ -176,7 +197,7 @@ function atualizarTabelaRegional(dados) {
             // Usar o mês calculado no backend
             const mes = item.mes;
 
-            // Se o mês fizer parte dos 3 meses considerados, adicionar ao array
+            // Se o mês fizer parte dos meses encontrados, adicionar ao array
             if (meses.includes(mes)) {
                 dadosPorMes[mes].push(item);
             }
@@ -247,46 +268,33 @@ function agruparPorRegional(dados) {
     return agrupado;
 }
 
-function obterUltimos3Meses() {
-    const meses = [
+function obterUltimos3MesesDosDados(dados) {
+    // Extrair todos os meses únicos dos dados
+    const mesesUnicos = [...new Set(dados.map(item => item.mes))];
+
+    // Ordenar os meses em ordem cronológica (assumindo que os meses estão em formato textual)
+    const ordemMeses = [
         'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
 
-    const dataAtual = new Date();
-    const mesReferencia = $('#mesReferencia').val();
+    // Filtrar meses válidos e ordenar de acordo com a ordem cronológica
+    const mesesOrdenados = mesesUnicos
+        .filter(mes => ordemMeses.includes(mes))
+        .sort((a, b) => ordemMeses.indexOf(a) - ordemMeses.indexOf(b));
 
-    if (mesReferencia) {
-        // Se um mês de referência foi selecionado, obter os 3 meses até esse mês
-        const mesAtual = parseInt(mesReferencia, 10);
+    // Pegar os últimos 3 meses, ou todos se houver menos de 3
+    const ultimos3Meses = mesesOrdenados.slice(-3);
 
-        // Calcular os 3 meses consecutivos terminando no mês selecionado
-        const mes3 = mesAtual - 2 <= 0 ? 12 + (mesAtual - 2) : mesAtual - 2;  // Mês -2
-        const mes2 = mesAtual - 1 <= 0 ? 12 + (mesAtual - 1) : mesAtual - 1;  // Mês -1
-        const mes1 = mesAtual;  // Mês selecionado
-
-        return [meses[mes3 - 1], meses[mes2 - 1], meses[mes1 - 1]];
-    } else {
-        // Caso contrário, usar os últimos 3 meses a partir do mês atual
-        const mesAtual = dataAtual.getMonth() + 1;  // Adiciona 1 porque getMonth() é 0-indexado
-        const mes2 = mesAtual - 1 <= 0 ? 12 : mesAtual - 1;  // Mês anterior
-        const mes3 = mesAtual - 2 <= 0 ? (mesAtual - 2 + 12) : mesAtual - 2;  // Dois meses antes
-
-        return [meses[mes3 - 1], meses[mes2 - 1], meses[mesAtual - 1]];
-    }
+    // Se tivermos menos de 3 meses, completar com meses anteriores (se necessário)
+    return ultimos3Meses;
 }
 
-function obterMesAtual() {
-    const meses = [
-        '', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
-
-    const dataAtual = new Date();
-    const mesAtual = dataAtual.getMonth() + 1;
-
-    return meses[mesAtual] || '';
+// Função para obter os meses únicos existentes nos dados
+function obterMesesUnicos(dados) {
+    return [...new Set(dados.map(item => item.mes).filter(mes => mes && mes !== ''))];
 }
+
 
 // Exibir mensagem de carregamento
 function mostrarCarregando(element) {

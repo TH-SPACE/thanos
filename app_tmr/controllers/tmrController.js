@@ -6,6 +6,9 @@ const db = require('../../db/db');
 // Middleware de autenticação (semelhante ao do app_he)
 const tmrAuth = require('../middleware/tmrAuth');
 
+// Serviço de sincronização
+const { syncDadosTmr } = require('../services/tmrSyncService');
+
 // Rota para acessar a página principal do TMR
 router.get('/', tmrAuth, (req, res) => {
     res.sendFile(path.join(__dirname, '../views/b2btmr.html'));
@@ -23,13 +26,25 @@ router.get('/data', tmrAuth, async (req, res) => {
     }
 });
 
+// Rota para sincronização manual de dados
+router.post('/sincronizar', tmrAuth, async (req, res) => {
+    try {
+        console.log('Iniciando sincronização manual de dados TMR...');
+        await syncDadosTmr();
+        res.json({ success: true, message: 'Sincronização concluída com sucesso!' });
+    } catch (error) {
+        console.error('Erro na sincronização manual de dados TMR:', error);
+        res.status(500).json({ success: false, error: 'Erro na sincronização: ' + error.message });
+    }
+});
+
 async function getDadosTMR() {
     // Esta função buscará os dados da tabela reparos_b2b_tmr
     const connection = await db.mysqlPool.getConnection();
     try {
-        // Buscar dados dos últimos 3 meses
+        // Buscar dados dos últimos 3 meses com base na data de início da vida
         const [rows] = await connection.execute(
-            'SELECT * FROM reparos_b2b_tmr WHERE data_registro >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ORDER BY data_registro DESC'
+            'SELECT * FROM reparos_b2b_tmr WHERE vdi_data_inicio >= DATE_SUB(NOW(), INTERVAL 3 MONTH) OR tqi_abertura >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ORDER BY vdi_data_inicio DESC'
         );
 
         // Converter tmr_total para número para cálculos no frontend e adicionar campo de mês

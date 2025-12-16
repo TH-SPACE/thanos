@@ -21,18 +21,39 @@ pool.getConnection((err, connection) => {
     }
 });
 
+// Variável para rastrear se o pool Oracle já foi inicializado
+let oracleInitialized = false;
+let oracleInitPromise = null;
+
 // Configuração do OracleDB
 async function initializeOracle() {
-    try {
-        await oracledb.createPool({
-            user: process.env.ORACLE_DB_USER,       // Usuário do banco
-            password: process.env.ORACLE_DB_PASSWORD, // Senha do banco
-            connectString: `${process.env.ORACLE_DB_HOST}/${process.env.ORACLE_DB_NAME}` // String de conexão (ex: "10.240.47.105/SIGITMSTB")
-        });
-        console.log('Conexão com o banco de dados Oracle estabelecida com sucesso!');
-    } catch (err) {
-        console.error(chalk.red('Erro ao conectar ao banco de dados Oracle, pois não está na Intranet ou erro de login e senha.'));
+    if (oracleInitialized) {
+        return; // Já inicializado
     }
+
+    if (oracleInitPromise) {
+        return oracleInitPromise; // Retorna a promessa em andamento
+    }
+
+    oracleInitPromise = (async () => {
+        try {
+            await oracledb.createPool({
+                user: process.env.ORACLE_DB_USER,       // Usuário do banco
+                password: process.env.ORACLE_DB_PASSWORD, // Senha do banco
+                connectString: `${process.env.ORACLE_DB_HOST}/${process.env.ORACLE_DB_NAME}`, // String de conexão (ex: "10.240.47.105/SIGITMSTB")
+                poolAlias: 'default' // Adicionando alias explícito para o pool
+            });
+            console.log('Conexão com o banco de dados Oracle estabelecida com sucesso!');
+            oracleInitialized = true;
+        } catch (err) {
+            console.error(chalk.red('Erro ao conectar ao banco de dados Oracle, pois não está na Intranet ou erro de login e senha.'));
+            console.error(err);
+            oracleInitialized = false;
+            throw err; // Lança o erro para ser tratado por quem chama
+        }
+    })();
+
+    return oracleInitPromise;
 }
 
 async function closeOracle() {
@@ -46,7 +67,10 @@ async function closeOracle() {
 
 async function getOracleConnection() {
     try {
-        return await oracledb.getConnection();
+        // Garante que o pool Oracle esteja inicializado antes de obter uma conexão
+        await initializeOracle();
+
+        return await oracledb.getConnection('default'); // Especificando o pool 'default'
     } catch (err) {
         console.error('Erro ao obter conexão do OracleDB:', err);
         throw err;
@@ -54,7 +78,11 @@ async function getOracleConnection() {
 }
 
 // Chama a função para inicializar a conexão com o OracleDB
-initializeOracle();
+// Não esperamos por ela aqui para não bloquear a inicialização
+initializeOracle().catch(err => {
+    // Apenas loga o erro, já que a inicialização pode falhar por motivos de rede/configuração
+    console.error('Erro na inicialização do OracleDB (continuando):', err);
+});
 
 //module.exports = pool.promise();
 
