@@ -30,8 +30,8 @@ $(document).ready(function() {
         sincronizarDadosManually();
     });
 
-    // Atualizar cabeçalhos iniciais
-    atualizarCabecalhoTabela();
+    // Carregar dados iniciais e atualizar cabeçalhos
+    carregarDadosTMR();
 });
 
 // Função para atualizar os cabeçalhos das tabelas com os meses dos dados
