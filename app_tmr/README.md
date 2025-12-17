@@ -15,10 +15,18 @@ Sistema web para calcular o tempo médio dos reparos B2B, com interface para vis
 - Rotina: executa a consulta e salvamento no banco a cada 12 horas
 
 ### Página Principal
-- Filtros: filtro de mês para selecionar a visão dos últimos 3 meses a partir do mês selecionado
+- Filtro por Grupo: filtro por grupo (`grp_nome`) nas abas de Cluster e Regional
 - Página com abas: Primeira aba com visão por Cluster, segunda por Regional
 - Visão por Cluster: Tabela com clusters, mostrando os meses e 5 colunas com informações: <4horas, >4horas, % Dentro(<4 horas / total), Total e TMR
+- Visão por Regional: Tabela com regionais, mostrando os meses e 5 colunas com informações: <4horas, >4horas, % Dentro(<4 horas / total), Total e TMR
 - Cálculo: Baseado na coluna `tqi_codigo` que se repete várias vezes (cada repetição é uma vida do código) e na coluna `tmr_total` que calcula o tempo em horas
+
+### Funcionalidades Recentes
+- **Filtro por Grupo**: Adicionado filtro por grupo (`grp_nome`) nas abas de Cluster e Regional. O filtro é aplicado no backend antes do agrupamento por `tqi_codigo`.
+- **Cálculo por Mês**: Corrigido cálculo do TMR para considerar apenas o tempo do reparo no mês específico, não o tempo acumulado.
+- **Contagem por Mês**: Reparos são contabilizados em todos os meses em que têm vidas, não apenas no mês da primeira vida.
+- **Listagem Completa de Grupos**: O dropdown de grupos mostra todos os grupos disponíveis mesmo após aplicar um filtro.
+- **Remoção do Filtro de Mês**: O filtro de mês mencionado no manual original não foi implementado, mantendo apenas os últimos 3 meses automaticamente.
 
 ## Estrutura de Pastas
 - `controllers/` - Controladores para as rotas
