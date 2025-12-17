@@ -26,7 +26,7 @@ async function obterDadosOracle() {
 
     const sqlQuery = `
             SELECT
-                UPPER(TRIM(TO_CHAR(vt.vdi_data_inicio, 'Month'))) AS mes_inicio,
+                UPPER(TRIM(TO_CHAR(tqi_data_reclamacao, 'Month'))) AS mes_inicio,
                 vt.vdi_codigo,
                 ti.tqi_codigo,
                 ti.tqi_raiz,
@@ -145,8 +145,8 @@ async function obterDadosOracle() {
 
             WHERE
                 ti.tqi_estado_codigo IN ('MS','GO','MA','AM','MT','PA','AP','DF','TO','RO','AC','RR')
-                AND vt.vdi_data_inicio >= TO_DATE('${dataInicioStr}', 'YYYY-MM-DD')
-                AND vt.vdi_data_inicio < TO_DATE('${dataFinalStr}', 'YYYY-MM-DD') + 1
+                AND tqi_data_reclamacao >= TO_DATE('${dataInicioStr}', 'YYYY-MM-DD')
+                AND tqi_data_reclamacao < TO_DATE('${dataFinalStr}', 'YYYY-MM-DD') + 1
         `;
 
     const result = await connection.execute(sqlQuery);

@@ -23,6 +23,16 @@ $(document).ready(function () {
   $("#sincronizarManualRegional").click(function () {
     sincronizarDadosManually();
   });
+
+  // Filtro de grupo para cluster
+  $("#filtroGrupoCluster").change(function () {
+    carregarDadosCluster();
+  });
+
+  // Filtro de grupo para regional
+  $("#filtroGrupoRegional").change(function () {
+    carregarDadosRegional();
+  });
 });
 
 // Função para atualizar os cabeçalhos das tabelas com os meses dos dados
@@ -99,9 +109,54 @@ function sincronizarDadosManually() {
 }
 
 function carregarDadosTMR() {
-  // Carregar dados de cluster e regional
-  carregarDadosCluster();
-  carregarDadosRegional();
+  // Carregar dados uma vez e atualizar ambas as tabelas
+  $("#tabelaCluster tbody").html(
+    '<tr><td colspan="100" class="text-center p-4">Carregando dados do cluster...</td></tr>'
+  );
+  $("#tabelaRegional tbody").html(
+    '<tr><td colspan="100" class="text-center p-4">Carregando dados da regional...</td></tr>'
+  );
+
+  // Preparar parâmetros da requisição
+const params = {};
+const grupoSelecionadoCluster = $("#filtroGrupoCluster").val();
+const grupoSelecionadoRegional = $("#filtroGrupoRegional").val();
+
+// Usar o grupo selecionado em qualquer uma das abas (como critério para a requisição)
+const grupoSelecionado = grupoSelecionadoCluster || grupoSelecionadoRegional;
+if (grupoSelecionado) {
+    params.grupo = grupoSelecionado;
+}
+
+  // Fazer as duas requisições simultaneamente: dados filtrados e lista completa de grupos
+  $.when(
+    $.get("/tmr/data", params),
+    $.get("/tmr/grupos")
+  ).done(function(dataResponse, gruposResponse) {
+    const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
+    const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+
+    // Obter os últimos 3 meses únicos dos dados recebidos
+    const meses = obterUltimos3MesesDosDados(dados);
+
+    // Atualizar cabeçalhos com os meses encontrados
+    atualizarCabecalhoTabela(meses);
+
+    // Preencher os seletores de grupo com a lista completa de grupos
+    atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
+
+    // Atualizar ambas as tabelas com os dados já filtrados no backend
+    atualizarTabelaCluster(dados, meses);
+    atualizarTabelaRegional(dados, meses);
+  }).fail(function (jqXHR, textStatus, errorThrown) {
+    $("#tabelaCluster tbody").html(
+      '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
+    );
+    $("#tabelaRegional tbody").html(
+      '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
+    );
+    alert("Erro ao carregar dados de cluster e regional: " + textStatus);
+  });
 }
 
 function carregarDadosCluster() {
@@ -110,19 +165,36 @@ function carregarDadosCluster() {
     '<tr><td colspan="100" class="text-center p-4">Carregando dados do cluster...</td></tr>'
   );
 
-  $.get("/tmr/data", function (dados) {
+  // Preparar parâmetros da requisição
+const params = {};
+const grupoSelecionado = $("#filtroGrupoCluster").val();
+if (grupoSelecionado) {
+    params.grupo = grupoSelecionado;
+}
+
+  // Fazer as duas requisições simultaneamente: dados filtrados e lista completa de grupos
+  $.when(
+    $.get("/tmr/data", params),
+    $.get("/tmr/grupos")
+  ).done(function(dataResponse, gruposResponse) {
+    const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
+    const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+
     // Obter os últimos 3 meses únicos dos dados recebidos
     const meses = obterUltimos3MesesDosDados(dados);
 
     // Atualizar cabeçalhos com os meses encontrados
     atualizarCabecalhoTabela(meses);
 
+    // Preencher os seletores de grupo com a lista completa de grupos
+    atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
+
     atualizarTabelaCluster(dados, meses);
-  }).fail(function () {
+  }).fail(function (jqXHR, textStatus, errorThrown) {
     $("#tabelaCluster tbody").html(
       '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
     );
-    alert("Erro ao carregar dados de cluster");
+    alert("Erro ao carregar dados de cluster: " + textStatus);
   });
 }
 
@@ -132,19 +204,36 @@ function carregarDadosRegional() {
     '<tr><td colspan="100" class="text-center p-4">Carregando dados da regional...</td></tr>'
   );
 
-  $.get("/tmr/data", function (dados) {
+  // Preparar parâmetros da requisição
+const params = {};
+const grupoSelecionado = $("#filtroGrupoRegional").val();
+if (grupoSelecionado) {
+    params.grupo = grupoSelecionado;
+}
+
+  // Fazer as duas requisições simultaneamente: dados filtrados e lista completa de grupos
+  $.when(
+    $.get("/tmr/data", params),
+    $.get("/tmr/grupos")
+  ).done(function(dataResponse, gruposResponse) {
+    const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
+    const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+
     // Obter os últimos 3 meses únicos dos dados recebidos (já feito na função de cluster)
     const meses = obterUltimos3MesesDosDados(dados);
 
     // Atualizar cabeçalhos com os meses encontrados (já deve ter sido feito)
     // atualizarCabecalhoTabela(meses); // Comentado para evitar sobreposição
 
+    // Preencher os seletores de grupo com a lista completa de grupos
+    atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
+
     atualizarTabelaRegional(dados, meses);
-  }).fail(function () {
+  }).fail(function (jqXHR, textStatus, errorThrown) {
     $("#tabelaRegional tbody").html(
       '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
     );
-    alert("Erro ao carregar dados de regional");
+    alert("Erro ao carregar dados de regional: " + textStatus);
   });
 }
 
@@ -153,7 +242,7 @@ function atualizarTabelaCluster(dados, meses) {
     let tableHtml = '';
     let totalCells = '<td class="fw-bold">TOTAL</td>'; // Célula do total para a coluna de agrupamento
 
-    // Agrupar dados por cluster
+    // Agrupar dados por cluster (os dados já estão filtrados no backend)
     const dadosPorCluster = agruparPorCluster(dados);
 
     // Calcular totais por mês
@@ -257,7 +346,7 @@ function atualizarTabelaRegional(dados, meses) {
     let tableHtml = '';
     let totalCells = '<td class="fw-bold">TOTAL</td>'; // Célula do total para a coluna de agrupamento
 
-    // Agrupar dados por regional
+    // Agrupar dados por regional (os dados já estão filtrados no backend)
     const dadosPorRegional = agruparPorRegional(dados);
 
     // Calcular totais por mês
@@ -442,6 +531,68 @@ function formatarNumero(numero) {
     return "";
   }
   return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+// Função para atualizar as opções do seletor de grupo com a lista completa
+function atualizarOpcoesGrupoCompleta(grupos, idSelect1, idSelect2) {
+  // Ordenar os grupos alfabeticamente
+  grupos.sort();
+
+  // Atualizar ambos os seletores com as mesmas opções
+  const seletor1 = $(`#${idSelect1}`);
+  const seletor2 = $(`#${idSelect2}`);
+
+  // Salvar valores atuais selecionados
+  const valorAtual1 = seletor1.val();
+  const valorAtual2 = seletor2.val();
+
+  // Atualizar as opções mantendo os valores atuais selecionados
+  atualizarSelectComValoresPreservados(seletor1, grupos, valorAtual1);
+  atualizarSelectComValoresPreservados(seletor2, grupos, valorAtual2);
+}
+
+// Função para atualizar as opções do seletor de grupo
+function atualizarOpcoesGrupo(dados, idSelect1, idSelect2) {
+  // Obter grupos únicos dos dados
+  const gruposUnicos = [...new Set(dados.map(item => item.grp_nome).filter(grp => grp && grp !== "" && grp !== null))];
+
+  // Ordenar os grupos alfabeticamente
+  gruposUnicos.sort();
+
+  // Atualizar ambos os seletores com as mesmas opções
+  const seletor1 = $(`#${idSelect1}`);
+  const seletor2 = $(`#${idSelect2}`);
+
+  // Salvar valores atuais selecionados
+  const valorAtual1 = seletor1.val();
+  const valorAtual2 = seletor2.val();
+
+  // Atualizar as opções mantendo os valores atuais selecionados
+  atualizarSelectComValoresPreservados(seletor1, gruposUnicos, valorAtual1);
+  atualizarSelectComValoresPreservados(seletor2, gruposUnicos, valorAtual2);
+}
+
+// Função auxiliar para atualizar um seletor mantendo o valor selecionado
+function atualizarSelectComValoresPreservados(seletor, novasOpcoes, valorAtual) {
+  // Salvar o valor atual
+  const valorAntigo = seletor.val();
+
+  // Limpar as opções atuais (exceto a primeira que é "Todos os Grupos")
+  seletor.find('option:gt(0)').remove();
+
+  // Adicionar novas opções
+  novasOpcoes.forEach(grupo => {
+    const option = new Option(grupo, grupo);
+    seletor.append(option);
+  });
+
+  // Restaurar o valor selecionado, mas manter "Todos os Grupos" se nenhum valor específico foi passado e nenhum estava selecionado anteriormente
+  if (valorAtual !== undefined) {
+    seletor.val(valorAtual);
+  } else if (valorAntigo !== undefined) {
+    seletor.val(valorAntigo);
+  }
+  // Caso contrário, mantém o padrão ("Todos os Grupos" que é vazio)
 }
 
 // Função para verificar se o valor é um número válido

@@ -17,12 +17,36 @@ router.get('/', tmrAuth, (req, res) => {
 // Rota para obter dados de TMR
 router.get('/data', tmrAuth, async (req, res) => {
     try {
+        // Obter parâmetro de filtro de grupo, se existir
+        const grupoFiltro = req.query.grupo || null;
+
         // Obter dados do banco de dados
-        const dados = await getDadosTMR();
+        const dados = await getDadosTMR(grupoFiltro);
         res.json(dados);
     } catch (error) {
         console.error('Erro ao obter dados de TMR:', error);
         res.status(500).json({ error: 'Erro ao obter dados de TMR' });
+    }
+});
+
+// Rota para obter todos os grupos disponíveis
+router.get('/grupos', tmrAuth, async (req, res) => {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+        try {
+            // Buscar todos os grupos distintos da tabela reparos_b2b_tmr
+            const [rows] = await connection.execute(
+                'SELECT DISTINCT grp_nome FROM reparos_b2b_tmr WHERE grp_nome IS NOT NULL AND grp_nome != "" ORDER BY grp_nome ASC'
+            );
+
+            const grupos = rows.map(row => row.grp_nome);
+            res.json(grupos);
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao obter grupos:', error);
+        res.status(500).json({ error: 'Erro ao obter grupos' });
     }
 });
 
@@ -38,23 +62,35 @@ router.post('/sincronizar', tmrAuth, async (req, res) => {
     }
 });
 
-async function getDadosTMR() {
+async function getDadosTMR(grupoFiltro = null) {
     // Esta função buscará os dados da tabela reparos_b2b_tmr
     const connection = await db.mysqlPool.getConnection();
     try {
+        let query = 'SELECT * FROM reparos_b2b_tmr WHERE tqi_abertura >= DATE_SUB(NOW(), INTERVAL 3 MONTH)';
+
+        // Adicionar filtro por grupo se especificado
+        if (grupoFiltro) {
+            query += ' AND grp_nome = ?';
+        }
+
+        query += ' ORDER BY tqi_abertura DESC';
+
+        let params = [];
+        if (grupoFiltro) {
+            params = [grupoFiltro];
+        }
+
         // Buscar dados dos últimos 3 meses com base na data de início da vida
-        const [rows] = await connection.execute(
-            'SELECT * FROM reparos_b2b_tmr WHERE vdi_data_inicio >= DATE_SUB(NOW(), INTERVAL 3 MONTH) ORDER BY vdi_data_inicio DESC'
-        );
+        const [rows] = await connection.execute(query, params);
 
         // Primeiro, vamos organizar os dados por mês e reparo
         const dadosPorMes = {};
 
         for (const row of rows) {
-            // Calcular o mês com base na vdi_data_inicio desta vida específica
+            // Calcular o mês com base na tqi_abertura desta vida específica
             let mes = '';
-            if (row.vdi_data_inicio) {
-                const dataInicio = new Date(row.vdi_data_inicio);
+            if (row.tqi_abertura) {
+                const dataInicio = new Date(row.tqi_abertura);
                 const meses = [
                     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
