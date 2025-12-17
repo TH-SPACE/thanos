@@ -18,7 +18,6 @@ const { logMiddleware } = require("./middlewares/log");
 // ⚙️ Inicializações
 dotenv.config();
 const app = express();
-console.log("Aplicação criada por Thiago Alves Nunes");
 const PORT = process.env.PORT || 3000;
 
 // Configurações do app
@@ -36,10 +35,7 @@ app.use(
   express.static(path.join(__dirname, "app_thanos", "public"))
 );
 // Serve a pasta app_tmr para arquivos estáticos do TMR
-app.use(
-  "/tmr",
-  express.static(path.join(__dirname, "app_tmr", "public"))
-);
+app.use("/tmr", express.static(path.join(__dirname, "app_tmr", "public")));
 // Serve a pasta consulta_ad como estática para o script.js
 app.use("/consulta_ad", express.static(path.join(__dirname, "consulta_ad")));
 
@@ -75,10 +71,24 @@ app.use("/tmr", require("./app_tmr/routes/tmrRoutes"));
 // 📋 Rota da todo list
 app.use("/todo_th", require("./todo_th/todo_th"));
 
+// Inicializar o serviço de sincronização do TMR
+require("./app_tmr/initTmrSync");
+
 // 🚀 Inicialização do servidor
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🔥 THANOS rodando em http://10.243.20.64:${PORT}`);
-  console.log(`📦 Versão THANOS: v${version}`);
-  //  console.log("Encerrando a aplicação...");
-  //  process.exit(0); // 0 indica saída bem-sucedida
+  // Mensagem formatada de inicialização
+  const startupMessage = `
+╔══════════════════════════════════════════════════════════════╗
+║                    THANOS INICIADO COM SUCESSO!              ║
+║                                                              ║
+║  🔥 Aplicação rodando em: http://10.243.20.64:${PORT}          ║
+║  📦 Versão: v${version.padEnd(47 - version.length, " ")}     ║
+║  ⏰ Serviço TMR: Sincronização automática ativa              ║
+║  🔄 Atualizações a cada 12 horas                             ║
+║                                                              ║
+║  Sistema pronto para uso!                                    ║
+╚══════════════════════════════════════════════════════════════╝
+`;
+
+  console.log(startupMessage);
 });

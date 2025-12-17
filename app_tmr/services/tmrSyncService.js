@@ -4,7 +4,7 @@ const { obterDadosOracle } = require('../controllers/dadosTmrController');
 // Função para sincronizar dados do Oracle para o MariaDB
 async function syncDadosTmr() {
     try {
-        console.log('Iniciando sincronização de dados TMR...');
+        // console.log('Iniciando sincronização de dados TMR...');
 
         // Obter dados do Oracle
         const dadosOracle = await obterDadosOracle();
@@ -112,8 +112,8 @@ async function syncDadosTmr() {
             connection.release();
         }
     } catch (error) {
-        console.error('Erro na sincronização de dados TMR:', error);
-        throw error;
+        console.error('Erro na sincronização de dados TMR:');
+        // throw error;
     }
 }
 
@@ -131,7 +131,7 @@ function iniciarSyncService() {
         }
     }, 12 * 60 * 60 * 1000); // 12 horas em milissegundos
     
-    console.log('Serviço de sincronização TMR iniciado. Atualizações a cada 12 horas.');
+    // console.log('Serviço de sincronização TMR iniciado. Atualizações a cada 12 horas.');
 }
 
 module.exports = {

@@ -34,7 +34,7 @@ try {
   // Faz o parse do JSON e armazena na variável global
   valoresPorCargo = JSON.parse(data);
 
-  console.log("✅ Valores de HE carregados com sucesso!");
+  // console.log("✅ Valores de HE carregados com sucesso!");
 } catch (err) {
   // Log de erro caso o arquivo não exista ou tenha formato inválido
   console.error("❌ Erro ao carregar valores_he.json:", err);

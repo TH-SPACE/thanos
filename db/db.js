@@ -42,12 +42,12 @@ async function initializeOracle() {
                 password: process.env.ORACLE_DB_PASSWORD, // Senha do banco
                 connectString: `${process.env.ORACLE_DB_HOST}/${process.env.ORACLE_DB_NAME}`, // String de conexão (ex: "10.240.47.105/SIGITMSTB")
                 poolAlias: 'default' // Adicionando alias explícito para o pool
-            });
-            console.log('Conexão com o banco de dados Oracle estabelecida com sucesso!');
+            });            
             oracleInitialized = true;
+            console.log('Conexão com o banco de dados Oracle estabelecida com sucesso!');
         } catch (err) {
             console.error(chalk.red('Erro ao conectar ao banco de dados Oracle, pois não está na Intranet ou erro de login e senha.'));
-            console.error(err);
+            // console.error(err);
             oracleInitialized = false;
             throw err; // Lança o erro para ser tratado por quem chama
         }
@@ -61,7 +61,7 @@ async function closeOracle() {
         await oracledb.getPool().close(0);
         console.log('Conexão com o banco de dados Oracle encerrada com sucesso!');
     } catch (err) {
-        console.error('Erro ao encerrar a conexão com o banco de dados Oracle:', err);
+        console.error('Erro ao encerrar a conexão com o banco de dados Oracle:');
     }
 }
 
@@ -72,7 +72,7 @@ async function getOracleConnection() {
 
         return await oracledb.getConnection('default'); // Especificando o pool 'default'
     } catch (err) {
-        console.error('Erro ao obter conexão do OracleDB:', err);
+        console.error('Erro ao obter conexão do OracleDB:');
         throw err;
     }
 }

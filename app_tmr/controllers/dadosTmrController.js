@@ -169,7 +169,7 @@ async function obterDadosOracle() {
 
     return formattedData;
   } catch (err) {
-    console.error("Erro ao consultar dados do OracleDB:", err);
+    console.error("Erro ao consultar dados do OracleDB:");
     throw err;
   }
 }
@@ -180,7 +180,7 @@ router.get("/oracle-data", tmrAuth, async (req, res) => {
     const dados = await obterDadosOracle();
     res.json(dados);
   } catch (error) {
-    console.error("Erro ao obter dados do Oracle:", error);
+    console.error("Erro ao obter dados do Oracle:");
     res.status(500).json({ error: "Erro ao obter dados do Oracle" });
   }
 });
