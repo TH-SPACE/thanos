@@ -7,9 +7,6 @@ body {
 }
 
 /* Estilos para a navbar */
-.navbar {
-    margin-bottom: 20px;
-}
 
 .navbar-brand {
     font-size: 1.2rem;
@@ -93,7 +90,7 @@ body {
 }
 
 .tab-content {
-    padding: 20px;
+    padding: 10px;
     background-color: #fff;
     border: 1px solid #dee2e6;
     border-top: none;
