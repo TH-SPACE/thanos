@@ -3,6 +3,7 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f8f9fa;
+    font-size: 14px; /* Diminuindo o tamanho da fonte global */
 }
 
 .card {
@@ -13,11 +14,13 @@ body {
 .table th {
     vertical-align: middle;
     text-align: center;
+    font-size: 0.85em;
 }
 
 .table td {
     vertical-align: middle;
     text-align: center;
+    font-size: 0.85em;
 }
 
 .table th:first-child,
@@ -92,6 +95,10 @@ body {
     color: #6c757d;
 }
 
+.stat-label, .stat-number {
+    font-size: 0.8rem;
+}
+
 .progress-bar-success {
     background-color: #198754;
 }
@@ -116,11 +123,13 @@ body {
 .perc-dentro-prazo {
     font-weight: bold;
     color: #198754; /* verde */
+    font-size: 0.9em;
 }
 
 .tmr-value {
     font-weight: bold;
     color: #0d6efd; /* azul */
+    font-size: 0.9em;
 }
 
 .value-within {
@@ -129,4 +138,9 @@ body {
 
 .value-over {
     color: #dc3545; /* vermelho */
+}
+
+/* Reduzindo o tamanho de todos os cabeçalhos */
+h1, h2, h3, h4, h5, h6 {
+    font-size: calc(1.375rem - 0.2rem);
 }
