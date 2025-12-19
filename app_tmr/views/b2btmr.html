@@ -12,7 +12,47 @@
     <link rel="stylesheet" href="/tmr/css/tmr-custom.css">
 </head>
 <body>
-    <div class="container-fluid">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/tmr">
+                <i class="fas fa-clock"></i> Sistema TMR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/tmr"><i class="fas fa-home"></i> TMR</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-cog"></i> Configurações</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-database"></i> Consultas</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> <span id="nomeUsuarioNav">Carregando...</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle"></i> Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
         <header class="border-bottom mb-4">
             <div class="row align-items-center py-3">
                 <div class="col-md-8">
@@ -137,11 +177,14 @@
             $.get('/auth/usuario', function(usuario) {
                 if (usuario && usuario.nome) {
                     $('#nomeUsuario').text(usuario.nome);
+                    $('#nomeUsuarioNav').text(usuario.nome);
                 } else {
                     $('#nomeUsuario').text('Não identificado');
+                    $('#nomeUsuarioNav').text('Não identificado');
                 }
             }).fail(function() {
                 $('#nomeUsuario').text('Não identificado');
+                $('#nomeUsuarioNav').text('Não identificado');
             });
         });
     </script>

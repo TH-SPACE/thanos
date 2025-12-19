@@ -6,6 +6,40 @@ body {
     font-size: 14px; /* Diminuindo o tamanho da fonte global */
 }
 
+/* Estilos para a navbar */
+.navbar {
+    margin-bottom: 20px;
+}
+
+.navbar-brand {
+    font-size: 1.2rem;
+}
+
+.navbar-brand i {
+    margin-right: 8px;
+}
+
+.nav-item i {
+    margin-right: 6px;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.navbar-nav .nav-link:hover {
+    color: white;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-item:hover {
+    background-color: #e9ecef;
+}
+
 .card {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     border: 1px solid rgba(0, 0, 0, 0.125);
