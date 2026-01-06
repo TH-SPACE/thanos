@@ -39,11 +39,32 @@ $(document).ready(function () {
 function atualizarCabecalhoTabela(meses) {
   // Atualizar cabeçalho da tabela de cluster (com rowspan)
   let headerClusterHtml = '<th rowspan="2">Cluster</th>';
-  meses.forEach((mes) => {
-    // Exibir apenas o nome do mês, não o ano, para manter a interface limpa
-    const nomeMes = mes.split(' ')[0]; // Pegar apenas o nome do mês
-    headerClusterHtml += `<th colspan="5">${nomeMes}</th>`;
+
+  // Processar meses para determinar quando mostrar o ano
+  const mesesProcessados = meses.map(mes => {
+    const [nomeMes, ano] = mes.split(' ');
+    return { nomeMes, ano };
   });
+
+  // Identificar anos únicos
+  const anosUnicos = [...new Set(mesesProcessados.map(item => item.ano))];
+
+  mesesProcessados.forEach((mesInfo, index) => {
+    let mesDisplay = mesInfo.nomeMes;
+
+    // Se houver mais de um ano nos dados, mostrar o ano para cada mês
+    if (anosUnicos.length > 1) {
+      mesDisplay = `${mesInfo.nomeMes} ${mesInfo.ano}`;
+    } else {
+      // Se for o primeiro mês ou o ano mudou em relação ao anterior, mostrar o ano
+      if (index === 0 || mesInfo.ano !== mesesProcessados[index - 1].ano) {
+        mesDisplay = `${mesInfo.nomeMes} ${mesInfo.ano}`;
+      }
+    }
+
+    headerClusterHtml += `<th colspan="5">${mesDisplay}</th>`;
+  });
+
   $("#headerCluster").html(headerClusterHtml);
 
   // Atualizar subcabeçalho da tabela de cluster com rótulos das colunas
@@ -61,11 +82,32 @@ function atualizarCabecalhoTabela(meses) {
 
   // Atualizar cabeçalho da tabela de regional (com rowspan)
   let headerRegionalHtml = '<th rowspan="2">Regional</th>';
-  meses.forEach((mes) => {
-    // Exibir apenas o nome do mês, não o ano, para manter a interface limpa
-    const nomeMes = mes.split(' ')[0]; // Pegar apenas o nome do mês
-    headerRegionalHtml += `<th colspan="5">${nomeMes}</th>`;
+
+  // Processar meses para determinar quando mostrar o ano
+  const mesesProcessadosRegional = meses.map(mes => {
+    const [nomeMes, ano] = mes.split(' ');
+    return { nomeMes, ano };
   });
+
+  // Identificar anos únicos
+  const anosUnicosRegional = [...new Set(mesesProcessadosRegional.map(item => item.ano))];
+
+  mesesProcessadosRegional.forEach((mesInfo, index) => {
+    let mesDisplay = mesInfo.nomeMes;
+
+    // Se houver mais de um ano nos dados, mostrar o ano para cada mês
+    if (anosUnicosRegional.length > 1) {
+      mesDisplay = `${mesInfo.nomeMes} ${mesInfo.ano}`;
+    } else {
+      // Se for o primeiro mês ou o ano mudou em relação ao anterior, mostrar o ano
+      if (index === 0 || mesInfo.ano !== mesesProcessadosRegional[index - 1].ano) {
+        mesDisplay = `${mesInfo.nomeMes} ${mesInfo.ano}`;
+      }
+    }
+
+    headerRegionalHtml += `<th colspan="5">${mesDisplay}</th>`;
+  });
+
   $("#headerRegional").html(headerRegionalHtml);
 
   // Atualizar subcabeçalho da tabela de regional com rótulos das colunas
