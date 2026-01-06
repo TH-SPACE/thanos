@@ -66,7 +66,18 @@ async function getDadosTMR(grupoFiltro = null) {
     // Esta função buscará os dados da tabela reparos_b2b_tmr
     const connection = await db.mysqlPool.getConnection();
     try {
-        let query = 'SELECT * FROM reparos_b2b_tmr WHERE tqi_abertura >= DATE_SUB(NOW(), INTERVAL 3 MONTH)';
+        // Calcular datas para os últimos 3 meses (incluindo o mês atual em andamento)
+        const dataAtual = new Date();
+
+        // Para pegar os 3 meses mais recentes (até o mês atual), pegamos do primeiro dia de 2 meses atrás
+        // até o final do mês atual
+        const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 2, 1); // 3 meses incluindo o atual
+
+        // Formatar datas para o formato SQL
+        const dataInicioStr = primeiroDiaTresMesesAtras.toISOString().split('T')[0];
+        const dataFinalStr = dataAtual.toISOString().split('T')[0];
+
+        let query = `SELECT * FROM reparos_b2b_tmr WHERE tqi_abertura >= '${dataInicioStr}' AND tqi_abertura <= '${dataFinalStr}'`;
 
         // Adicionar filtro por grupo se especificado
         if (grupoFiltro) {
@@ -95,7 +106,7 @@ async function getDadosTMR(grupoFiltro = null) {
                     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
                 ];
-                mes = meses[dataInicio.getMonth()];
+                mes = `${meses[dataInicio.getMonth()]} ${dataInicio.getFullYear()}`;
             }
 
             // Criar chave única para reparo+mês

@@ -40,7 +40,9 @@ function atualizarCabecalhoTabela(meses) {
   // Atualizar cabeçalho da tabela de cluster (com rowspan)
   let headerClusterHtml = '<th rowspan="2">Cluster</th>';
   meses.forEach((mes) => {
-    headerClusterHtml += `<th colspan="5">${mes}</th>`;
+    // Exibir apenas o nome do mês, não o ano, para manter a interface limpa
+    const nomeMes = mes.split(' ')[0]; // Pegar apenas o nome do mês
+    headerClusterHtml += `<th colspan="5">${nomeMes}</th>`;
   });
   $("#headerCluster").html(headerClusterHtml);
 
@@ -60,7 +62,9 @@ function atualizarCabecalhoTabela(meses) {
   // Atualizar cabeçalho da tabela de regional (com rowspan)
   let headerRegionalHtml = '<th rowspan="2">Regional</th>';
   meses.forEach((mes) => {
-    headerRegionalHtml += `<th colspan="5">${mes}</th>`;
+    // Exibir apenas o nome do mês, não o ano, para manter a interface limpa
+    const nomeMes = mes.split(' ')[0]; // Pegar apenas o nome do mês
+    headerRegionalHtml += `<th colspan="5">${nomeMes}</th>`;
   });
   $("#headerRegional").html(headerRegionalHtml);
 
@@ -481,7 +485,7 @@ function obterUltimos3MesesDosDados(dados) {
   // Extrair todos os meses únicos dos dados
   const mesesUnicos = [...new Set(dados.map((item) => item.mes))];
 
-  // Ordenar os meses em ordem cronológica (assumindo que os meses estão em formato textual)
+  // Ordenar os meses em ordem cronológica considerando o ano
   const ordemMeses = [
     "Janeiro",
     "Fevereiro",
@@ -497,10 +501,34 @@ function obterUltimos3MesesDosDados(dados) {
     "Dezembro",
   ];
 
+  // Função para extrair mês e ano de uma string no formato "Mês Ano"
+  function extrairMesAno(mesStr) {
+    const partes = mesStr.split(' ');
+    if (partes.length === 2) {
+      const mes = partes[0];
+      const ano = parseInt(partes[1]);
+      return { mes, ano };
+    }
+    return { mes: mesStr, ano: 0 };
+  }
+
   // Filtrar meses válidos e ordenar de acordo com a ordem cronológica
   const mesesOrdenados = mesesUnicos
-    .filter((mes) => ordemMeses.includes(mes))
-    .sort((a, b) => ordemMeses.indexOf(a) - ordemMeses.indexOf(b));
+    .filter((mes) => {
+      const { mes: nomeMes } = extrairMesAno(mes);
+      return ordemMeses.includes(nomeMes);
+    })
+    .sort((a, b) => {
+      const { mes: mesA, ano: anoA } = extrairMesAno(a);
+      const { mes: mesB, ano: anoB } = extrairMesAno(b);
+
+      // Primeiro compara por ano
+      if (anoA !== anoB) {
+        return anoA - anoB;
+      }
+      // Se o ano for igual, compara por mês
+      return ordemMeses.indexOf(mesA) - ordemMeses.indexOf(mesB);
+    });
 
   // Pegar os últimos 3 meses, ou todos se houver menos de 3
   const ultimos3Meses = mesesOrdenados.slice(-3);

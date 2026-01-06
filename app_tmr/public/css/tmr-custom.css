@@ -76,6 +76,11 @@ body {
     text-align: center;
 }
 
+/* Garantir alinhamento correto para subcabeçalhos */
+.table thead tr:nth-child(2) th {
+    text-align: center;
+}
+
 .table-dark th {
     font-weight: bold;
 }

@@ -15,10 +15,15 @@ async function obterDadosOracle() {
       `ALTER SESSION SET NLS_DATE_LANGUAGE = 'PORTUGUESE'`
     );
 
-    // Calcular datas para os últimos 3 meses
-    const dataFinal = new Date();
-    const dataInicio = new Date();
-    dataInicio.setMonth(dataFinal.getMonth() - 3);
+    // Calcular datas para os últimos 3 meses (incluindo o mês atual em andamento)
+    const dataAtual = new Date();
+
+    // Para pegar os 3 meses mais recentes (até o mês atual), pegamos do primeiro dia de 2 meses atrás
+    // até o final do mês atual
+    const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 2, 1); // 3 meses incluindo o atual
+
+    const dataInicio = primeiroDiaTresMesesAtras;
+    const dataFinal = dataAtual; // Até a data atual
 
     // Formatar datas para o formato Oracle
     const dataInicioStr = dataInicio.toISOString().split("T")[0];
@@ -146,7 +151,7 @@ async function obterDadosOracle() {
             WHERE
                 ti.tqi_estado_codigo IN ('MS','GO','MA','AM','MT','PA','AP','DF','TO','RO','AC','RR')
                 AND tqi_data_reclamacao >= TO_DATE('${dataInicioStr}', 'YYYY-MM-DD')
-                AND tqi_data_reclamacao < TO_DATE('${dataFinalStr}', 'YYYY-MM-DD') + 1
+                AND tqi_data_reclamacao <= TO_DATE('${dataFinalStr}', 'YYYY-MM-DD')
         `;
 
     const result = await connection.execute(sqlQuery);
