@@ -194,6 +194,9 @@ if (grupoSelecionado) {
     // Atualizar ambas as tabelas com os dados já filtrados no backend
     atualizarTabelaCluster(dados, meses);
     atualizarTabelaRegional(dados, meses);
+
+    // Atualizar o gráfico com os dados atuais
+    atualizarGraficoCluster(dados, meses);
   }).fail(function (jqXHR, textStatus, errorThrown) {
     $("#tabelaCluster tbody").html(
       '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
@@ -236,6 +239,9 @@ if (grupoSelecionado) {
     atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
 
     atualizarTabelaCluster(dados, meses);
+
+    // Atualizar o gráfico com os dados atuais
+    atualizarGraficoCluster(dados, meses);
   }).fail(function (jqXHR, textStatus, errorThrown) {
     $("#tabelaCluster tbody").html(
       '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
@@ -385,6 +391,9 @@ function atualizarTabelaCluster(dados, meses) {
 
     // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
     $('#tabelaCluster tbody').html(tableHtml);
+
+    // Atualizar o gráfico com os dados atuais
+    atualizarGraficoCluster(dados, meses);
 }
 
 function atualizarTabelaRegional(dados, meses) {
@@ -668,4 +677,191 @@ function atualizarSelectComValoresPreservados(seletor, novasOpcoes, valorAtual) 
 // Função para verificar se o valor é um número válido
 function isNumber(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+// Função para criar o gráfico de total de reparos por mês na visão por cluster
+function criarGraficoCluster(dados, meses) {
+  // Calcular totais por mês
+  const totaisPorMes = {};
+
+  // Inicializar os meses
+  meses.forEach(mes => {
+    totaisPorMes[mes] = {
+      total: 0,
+      tmrTotal: 0,
+      tmrCount: 0
+    };
+  });
+
+  // Agrupar os dados por mês e calcular totais
+  dados.forEach(item => {
+    const mes = item.mes;
+    if (meses.includes(mes)) {
+      totaisPorMes[mes].total += 1; // Contar cada registro
+      if (item.tmr_total !== null) {
+        totaisPorMes[mes].tmrTotal += parseFloat(item.tmr_total);
+        totaisPorMes[mes].tmrCount += 1;
+      }
+    }
+  });
+
+  // Preparar dados para o gráfico
+  const labels = meses.map(mes => {
+    // Exibir apenas o nome do mês para manter o gráfico limpo
+    return mes.split(' ')[0];
+  });
+
+  const totalReparos = meses.map(mes => totaisPorMes[mes].total);
+
+  // Calcular TMR médio por mês
+  const tmrMedioPorMes = meses.map(mes => {
+    const mesData = totaisPorMes[mes];
+    return mesData.tmrCount > 0 ? parseFloat((mesData.tmrTotal / mesData.tmrCount).toFixed(2)) : 0;
+  });
+
+  // Obter o contexto do canvas
+  const ctx = document.getElementById('graficoCluster').getContext('2d');
+
+  // Destruir gráfico anterior se existir
+  if (window.graficoClusterInstance) {
+    window.graficoClusterInstance.destroy();
+  }
+
+  // Criar novo gráfico
+  window.graficoClusterInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Total de Reparos',
+          data: totalReparos,
+          backgroundColor: 'rgba(0, 123, 255, 0.5)', // Azul Bootstrap
+          borderColor: 'rgba(0, 123, 255, 1)', // Azul Bootstrap
+          borderWidth: 1,
+          yAxisID: 'y',
+          order: 2 // Colocar as barras atrás da linha
+        },
+        {
+          label: 'TMR Médio (horas)',
+          data: tmrMedioPorMes,
+          type: 'line',
+          fill: false,
+          borderColor: 'rgba(220, 53, 69, 1)', // Vermelho Bootstrap
+          backgroundColor: 'rgba(220, 53, 69, 0.2)',
+          borderWidth: 3,
+          borderDash: [5, 5], // Linha tracejada para distinguir
+          yAxisID: 'y1',
+          pointRadius: 6,
+          pointBackgroundColor: 'rgba(220, 53, 69, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointHoverRadius: 8,
+          order: 1 // Colocar a linha na frente das barras
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: {
+            display: true,
+            text: 'Total de Reparos',
+            font: {
+              size: 12,
+              weight: 'bold'
+            }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.1)'
+          },
+          ticks: {
+            font: {
+              size: 11
+            }
+          }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          title: {
+            display: true,
+            text: 'TMR Médio (horas)',
+            font: {
+              size: 12,
+              weight: 'bold'
+            }
+          },
+          // grid line will be hidden for one of the axes
+          grid: {
+            drawOnChartArea: false,
+          },
+          ticks: {
+            font: {
+              size: 11
+            }
+          }
+        },
+        x: {
+          grid: {
+            color: 'rgba(0, 0, 0, 0.1)'
+          },
+          ticks: {
+            font: {
+              size: 12,
+              weight: 'bold'
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            font: {
+              size: 12,
+              weight: 'bold'
+            },
+            usePointStyle: true,
+            padding: 20
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleFont: {
+            size: 14
+          },
+          bodyFont: {
+            size: 13
+          },
+          padding: 10,
+          usePointStyle: true,
+          boxWidth: 10,
+          boxHeight: 10
+        },
+        title: {
+          display: false // Removido título duplicado do gráfico já que temos no card
+        }
+      },
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
+      }
+    }
+  });
+}
+
+// Função para atualizar o gráfico quando os dados forem carregados
+function atualizarGraficoCluster(dados, meses) {
+  if (dados && meses && meses.length > 0) {
+    criarGraficoCluster(dados, meses);
+  }
 }
