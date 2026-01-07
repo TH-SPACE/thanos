@@ -1,7 +1,7 @@
 // Funções JavaScript para o sistema de TMR
 
 // Variável para armazenar as procedências selecionadas
-let procedenciasSelecionadas = [];
+let procedenciasSelecionadas = ["proativo", "reativo"];
 
 $(document).ready(function () {
   // Carregar dados iniciais e atualizar cabeçalhos
@@ -770,36 +770,20 @@ function atualizarMenuProcedenciaCompleto(procedencias) {
     menu.append(item);
   });
 
-  // Definir seleções padrão se nenhuma seleção tiver sido feita ainda
-  if (procedenciasSelecionadas.length === 0) {
-    // Verificar se "proativo" e "reativo" existem nas opções e selecioná-las por padrão
-    const temProativo = procedencias.includes("proativo");
-    const temReativo = procedencias.includes("reativo");
-
-    if (temProativo) {
-      procedenciasSelecionadas.push("proativo");
-      $(`#filtroProcedenciaClusterMenu input[value="proativo"]`).prop(
-        "checked",
-        true
-      );
-    }
-
-    if (temReativo) {
-      procedenciasSelecionadas.push("reativo");
-      $(`#filtroProcedenciaClusterMenu input[value="reativo"]`).prop(
-        "checked",
-        true
-      );
-    }
-  } else {
-    // Atualizar os estados dos checkboxes com base nas seleções atuais
-    procedenciasSelecionadas.forEach((procedencia) => {
+  // Atualizar os estados dos checkboxes com base nas seleções atuais
+  procedencias.forEach((procedencia) => {
+    if (procedenciasSelecionadas.includes(procedencia)) {
       $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
         "checked",
         true
       );
-    });
-  }
+    } else {
+      $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
+        "checked",
+        false
+      );
+    }
+  });
 
   // Atualizar o rótulo do botão
   atualizarRotuloProcedencia();
