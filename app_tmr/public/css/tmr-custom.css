@@ -180,3 +180,23 @@ body {
 h1, h2, h3, h4, h5, h6 {
     font-size: calc(1.375rem - 0.2rem);
 }
+
+/* Estilo para o dropdown com checkboxes de procedência */
+.dropdown-menu input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.dropdown-item {
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Estilo para o botão do dropdown de procedência */
+.btn-procedencia-selected {
+    background-color: #e7f1ff;
+    border-color: #86b7fe;
+}

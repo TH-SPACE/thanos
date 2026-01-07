@@ -1,26 +1,25 @@
 const db = require('../../db/db');
 const { obterDadosOracle } = require('../controllers/dadosTmrController');
+const { parseOracleDate } = require('../utils/dateUtils');
 
 // Função para sincronizar dados do Oracle para o MariaDB
 async function syncDadosTmr() {
     try {
-        // console.log('Iniciando sincronização de dados TMR...');
-
         // Obter dados do Oracle
         const dadosOracle = await obterDadosOracle();
-        
+
         if (!dadosOracle || dadosOracle.length === 0) {
             console.log('Nenhum dado encontrado no Oracle para sincronizar.');
             return;
         }
-        
+
         // Conectar ao banco MariaDB
         const connection = await db.mysqlPool.getConnection();
-        
+
         try {
             // Remover dados antigos antes de inserir os novos
             await connection.execute('DELETE FROM reparos_b2b_tmr');
-            
+
             // Preparar dados para inserção
             const valores = dadosOracle.map(item => [
                 item.MES_INICIO !== undefined && item.MES_INICIO !== '' ? item.MES_INICIO : null,
@@ -54,31 +53,6 @@ async function syncDadosTmr() {
                 item.TMR_TOTAL !== null && item.TMR_TOTAL !== undefined && item.TMR_TOTAL !== '' ? parseFloat(item.TMR_TOTAL) : null,
             ]);
 
-            // Função para converter datas do formato Oracle para Date do JavaScript
-            function parseOracleDate(dateStr) {
-                if (!dateStr) return null;
-
-                // Verificar se já é um objeto Date
-                if (dateStr instanceof Date) return dateStr;
-
-                // Verificar se é um número (timestamp)
-                if (typeof dateStr === 'number') return new Date(dateStr);
-
-                // Converter string do formato DD/MM/YYYY HH24:MI:SS para formato ISO
-                const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/;
-                const match = dateStr.match(dateRegex);
-
-                if (match) {
-                    // Formato: DD/MM/YYYY HH24:MI:SS
-                    const [, day, month, year, hour, minute, second] = match;
-                    // Converter para formato ISO: YYYY-MM-DDTHH:mm:ss
-                    return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
-                }
-
-                // Se não for o formato esperado, tentar parse direto
-                const parsedDate = new Date(dateStr);
-                return isNaN(parsedDate.getTime()) ? null : parsedDate;
-            }
 
             // Inserir novos dados em blocos para evitar o limite de placeholders
             const batchSize = 100; // Tamanho do lote menor para evitar o limite de placeholders
@@ -106,14 +80,14 @@ async function syncDadosTmr() {
 
                 console.log(`Lote ${Math.floor(i / batchSize) + 1} de ${Math.ceil(valores.length / batchSize)} inserido com sucesso (${batch.length} registros)`);
             }
-            
+
             console.log(`Sincronização concluída. ${dadosOracle.length} registros transferidos.`);
         } finally {
             connection.release();
         }
     } catch (error) {
         console.error('Erro na sincronização de dados TMR:');
-        // throw error;
+        throw error;
     }
 }
 

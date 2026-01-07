@@ -1,5 +1,5 @@
-const express = require('express');
-const router = express.Router();
+const { Router } = require('express');
+const router = Router();
 const path = require('path');
 const db = require('../../db/db');
 
@@ -20,9 +20,10 @@ router.get('/data', tmrAuth, async (req, res) => {
         // Obter parâmetros de filtro, se existirem
         const grupoFiltro = req.query.grupo || null;
         const regionalFiltro = req.query.regional || null;
+        const procedenciaFiltro = req.query.procedencia || null; // Pode ser uma string com valores separados por vírgula
 
         // Obter dados do banco de dados
-        const dados = await getDadosTMR(grupoFiltro, regionalFiltro);
+        const dados = await getDadosTMR(grupoFiltro, regionalFiltro, procedenciaFiltro);
         res.json(dados);
     } catch (error) {
         console.error('Erro ao obter dados de TMR:', error);
@@ -72,6 +73,27 @@ router.get('/regionais', tmrAuth, async (req, res) => {
     }
 });
 
+// Rota para obter todas as procedências disponíveis
+router.get('/procedencias', tmrAuth, async (req, res) => {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+        try {
+            // Buscar todas as procedências distintas da tabela reparos_b2b_tmr
+            const [rows] = await connection.execute(
+                'SELECT DISTINCT procedencia FROM reparos_b2b_tmr WHERE procedencia IS NOT NULL AND procedencia != "" ORDER BY procedencia ASC'
+            );
+
+            const procedencias = rows.map(row => row.procedencia);
+            res.json(procedencias);
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao obter procedências:', error);
+        res.status(500).json({ error: 'Erro ao obter procedências' });
+    }
+});
+
 // Rota para sincronização manual de dados
 router.post('/sincronizar', tmrAuth, async (req, res) => {
     try {
@@ -84,7 +106,7 @@ router.post('/sincronizar', tmrAuth, async (req, res) => {
     }
 });
 
-async function getDadosTMR(grupoFiltro = null, regionalFiltro = null) {
+async function getDadosTMR(grupoFiltro = null, regionalFiltro = null, procedenciaFiltro = null) {
     // Esta função buscará os dados da tabela reparos_b2b_tmr
     const connection = await db.mysqlPool.getConnection();
     try {
@@ -110,6 +132,19 @@ async function getDadosTMR(grupoFiltro = null, regionalFiltro = null) {
         if (regionalFiltro) {
             query += ' AND regional = ?';
             params.push(regionalFiltro);
+        }
+
+        // Adicionar filtro por procedência (multisseleção)
+        if (procedenciaFiltro) {
+            // Converter a string de procedências em array
+            const procedenciasArray = Array.isArray(procedenciaFiltro)
+                ? procedenciaFiltro
+                : procedenciaFiltro.split(',');
+
+            // Criar placeholders para cada procedência
+            const placeholders = procedenciasArray.map(() => '?').join(',');
+            query += ` AND procedencia IN (${placeholders})`;
+            params = params.concat(procedenciasArray);
         }
 
         query += ' ORDER BY tqi_abertura DESC';

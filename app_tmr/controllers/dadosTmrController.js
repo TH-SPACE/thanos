@@ -1,5 +1,5 @@
-const express = require("express");
-const router = express.Router();
+const { Router } = require("express");
+const router = Router();
 const db = require("../../db/db");
 
 // Middleware de autenticação
