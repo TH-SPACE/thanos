@@ -1,7 +1,8 @@
 // Funções JavaScript para o sistema de TMR
 
-// Variável para armazenar as procedências selecionadas
+// Variáveis para armazenar as procedências selecionadas
 let procedenciasSelecionadas = ["proativo", "reativo"];
+const procedenciasPadrao = ["proativo", "reativo"]; // Filtros padrão que sempre devem estar selecionados
 
 $(document).ready(function () {
   // Carregar dados iniciais e atualizar cabeçalhos
@@ -17,6 +18,16 @@ $(document).ready(function () {
     carregarDadosRegional();
   });
 
+  // Botão de aplicar filtros na aba de cluster
+  $("#aplicarFiltrosCluster").click(function () {
+    carregarDadosCluster();
+  });
+
+  // Botão de aplicar filtros na aba de regional
+  $("#aplicarFiltrosRegional").click(function () {
+    carregarDadosRegional();
+  });
+
   // Botão de sincronização manual de dados
   $("#sincronizarManual").click(function () {
     sincronizarDadosManually();
@@ -27,14 +38,19 @@ $(document).ready(function () {
     sincronizarDadosManually();
   });
 
-  // Filtro de grupo para cluster
+  // Filtro de grupo para cluster - atualiza visualmente mas não carrega dados até o botão ser pressionado
   $("#filtroGrupoCluster").change(function () {
-    carregarDadosCluster();
+    // Apenas atualiza o estado visual do filtro
   });
 
-  // Filtro de regional para cluster
+  // Filtro de regional para cluster - atualiza visualmente mas não carrega dados até o botão ser pressionado
   $("#filtroRegionalCluster").change(function () {
-    carregarDadosCluster();
+    // Apenas atualiza o estado visual do filtro
+  });
+
+  // Filtro de grupo para regional - atualiza visualmente mas não carrega dados até o botão ser pressionado
+  $("#filtroGrupoRegional").change(function () {
+    // Apenas atualiza o estado visual do filtro
   });
 
   // Evento para limpar todas as seleções (não mais necessário após remoção do "Todas as Procedências")
@@ -46,6 +62,12 @@ $(document).ready(function () {
     const checkbox = $(this).find('input[type="checkbox"]');
     const isChecked = checkbox.is(":checked");
     const procedencia = checkbox.val();
+
+    // Impedir que os filtros padrão sejam desmarcados
+    if (procedenciasPadrao.includes(procedencia) && isChecked) {
+      // Não permite desmarcar os filtros padrão
+      return;
+    }
 
     // Atualizar o estado do checkbox
     checkbox.prop("checked", !isChecked);
@@ -61,15 +83,16 @@ $(document).ready(function () {
       procedenciasSelecionadas.push(procedencia);
     }
 
+    // Garantir que os filtros padrão estejam sempre presentes
+    procedenciasPadrao.forEach(padrao => {
+      if (!procedenciasSelecionadas.includes(padrao)) {
+        procedenciasSelecionadas.push(padrao);
+        $(`#filtroProcedenciaClusterMenu input[value="${padrao}"]`).prop("checked", true);
+      }
+    });
+
     // Atualizar o rótulo do botão
     atualizarRotuloProcedencia();
-
-    carregarDadosCluster();
-  });
-
-  // Filtro de grupo para regional
-  $("#filtroGrupoRegional").change(function () {
-    carregarDadosRegional();
   });
 });
 
@@ -94,6 +117,53 @@ function atualizarRotuloProcedencia() {
     }
     $("#filtroProcedenciaClusterBtn").addClass("btn-procedencia-selected");
   }
+}
+
+// Função para obter os parâmetros de filtro atuais
+function obterParametrosFiltro() {
+  const params = {};
+  const grupoSelecionadoCluster = $("#filtroGrupoCluster").val();
+  const grupoSelecionadoRegional = $("#filtroGrupoRegional").val();
+  const regionalSelecionadaCluster = $("#filtroRegionalCluster").val();
+
+  // Usar o grupo selecionado em qualquer uma das abas (como critério para a requisição)
+  const grupoSelecionado = grupoSelecionadoCluster || grupoSelecionadoRegional;
+  if (grupoSelecionado) {
+    params.grupo = grupoSelecionado;
+  }
+
+  // Usar a regional selecionada apenas na aba de cluster
+  if (regionalSelecionadaCluster) {
+    params.regional = regionalSelecionadaCluster;
+  }
+
+  // Usar as procedências selecionadas apenas na aba de cluster
+  if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
+    // Converter array em string separada por vírgulas
+    params.procedencia = procedenciasSelecionadas.join(",");
+  }
+
+  return params;
+}
+
+// Função para resetar aos filtros padrão
+function resetarFiltrosPadrao() {
+  // Resetar os seletores de grupo e regional
+  $("#filtroGrupoCluster").val("");
+  $("#filtroGrupoRegional").val("");
+  $("#filtroRegionalCluster").val("");
+
+  // Resetar as procedências selecionadas para o padrão
+  procedenciasSelecionadas = [...procedenciasPadrao];
+
+  // Atualizar o menu de procedência para refletir as seleções
+  // Obter novamente a lista completa de procedências para atualizar o menu
+  $.get("/tmr/procedencias", function(procedencias) {
+    atualizarMenuProcedenciaCompleto(procedencias);
+  });
+
+  // Atualizar o rótulo do botão
+  atualizarRotuloProcedencia();
 }
 
 // Função para atualizar os cabeçalhos das tabelas com os meses dos dados
@@ -229,29 +299,8 @@ function carregarDadosTMR() {
     '<tr><td colspan="100" class="text-center p-4">Carregando dados da regional...</td></tr>'
   );
 
-  // Preparar parâmetros da requisição
-  const params = {};
-  const grupoSelecionadoCluster = $("#filtroGrupoCluster").val();
-  const grupoSelecionadoRegional = $("#filtroGrupoRegional").val();
-  const regionalSelecionadaCluster = $("#filtroRegionalCluster").val();
-  // Usar a variável global procedenciasSelecionadas
-
-  // Usar o grupo selecionado em qualquer uma das abas (como critério para a requisição)
-  const grupoSelecionado = grupoSelecionadoCluster || grupoSelecionadoRegional;
-  if (grupoSelecionado) {
-    params.grupo = grupoSelecionado;
-  }
-
-  // Usar a regional selecionada apenas na aba de cluster
-  if (regionalSelecionadaCluster) {
-    params.regional = regionalSelecionadaCluster;
-  }
-
-  // Usar as procedências selecionadas apenas na aba de cluster
-  if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
-    // Converter array em string separada por vírgulas
-    params.procedencia = procedenciasSelecionadas.join(",");
-  }
+  // Obter parâmetros de filtro atuais
+  const params = obterParametrosFiltro();
 
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
@@ -314,21 +363,8 @@ function carregarDadosCluster() {
     '<tr><td colspan="100" class="text-center p-4">Carregando dados do cluster...</td></tr>'
   );
 
-  // Preparar parâmetros da requisição
-  const params = {};
-  const grupoSelecionado = $("#filtroGrupoCluster").val();
-  const regionalSelecionada = $("#filtroRegionalCluster").val();
-  // Usar a variável global procedenciasSelecionadas
-  if (grupoSelecionado) {
-    params.grupo = grupoSelecionado;
-  }
-  if (regionalSelecionada) {
-    params.regional = regionalSelecionada;
-  }
-  if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
-    // Converter array em string separada por vírgulas
-    params.procedencia = procedenciasSelecionadas.join(",");
-  }
+  // Obter parâmetros de filtro atuais
+  const params = obterParametrosFiltro();
 
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
@@ -386,12 +422,8 @@ function carregarDadosRegional() {
     '<tr><td colspan="100" class="text-center p-4">Carregando dados da regional...</td></tr>'
   );
 
-  // Preparar parâmetros da requisição
-  const params = {};
-  const grupoSelecionado = $("#filtroGrupoRegional").val();
-  if (grupoSelecionado) {
-    params.grupo = grupoSelecionado;
-  }
+  // Obter parâmetros de filtro atuais
+  const params = obterParametrosFiltro();
 
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
@@ -778,10 +810,22 @@ function atualizarMenuProcedenciaCompleto(procedencias) {
         true
       );
     } else {
-      $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
-        "checked",
-        false
-      );
+      // Impedir que os filtros padrão fiquem desmarcados
+      if (procedenciasPadrao.includes(procedencia)) {
+        $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
+          "checked",
+          true
+        );
+        // Garantir que os filtros padrão estejam na lista
+        if (!procedenciasSelecionadas.includes(procedencia)) {
+          procedenciasSelecionadas.push(procedencia);
+        }
+      } else {
+        $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
+          "checked",
+          false
+        );
+      }
     }
   });
 
