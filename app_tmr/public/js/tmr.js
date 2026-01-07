@@ -921,10 +921,10 @@ function criarGraficoCluster(dados, meses) {
       scales: {
         y: {
           type: "linear",
-          display: true,
+          display: false, // Ocultar eixo Y esquerdo
           position: "left",
           title: {
-            display: true,
+            display: false, // Ocultar título do eixo Y esquerdo
             text: "Total de Reparos",
             font: {
               size: 12,
@@ -932,9 +932,10 @@ function criarGraficoCluster(dados, meses) {
             },
           },
           grid: {
-            color: "rgba(0, 0, 0, 0.1)",
+            display: false, // Remover linhas do grid
           },
           ticks: {
+            display: false, // Ocultar rótulos numéricos
             font: {
               size: 11,
             },
@@ -942,21 +943,21 @@ function criarGraficoCluster(dados, meses) {
         },
         y1: {
           type: "linear",
-          display: true,
+          display: false, // Ocultar eixo Y direito
           position: "right",
           title: {
-            display: true,
+            display: false, // Ocultar título do eixo Y direito
             text: "TMR Médio (horas)",
             font: {
               size: 12,
               weight: "bold",
             },
           },
-          // grid line will be hidden for one of the axes
           grid: {
-            drawOnChartArea: false,
+            display: false, // Remover linhas do grid
           },
           ticks: {
+            display: false, // Ocultar rótulos numéricos
             font: {
               size: 11,
             },
@@ -964,7 +965,7 @@ function criarGraficoCluster(dados, meses) {
         },
         x: {
           grid: {
-            color: "rgba(0, 0, 0, 0.1)",
+            display: false, // Remover linhas do grid do eixo X
           },
           ticks: {
             font: {
