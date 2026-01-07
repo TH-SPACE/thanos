@@ -22,12 +22,14 @@ async function obterDadosOracle() {
     // até o final do mês atual
     const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 2, 1); // 3 meses incluindo o atual
 
-    const dataInicio = primeiroDiaTresMesesAtras;
-    const dataFinal = dataAtual; // Até a data atual
+    // Definir data final para o início do dia seguinte (00:00 de amanhã) para incluir todos os dados de hoje
+    const dataFinal = new Date(dataAtual);
+    dataFinal.setDate(dataFinal.getDate() + 1);
+    dataFinal.setHours(0, 0, 0, 0); // Zerar horas, minutos, segundos e milissegundos
 
-    // Formatar datas para o formato Oracle
-    const dataInicioStr = dataInicio.toISOString().split("T")[0];
+    const dataInicio = primeiroDiaTresMesesAtras;
     const dataFinalStr = dataFinal.toISOString().split("T")[0];
+    const dataInicioStr = dataInicio.toISOString().split("T")[0];
 
     const sqlQuery = `
             SELECT

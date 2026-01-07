@@ -977,7 +977,8 @@ function criarGraficoCluster(dados, meses) {
       },
       plugins: {
         legend: {
-          position: "top",
+          position: "top", //para afastar mais do gráfico é só colocar 'top' por 'top: 20'
+          align: "start",
           labels: {
             font: {
               size: 12,
