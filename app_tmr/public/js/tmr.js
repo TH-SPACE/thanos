@@ -41,19 +41,21 @@ $(document).ready(function () {
   // A funcionalidade agora é apenas de seleção múltipla individual
 
   // Evento para os itens individuais de procedência
-  $(document).on('click', '.filtro-procedencia-item', function(e) {
+  $(document).on("click", ".filtro-procedencia-item", function (e) {
     e.preventDefault();
     const checkbox = $(this).find('input[type="checkbox"]');
-    const isChecked = checkbox.is(':checked');
+    const isChecked = checkbox.is(":checked");
     const procedencia = checkbox.val();
 
     // Atualizar o estado do checkbox
-    checkbox.prop('checked', !isChecked);
+    checkbox.prop("checked", !isChecked);
 
     // Atualizar a lista de procedências selecionadas
     if (isChecked) {
       // Se estava marcado e agora será desmarcado
-      procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== procedencia);
+      procedenciasSelecionadas = procedenciasSelecionadas.filter(
+        (p) => p !== procedencia
+      );
     } else {
       // Se estava desmarcado e agora será marcado
       procedenciasSelecionadas.push(procedencia);
@@ -74,19 +76,23 @@ $(document).ready(function () {
 // Função para atualizar o rótulo do botão de procedência
 function atualizarRotuloProcedencia() {
   if (procedenciasSelecionadas.length === 0) {
-    $('#filtroProcedenciaClusterLabel').text('Procedência');
-    $('#filtroProcedenciaClusterBtn').removeClass('btn-procedencia-selected');
+    $("#filtroProcedenciaClusterLabel").text("Procedência");
+    $("#filtroProcedenciaClusterBtn").removeClass("btn-procedencia-selected");
   } else if (procedenciasSelecionadas.length === 1) {
-    $('#filtroProcedenciaClusterLabel').text(procedenciasSelecionadas[0]);
-    $('#filtroProcedenciaClusterBtn').addClass('btn-procedencia-selected');
+    $("#filtroProcedenciaClusterLabel").text(procedenciasSelecionadas[0]);
+    $("#filtroProcedenciaClusterBtn").addClass("btn-procedencia-selected");
   } else {
     // Mostrar os nomes das procedências selecionadas (limitado a 2 para evitar texto muito longo)
     if (procedenciasSelecionadas.length <= 2) {
-      $('#filtroProcedenciaClusterLabel').text(procedenciasSelecionadas.join(', '));
+      $("#filtroProcedenciaClusterLabel").text(
+        procedenciasSelecionadas.join(", ")
+      );
     } else {
-      $('#filtroProcedenciaClusterLabel').text(`${procedenciasSelecionadas.length} selecionadas`);
+      $("#filtroProcedenciaClusterLabel").text(
+        `${procedenciasSelecionadas.length} selecionadas`
+      );
     }
-    $('#filtroProcedenciaClusterBtn').addClass('btn-procedencia-selected');
+    $("#filtroProcedenciaClusterBtn").addClass("btn-procedencia-selected");
   }
 }
 
@@ -96,13 +102,13 @@ function atualizarCabecalhoTabela(meses) {
   let headerClusterHtml = '<th rowspan="2">Cluster</th>';
 
   // Processar meses para determinar quando mostrar o ano
-  const mesesProcessados = meses.map(mes => {
-    const [nomeMes, ano] = mes.split(' ');
+  const mesesProcessados = meses.map((mes) => {
+    const [nomeMes, ano] = mes.split(" ");
     return { nomeMes, ano };
   });
 
   // Identificar anos únicos
-  const anosUnicos = [...new Set(mesesProcessados.map(item => item.ano))];
+  const anosUnicos = [...new Set(mesesProcessados.map((item) => item.ano))];
 
   mesesProcessados.forEach((mesInfo, index) => {
     let mesDisplay = mesInfo.nomeMes;
@@ -123,7 +129,7 @@ function atualizarCabecalhoTabela(meses) {
   $("#headerCluster").html(headerClusterHtml);
 
   // Atualizar subcabeçalho da tabela de cluster com rótulos das colunas
-  let subheaderClusterHtml = '';
+  let subheaderClusterHtml = "";
   meses.forEach((mes) => {
     subheaderClusterHtml += `
             <th>&lt;4h</th>
@@ -139,13 +145,15 @@ function atualizarCabecalhoTabela(meses) {
   let headerRegionalHtml = '<th rowspan="2">Regional</th>';
 
   // Processar meses para determinar quando mostrar o ano
-  const mesesProcessadosRegional = meses.map(mes => {
-    const [nomeMes, ano] = mes.split(' ');
+  const mesesProcessadosRegional = meses.map((mes) => {
+    const [nomeMes, ano] = mes.split(" ");
     return { nomeMes, ano };
   });
 
   // Identificar anos únicos
-  const anosUnicosRegional = [...new Set(mesesProcessadosRegional.map(item => item.ano))];
+  const anosUnicosRegional = [
+    ...new Set(mesesProcessadosRegional.map((item) => item.ano)),
+  ];
 
   mesesProcessadosRegional.forEach((mesInfo, index) => {
     let mesDisplay = mesInfo.nomeMes;
@@ -155,7 +163,10 @@ function atualizarCabecalhoTabela(meses) {
       mesDisplay = `${mesInfo.nomeMes} ${mesInfo.ano}`;
     } else {
       // Se for o primeiro mês ou o ano mudou em relação ao anterior, mostrar o ano
-      if (index === 0 || mesInfo.ano !== mesesProcessadosRegional[index - 1].ano) {
+      if (
+        index === 0 ||
+        mesInfo.ano !== mesesProcessadosRegional[index - 1].ano
+      ) {
         mesDisplay = `${mesInfo.nomeMes} ${mesInfo.ano}`;
       }
     }
@@ -166,7 +177,7 @@ function atualizarCabecalhoTabela(meses) {
   $("#headerRegional").html(headerRegionalHtml);
 
   // Atualizar subcabeçalho da tabela de regional com rótulos das colunas
-  let subheaderRegionalHtml = '';
+  let subheaderRegionalHtml = "";
   meses.forEach((mes) => {
     subheaderRegionalHtml += `
             <th>&lt;4h</th>
@@ -219,28 +230,28 @@ function carregarDadosTMR() {
   );
 
   // Preparar parâmetros da requisição
-const params = {};
-const grupoSelecionadoCluster = $("#filtroGrupoCluster").val();
-const grupoSelecionadoRegional = $("#filtroGrupoRegional").val();
-const regionalSelecionadaCluster = $("#filtroRegionalCluster").val();
-// Usar a variável global procedenciasSelecionadas
+  const params = {};
+  const grupoSelecionadoCluster = $("#filtroGrupoCluster").val();
+  const grupoSelecionadoRegional = $("#filtroGrupoRegional").val();
+  const regionalSelecionadaCluster = $("#filtroRegionalCluster").val();
+  // Usar a variável global procedenciasSelecionadas
 
-// Usar o grupo selecionado em qualquer uma das abas (como critério para a requisição)
-const grupoSelecionado = grupoSelecionadoCluster || grupoSelecionadoRegional;
-if (grupoSelecionado) {
+  // Usar o grupo selecionado em qualquer uma das abas (como critério para a requisição)
+  const grupoSelecionado = grupoSelecionadoCluster || grupoSelecionadoRegional;
+  if (grupoSelecionado) {
     params.grupo = grupoSelecionado;
-}
+  }
 
-// Usar a regional selecionada apenas na aba de cluster
-if (regionalSelecionadaCluster) {
+  // Usar a regional selecionada apenas na aba de cluster
+  if (regionalSelecionadaCluster) {
     params.regional = regionalSelecionadaCluster;
-}
+  }
 
-// Usar as procedências selecionadas apenas na aba de cluster
-if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
+  // Usar as procedências selecionadas apenas na aba de cluster
+  if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
     // Converter array em string separada por vírgulas
-    params.procedencia = procedenciasSelecionadas.join(',');
-}
+    params.procedencia = procedenciasSelecionadas.join(",");
+  }
 
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
@@ -248,42 +259,53 @@ if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
     $.get("/tmr/grupos"),
     $.get("/tmr/regionais"),
     $.get("/tmr/procedencias")
-  ).done(function(dataResponse, gruposResponse, regionaisResponse, procedenciasResponse) {
-    const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
-    const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
-    const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
-    const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
+  )
+    .done(function (
+      dataResponse,
+      gruposResponse,
+      regionaisResponse,
+      procedenciasResponse
+    ) {
+      const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
+      const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+      const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
+      const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
 
-    // Obter os últimos 3 meses únicos dos dados recebidos
-    const meses = obterUltimos3MesesDosDados(dados);
+      // Obter os últimos 3 meses únicos dos dados recebidos
+      const meses = obterUltimos3MesesDosDados(dados);
 
-    // Atualizar cabeçalhos com os meses encontrados
-    atualizarCabecalhoTabela(meses);
+      // Atualizar cabeçalhos com os meses encontrados
+      atualizarCabecalhoTabela(meses);
 
-    // Preencher os seletores de grupo com a lista completa de grupos
-    atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
+      // Preencher os seletores de grupo com a lista completa de grupos
+      atualizarOpcoesGrupoCompleta(
+        grupos,
+        "filtroGrupoCluster",
+        "filtroGrupoRegional"
+      );
 
-    // Preencher o seletor de regional com a lista completa de regionais
-    atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalCluster");
+      // Preencher o seletor de regional com a lista completa de regionais
+      atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalCluster");
 
-    // Preencher o menu de procedência com a lista completa de procedências
-    atualizarMenuProcedenciaCompleto(procedencias);
+      // Preencher o menu de procedência com a lista completa de procedências
+      atualizarMenuProcedenciaCompleto(procedencias);
 
-    // Atualizar ambas as tabelas com os dados já filtrados no backend
-    atualizarTabelaCluster(dados, meses);
-    atualizarTabelaRegional(dados, meses);
+      // Atualizar ambas as tabelas com os dados já filtrados no backend
+      atualizarTabelaCluster(dados, meses);
+      atualizarTabelaRegional(dados, meses);
 
-    // Atualizar o gráfico com os dados atuais
-    atualizarGraficoCluster(dados, meses);
-  }).fail(function (jqXHR, textStatus, errorThrown) {
-    $("#tabelaCluster tbody").html(
-      '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
-    );
-    $("#tabelaRegional tbody").html(
-      '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
-    );
-    alert("Erro ao carregar dados de cluster e regional: " + textStatus);
-  });
+      // Atualizar o gráfico com os dados atuais
+      atualizarGraficoCluster(dados, meses);
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      $("#tabelaCluster tbody").html(
+        '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
+      );
+      $("#tabelaRegional tbody").html(
+        '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
+      );
+      alert("Erro ao carregar dados de cluster e regional: " + textStatus);
+    });
 }
 
 function carregarDadosCluster() {
@@ -293,20 +315,20 @@ function carregarDadosCluster() {
   );
 
   // Preparar parâmetros da requisição
-const params = {};
-const grupoSelecionado = $("#filtroGrupoCluster").val();
-const regionalSelecionada = $("#filtroRegionalCluster").val();
-// Usar a variável global procedenciasSelecionadas
-if (grupoSelecionado) {
+  const params = {};
+  const grupoSelecionado = $("#filtroGrupoCluster").val();
+  const regionalSelecionada = $("#filtroRegionalCluster").val();
+  // Usar a variável global procedenciasSelecionadas
+  if (grupoSelecionado) {
     params.grupo = grupoSelecionado;
-}
-if (regionalSelecionada) {
+  }
+  if (regionalSelecionada) {
     params.regional = regionalSelecionada;
-}
-if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
+  }
+  if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
     // Converter array em string separada por vírgulas
-    params.procedencia = procedenciasSelecionadas.join(',');
-}
+    params.procedencia = procedenciasSelecionadas.join(",");
+  }
 
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
@@ -314,37 +336,48 @@ if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
     $.get("/tmr/grupos"),
     $.get("/tmr/regionais"),
     $.get("/tmr/procedencias")
-  ).done(function(dataResponse, gruposResponse, regionaisResponse, procedenciasResponse) {
-    const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
-    const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
-    const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
-    const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
+  )
+    .done(function (
+      dataResponse,
+      gruposResponse,
+      regionaisResponse,
+      procedenciasResponse
+    ) {
+      const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
+      const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+      const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
+      const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
 
-    // Obter os últimos 3 meses únicos dos dados recebidos
-    const meses = obterUltimos3MesesDosDados(dados);
+      // Obter os últimos 3 meses únicos dos dados recebidos
+      const meses = obterUltimos3MesesDosDados(dados);
 
-    // Atualizar cabeçalhos com os meses encontrados
-    atualizarCabecalhoTabela(meses);
+      // Atualizar cabeçalhos com os meses encontrados
+      atualizarCabecalhoTabela(meses);
 
-    // Preencher os seletores de grupo com a lista completa de grupos
-    atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
+      // Preencher os seletores de grupo com a lista completa de grupos
+      atualizarOpcoesGrupoCompleta(
+        grupos,
+        "filtroGrupoCluster",
+        "filtroGrupoRegional"
+      );
 
-    // Preencher o seletor de regional com a lista completa de regionais
-    atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalCluster");
+      // Preencher o seletor de regional com a lista completa de regionais
+      atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalCluster");
 
-    // Preencher o menu de procedência com a lista completa de procedências
-    atualizarMenuProcedenciaCompleto(procedencias);
+      // Preencher o menu de procedência com a lista completa de procedências
+      atualizarMenuProcedenciaCompleto(procedencias);
 
-    atualizarTabelaCluster(dados, meses);
+      atualizarTabelaCluster(dados, meses);
 
-    // Atualizar o gráfico com os dados atuais
-    atualizarGraficoCluster(dados, meses);
-  }).fail(function (jqXHR, textStatus, errorThrown) {
-    $("#tabelaCluster tbody").html(
-      '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
-    );
-    alert("Erro ao carregar dados de cluster: " + textStatus);
-  });
+      // Atualizar o gráfico com os dados atuais
+      atualizarGraficoCluster(dados, meses);
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      $("#tabelaCluster tbody").html(
+        '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
+      );
+      alert("Erro ao carregar dados de cluster: " + textStatus);
+    });
 }
 
 function carregarDadosRegional() {
@@ -354,11 +387,11 @@ function carregarDadosRegional() {
   );
 
   // Preparar parâmetros da requisição
-const params = {};
-const grupoSelecionado = $("#filtroGrupoRegional").val();
-if (grupoSelecionado) {
+  const params = {};
+  const grupoSelecionado = $("#filtroGrupoRegional").val();
+  if (grupoSelecionado) {
     params.grupo = grupoSelecionado;
-}
+  }
 
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
@@ -366,150 +399,202 @@ if (grupoSelecionado) {
     $.get("/tmr/grupos"),
     $.get("/tmr/regionais"),
     $.get("/tmr/procedencias")
-  ).done(function(dataResponse, gruposResponse, regionaisResponse, procedenciasResponse) {
-    const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
-    const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
-    const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
-    const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
+  )
+    .done(function (
+      dataResponse,
+      gruposResponse,
+      regionaisResponse,
+      procedenciasResponse
+    ) {
+      const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
+      const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+      const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
+      const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
 
-    // Obter os últimos 3 meses únicos dos dados recebidos (já feito na função de cluster)
-    const meses = obterUltimos3MesesDosDados(dados);
+      // Obter os últimos 3 meses únicos dos dados recebidos (já feito na função de cluster)
+      const meses = obterUltimos3MesesDosDados(dados);
 
-    // Atualizar cabeçalhos com os meses encontrados (já deve ter sido feito)
-    // atualizarCabecalhoTabela(meses); // Comentado para evitar sobreposição
+      // Atualizar cabeçalhos com os meses encontrados (já deve ter sido feito)
+      // atualizarCabecalhoTabela(meses); // Comentado para evitar sobreposição
 
-    // Preencher os seletores de grupo com a lista completa de grupos
-    atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
+      // Preencher os seletores de grupo com a lista completa de grupos
+      atualizarOpcoesGrupoCompleta(
+        grupos,
+        "filtroGrupoCluster",
+        "filtroGrupoRegional"
+      );
 
-    // Preencher o seletor de regional com a lista completa de regionais
-    atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalCluster");
+      // Preencher o seletor de regional com a lista completa de regionais
+      atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalCluster");
 
-    // Preencher o menu de procedência com a lista completa de procedências
-    atualizarMenuProcedenciaCompleto(procedencias);
+      // Preencher o menu de procedência com a lista completa de procedências
+      atualizarMenuProcedenciaCompleto(procedencias);
 
-    atualizarTabelaRegional(dados, meses);
-  }).fail(function (jqXHR, textStatus, errorThrown) {
-    $("#tabelaRegional tbody").html(
-      '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
-    );
-    alert("Erro ao carregar dados de regional: " + textStatus);
-  });
+      atualizarTabelaRegional(dados, meses);
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      $("#tabelaRegional tbody").html(
+        '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
+      );
+      alert("Erro ao carregar dados de regional: " + textStatus);
+    });
 }
 
 // Função genérica para atualizar tabelas com base em diferentes agrupamentos
-function atualizarTabelaGenerico(dados, meses, elementoTabela, idTotal, agruparFuncao, campoAgrupamento) {
-    // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
-    let tableHtml = '';
-    let totalCells = '<td class="fw-bold">TOTAL</td>'; // Célula do total para a coluna de agrupamento
+function atualizarTabelaGenerico(
+  dados,
+  meses,
+  elementoTabela,
+  idTotal,
+  agruparFuncao,
+  campoAgrupamento
+) {
+  // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
+  let tableHtml = "";
+  let totalCells = '<td class="fw-bold">TOTAL</td>'; // Célula do total para a coluna de agrupamento
 
-    // Agrupar dados usando a função fornecida (os dados já estão filtrados no backend)
-    const dadosAgrupados = agruparFuncao(dados);
+  // Agrupar dados usando a função fornecida (os dados já estão filtrados no backend)
+  const dadosAgrupados = agruparFuncao(dados);
 
-    // Calcular totais por mês
-    const totaisPorMes = {};
+  // Calcular totais por mês
+  const totaisPorMes = {};
+
+  // Inicializar os meses
+  meses.forEach((mes) => {
+    totaisPorMes[mes] = {
+      dentroPrazo: 0,
+      foraPrazo: 0,
+      total: 0,
+      tmrTotal: 0,
+      tmrCount: 0,
+    };
+  });
+
+  // Preencher a tabela com os dados
+  for (const agrupamento in dadosAgrupados) {
+    const agrupamentoData = dadosAgrupados[agrupamento];
+
+    // Calcular métricas para cada mês individualmente
+    // Primeiro, vamos organizar os dados por mês
+    const dadosPorMes = {};
 
     // Inicializar os meses
-    meses.forEach(mes => {
-        totaisPorMes[mes] = {
-            dentroPrazo: 0,
-            foraPrazo: 0,
-            total: 0,
-            tmrTotal: 0,
-            tmrCount: 0
-        };
+    meses.forEach((mes) => {
+      dadosPorMes[mes] = [];
     });
 
-    // Preencher a tabela com os dados
-    for (const agrupamento in dadosAgrupados) {
-        const agrupamentoData = dadosAgrupados[agrupamento];
+    // Agrupar os dados por mês
+    agrupamentoData.forEach((item) => {
+      // Usar o mês calculado no backend
+      const mes = item.mes;
 
-        // Calcular métricas para cada mês individualmente
-        // Primeiro, vamos organizar os dados por mês
-        const dadosPorMes = {};
+      // Se o mês fizer parte dos meses encontrados, adicionar ao array
+      if (meses.includes(mes)) {
+        dadosPorMes[mes].push(item);
+      }
+    });
 
-        // Inicializar os meses
-        meses.forEach(mes => {
-            dadosPorMes[mes] = [];
-        });
+    // Para cada mês, calcular as métricas
+    let allMesesCells = "";
+    for (const mes of meses) {
+      const dadosMes = dadosPorMes[mes] || [];
 
-        // Agrupar os dados por mês
-        agrupamentoData.forEach(item => {
-            // Usar o mês calculado no backend
-            const mes = item.mes;
+      // Calcular métricas para este mês específico
+      const dentroPrazo = dadosMes.filter(
+        (item) => item.tmr_total !== null && parseFloat(item.tmr_total) < 4
+      ).length;
+      const foraPrazo = dadosMes.filter(
+        (item) => item.tmr_total !== null && parseFloat(item.tmr_total) >= 4
+      ).length;
+      const total = dadosMes.length;
+      const percDentroPrazo =
+        total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+      const tmrMedio =
+        total > 0
+          ? (
+              dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
+              total
+            ).toFixed(2)
+          : 0;
 
-            // Se o mês fizer parte dos meses encontrados, adicionar ao array
-            if (meses.includes(mes)) {
-                dadosPorMes[mes].push(item);
-            }
-        });
+      // Atualizar totais por mês
+      totaisPorMes[mes].dentroPrazo += dentroPrazo;
+      totaisPorMes[mes].foraPrazo += foraPrazo;
+      totaisPorMes[mes].total += total;
+      totaisPorMes[mes].tmrTotal += dadosMes.reduce(
+        (sum, item) => sum + (item.tmr_total || 0),
+        0
+      );
+      totaisPorMes[mes].tmrCount += dadosMes.length;
 
-        // Para cada mês, calcular as métricas
-        let allMesesCells = '';
-        for (const mes of meses) {
-            const dadosMes = dadosPorMes[mes] || [];
-
-            // Calcular métricas para este mês específico
-            const dentroPrazo = dadosMes.filter(item => item.tmr_total !== null && parseFloat(item.tmr_total) < 4).length;
-            const foraPrazo = dadosMes.filter(item => item.tmr_total !== null && parseFloat(item.tmr_total) >= 4).length;
-            const total = dadosMes.length;
-            const percDentroPrazo = total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
-            const tmrMedio = total > 0 ? (dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) / total).toFixed(2) : 0;
-
-            // Atualizar totais por mês
-            totaisPorMes[mes].dentroPrazo += dentroPrazo;
-            totaisPorMes[mes].foraPrazo += foraPrazo;
-            totaisPorMes[mes].total += total;
-            totaisPorMes[mes].tmrTotal += dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0);
-            totaisPorMes[mes].tmrCount += dadosMes.length;
-
-            // Adicionar as 5 colunas para este mês
-            allMesesCells += `
+      // Adicionar as 5 colunas para este mês
+      allMesesCells += `
                 <td class="text-center value-within">${dentroPrazo}</td>
                 <td class="text-center value-over">${foraPrazo}</td>
                 <td class="text-center perc-dentro-prazo">${percDentroPrazo}%</td>
                 <td class="text-center">${total}</td>
                 <td class="text-center tmr-value">${tmrMedio}h</td>
             `;
-        }
+    }
 
-        tableHtml += `
+    tableHtml += `
             <tr>
                 <td class="fw-bold">${agrupamento}</td>
                 ${allMesesCells}
             </tr>
         `;
-    }
+  }
 
-    // Calcular e adicionar linha de totais
-    for (const mes of meses) {
-        const mesTotais = totaisPorMes[mes];
-        const tmrMedioTotal = mesTotais.tmrCount > 0 ? (mesTotais.tmrTotal / mesTotais.tmrCount).toFixed(2) : 0;
-        const percDentroPrazoTotal = mesTotais.total > 0 ? ((mesTotais.dentroPrazo / mesTotais.total) * 100).toFixed(2) : 0;
+  // Calcular e adicionar linha de totais
+  for (const mes of meses) {
+    const mesTotais = totaisPorMes[mes];
+    const tmrMedioTotal =
+      mesTotais.tmrCount > 0
+        ? (mesTotais.tmrTotal / mesTotais.tmrCount).toFixed(2)
+        : 0;
+    const percDentroPrazoTotal =
+      mesTotais.total > 0
+        ? ((mesTotais.dentroPrazo / mesTotais.total) * 100).toFixed(2)
+        : 0;
 
-        totalCells += `
+    totalCells += `
             <td class="text-center value-within fw-bold">${mesTotais.dentroPrazo}</td>
             <td class="text-center value-over fw-bold">${mesTotais.foraPrazo}</td>
             <td class="text-center perc-dentro-prazo fw-bold">${percDentroPrazoTotal}%</td>
             <td class="text-center fw-bold">${mesTotais.total}</td>
             <td class="text-center tmr-value fw-bold">${tmrMedioTotal}h</td>
         `;
-    }
+  }
 
-    tableHtml += `<tr id="${idTotal}" class="table-info">${totalCells}</tr>`;
+  tableHtml += `<tr id="${idTotal}" class="table-info">${totalCells}</tr>`;
 
-    // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
-    $(elementoTabela).html(tableHtml);
+  // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
+  $(elementoTabela).html(tableHtml);
 }
 
 function atualizarTabelaCluster(dados, meses) {
-    atualizarTabelaGenerico(dados, meses, '#tabelaCluster tbody', 'totalCluster', agruparPorCluster, 'nom_cluster');
+  atualizarTabelaGenerico(
+    dados,
+    meses,
+    "#tabelaCluster tbody",
+    "totalCluster",
+    agruparPorCluster,
+    "nom_cluster"
+  );
 
-    // Atualizar o gráfico com os dados atuais
-    atualizarGraficoCluster(dados, meses);
+  // Atualizar o gráfico com os dados atuais
+  atualizarGraficoCluster(dados, meses);
 }
 
 function atualizarTabelaRegional(dados, meses) {
-    atualizarTabelaGenerico(dados, meses, '#tabelaRegional tbody', 'totalRegional', agruparPorRegional, 'regional');
+  atualizarTabelaGenerico(
+    dados,
+    meses,
+    "#tabelaRegional tbody",
+    "totalRegional",
+    agruparPorRegional,
+    "regional"
+  );
 }
 
 function agruparPorCluster(dados) {
@@ -566,7 +651,7 @@ function obterUltimos3MesesDosDados(dados) {
 
   // Função para extrair mês e ano de uma string no formato "Mês Ano"
   function extrairMesAno(mesStr) {
-    const partes = mesStr.split(' ');
+    const partes = mesStr.split(" ");
     if (partes.length === 2) {
       const mes = partes[0];
       const ano = parseInt(partes[1]);
@@ -619,18 +704,22 @@ function atualizarOpcoesGrupoCompleta(grupos, idSelect1, idSelect2) {
 }
 
 // Função auxiliar para atualizar um seletor mantendo o valor selecionado
-function atualizarSelectComValoresPreservados(seletor, novasOpcoes, valorAtual) {
+function atualizarSelectComValoresPreservados(
+  seletor,
+  novasOpcoes,
+  valorAtual
+) {
   // Salvar o valor atual
   const valorAntigo = seletor.val();
 
   // Verificar se é um seletor múltiplo
-  const isMultiple = seletor.prop('multiple');
+  const isMultiple = seletor.prop("multiple");
 
   // Limpar as opções atuais (exceto a primeira que é "Todos os Grupos")
-  seletor.find('option:gt(0)').remove();
+  seletor.find("option:gt(0)").remove();
 
   // Adicionar novas opções
-  novasOpcoes.forEach(opcao => {
+  novasOpcoes.forEach((opcao) => {
     const option = new Option(opcao, opcao);
     seletor.append(option);
   });
@@ -674,30 +763,41 @@ function atualizarMenuProcedenciaCompleto(procedencias) {
   menu.empty();
 
   // Adicionar novos itens de procedência
-  procedencias.forEach(procedencia => {
-    const item = $(`<li><a class="dropdown-item filtro-procedencia-item" href="#"><input type="checkbox" value="${procedencia}"> ${procedencia}</a></li>`);
+  procedencias.forEach((procedencia) => {
+    const item = $(
+      `<li><a class="dropdown-item filtro-procedencia-item" href="#"><input type="checkbox" value="${procedencia}"> ${procedencia}</a></li>`
+    );
     menu.append(item);
   });
 
   // Definir seleções padrão se nenhuma seleção tiver sido feita ainda
   if (procedenciasSelecionadas.length === 0) {
     // Verificar se "proativo" e "reativo" existem nas opções e selecioná-las por padrão
-    const temProativo = procedencias.includes('proativo');
-    const temReativo = procedencias.includes('reativo');
+    const temProativo = procedencias.includes("proativo");
+    const temReativo = procedencias.includes("reativo");
 
     if (temProativo) {
-      procedenciasSelecionadas.push('proativo');
-      $(`#filtroProcedenciaClusterMenu input[value="proativo"]`).prop('checked', true);
+      procedenciasSelecionadas.push("proativo");
+      $(`#filtroProcedenciaClusterMenu input[value="proativo"]`).prop(
+        "checked",
+        true
+      );
     }
 
     if (temReativo) {
-      procedenciasSelecionadas.push('reativo');
-      $(`#filtroProcedenciaClusterMenu input[value="reativo"]`).prop('checked', true);
+      procedenciasSelecionadas.push("reativo");
+      $(`#filtroProcedenciaClusterMenu input[value="reativo"]`).prop(
+        "checked",
+        true
+      );
     }
   } else {
     // Atualizar os estados dos checkboxes com base nas seleções atuais
-    procedenciasSelecionadas.forEach(procedencia => {
-      $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop('checked', true);
+    procedenciasSelecionadas.forEach((procedencia) => {
+      $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
+        "checked",
+        true
+      );
     });
   }
 
@@ -711,16 +811,16 @@ function criarGraficoCluster(dados, meses) {
   const totaisPorMes = {};
 
   // Inicializar os meses
-  meses.forEach(mes => {
+  meses.forEach((mes) => {
     totaisPorMes[mes] = {
       total: 0,
       tmrTotal: 0,
-      tmrCount: 0
+      tmrCount: 0,
     };
   });
 
   // Agrupar os dados por mês e calcular totais
-  dados.forEach(item => {
+  dados.forEach((item) => {
     const mes = item.mes;
     if (meses.includes(mes)) {
       totaisPorMes[mes].total += 1; // Contar cada registro
@@ -732,21 +832,23 @@ function criarGraficoCluster(dados, meses) {
   });
 
   // Preparar dados para o gráfico
-  const labels = meses.map(mes => {
+  const labels = meses.map((mes) => {
     // Exibir apenas o nome do mês para manter o gráfico limpo
-    return mes.split(' ')[0];
+    return mes.split(" ")[0];
   });
 
-  const totalReparos = meses.map(mes => totaisPorMes[mes].total);
+  const totalReparos = meses.map((mes) => totaisPorMes[mes].total);
 
   // Calcular TMR médio por mês
-  const tmrMedioPorMes = meses.map(mes => {
+  const tmrMedioPorMes = meses.map((mes) => {
     const mesData = totaisPorMes[mes];
-    return mesData.tmrCount > 0 ? parseFloat((mesData.tmrTotal / mesData.tmrCount).toFixed(2)) : 0;
+    return mesData.tmrCount > 0
+      ? parseFloat((mesData.tmrTotal / mesData.tmrCount).toFixed(2))
+      : 0;
   });
 
   // Obter o contexto do canvas
-  const ctx = document.getElementById('graficoCluster').getContext('2d');
+  const ctx = document.getElementById("graficoCluster").getContext("2d");
 
   // Destruir gráfico anterior se existir
   if (window.graficoClusterInstance) {
@@ -755,74 +857,100 @@ function criarGraficoCluster(dados, meses) {
 
   // Criar novo gráfico
   window.graficoClusterInstance = new Chart(ctx, {
-    type: 'bar',
+    type: "bar",
     data: {
       labels: labels,
       datasets: [
         {
-          label: 'Total de Reparos',
+          label: "Total de Reparos",
           data: totalReparos,
-          backgroundColor: 'rgba(0, 123, 255, 0.5)', // Azul Bootstrap
-          borderColor: 'rgba(0, 123, 255, 1)', // Azul Bootstrap
+          backgroundColor: "rgba(0, 123, 255, 0.5)", // Azul Bootstrap
+          borderColor: "rgba(0, 123, 255, 1)", // Azul Bootstrap
           borderWidth: 1,
-          yAxisID: 'y',
-          order: 2 // Colocar as barras atrás da linha
+          yAxisID: "y",
+          order: 2, // Colocar as barras atrás da linha
+          datalabels: {
+            // Configurações do plugin datalabels para barras
+            anchor: "start", //para colocar a label dentro do grafico em baixo é só trocar 'end' por 'start'
+            align: "end",
+            color: "#000", //para colocar um background branco na label é só colocar backgroundColor: '#fff',
+            backgroundColor: "#fff",
+            font: {
+              weight: "bold",
+              size: 11,
+            },
+            formatter: function (value) {
+              return value > 0 ? value : ""; // Mostrar apenas se o valor for maior que 0
+            },
+          },
         },
         {
-          label: 'TMR Médio (horas)',
+          label: "TMR Médio (horas)",
           data: tmrMedioPorMes,
-          type: 'line',
+          type: "line",
           fill: false,
-          borderColor: 'rgba(220, 53, 69, 1)', // Vermelho Bootstrap
-          backgroundColor: 'rgba(220, 53, 69, 0.2)',
+          borderColor: "rgba(220, 53, 69, 1)", // Vermelho Bootstrap
+          backgroundColor: "rgba(220, 53, 69, 0.2)",
           borderWidth: 3,
           borderDash: [5, 5], // Linha tracejada para distinguir
-          yAxisID: 'y1',
+          yAxisID: "y1",
           pointRadius: 6,
-          pointBackgroundColor: 'rgba(220, 53, 69, 1)',
-          pointBorderColor: '#fff',
+          pointBackgroundColor: "rgba(220, 53, 69, 1)",
+          pointBorderColor: "#fff",
           pointBorderWidth: 2,
           pointHoverRadius: 8,
-          order: 1 // Colocar a linha na frente das barras
-        }
-      ]
+          order: 1, // Colocar a linha na frente das barras
+          datalabels: {
+            anchor: "end",
+            align: "top",
+            color: "#dc3545",
+            font: {
+              weight: "bold",
+              size: 11,
+            },
+            formatter: function (value) {
+              return value > 0 ? value.toFixed(2) + "h" : ""; // Mostrar TMR com 2 casas decimais e sufixo 'h'
+            },
+          },
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
         y: {
-          type: 'linear',
+          type: "linear",
           display: true,
-          position: 'left',
+          position: "left",
           title: {
             display: true,
-            text: 'Total de Reparos',
+            text: "Total de Reparos",
             font: {
               size: 12,
-              weight: 'bold'
-            }
+              weight: "bold",
+            },
           },
           grid: {
-            color: 'rgba(0, 0, 0, 0.1)'
+            color: "rgba(0, 0, 0, 0.1)",
           },
           ticks: {
             font: {
-              size: 11
-            }
-          }
+              size: 11,
+            },
+          },
         },
         y1: {
-          type: 'linear',
+          type: "linear",
           display: true,
-          position: 'right',
+          position: "right",
           title: {
             display: true,
-            text: 'TMR Médio (horas)',
+            text: "TMR Médio (horas)",
             font: {
               size: 12,
-              weight: 'bold'
-            }
+              weight: "bold",
+            },
           },
           // grid line will be hidden for one of the axes
           grid: {
@@ -830,58 +958,62 @@ function criarGraficoCluster(dados, meses) {
           },
           ticks: {
             font: {
-              size: 11
-            }
-          }
+              size: 11,
+            },
+          },
         },
         x: {
           grid: {
-            color: 'rgba(0, 0, 0, 0.1)'
+            color: "rgba(0, 0, 0, 0.1)",
           },
           ticks: {
             font: {
               size: 12,
-              weight: 'bold'
-            }
-          }
-        }
+              weight: "bold",
+            },
+          },
+        },
       },
       plugins: {
         legend: {
-          position: 'top',
+          position: "top",
           labels: {
             font: {
               size: 12,
-              weight: 'bold'
+              weight: "bold",
             },
             usePointStyle: true,
-            padding: 20
-          }
+            padding: 20,
+          },
         },
         tooltip: {
-          mode: 'index',
+          mode: "index",
           intersect: false,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
           titleFont: {
-            size: 14
+            size: 14,
           },
           bodyFont: {
-            size: 13
+            size: 13,
           },
           padding: 10,
           usePointStyle: true,
           boxWidth: 10,
-          boxHeight: 10
+          boxHeight: 10,
         },
         title: {
-          display: false // Removido título duplicado do gráfico já que temos no card
-        }
+          display: false, // Removido título duplicado do gráfico já que temos no card
+        },
+        datalabels: {
+          display: true, // Ativar o plugin datalabels globalmente
+        },
       },
       animation: {
         duration: 1000,
-        easing: 'easeOutQuart'
-      }
-    }
+        easing: "easeOutQuart",
+      },
+    },
+    plugins: [ChartDataLabels], // Registrar o plugin datalabels
   });
 }
 
