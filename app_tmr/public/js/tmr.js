@@ -29,6 +29,11 @@ $(document).ready(function () {
     carregarDadosCluster();
   });
 
+  // Filtro de regional para cluster
+  $("#filtroRegionalCluster").change(function () {
+    carregarDadosCluster();
+  });
+
   // Filtro de grupo para regional
   $("#filtroGrupoRegional").change(function () {
     carregarDadosRegional();
@@ -167,6 +172,7 @@ function carregarDadosTMR() {
 const params = {};
 const grupoSelecionadoCluster = $("#filtroGrupoCluster").val();
 const grupoSelecionadoRegional = $("#filtroGrupoRegional").val();
+const regionalSelecionadaCluster = $("#filtroRegionalCluster").val();
 
 // Usar o grupo selecionado em qualquer uma das abas (como critério para a requisição)
 const grupoSelecionado = grupoSelecionadoCluster || grupoSelecionadoRegional;
@@ -174,13 +180,20 @@ if (grupoSelecionado) {
     params.grupo = grupoSelecionado;
 }
 
-  // Fazer as duas requisições simultaneamente: dados filtrados e lista completa de grupos
+// Usar a regional selecionada apenas na aba de cluster
+if (regionalSelecionadaCluster) {
+    params.regional = regionalSelecionadaCluster;
+}
+
+  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos e lista completa de regionais
   $.when(
     $.get("/tmr/data", params),
-    $.get("/tmr/grupos")
-  ).done(function(dataResponse, gruposResponse) {
+    $.get("/tmr/grupos"),
+    $.get("/tmr/regionais")
+  ).done(function(dataResponse, gruposResponse, regionaisResponse) {
     const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
     const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+    const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
 
     // Obter os últimos 3 meses únicos dos dados recebidos
     const meses = obterUltimos3MesesDosDados(dados);
@@ -190,6 +203,9 @@ if (grupoSelecionado) {
 
     // Preencher os seletores de grupo com a lista completa de grupos
     atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
+
+    // Preencher o seletor de regional com a lista completa de regionais
+    atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalCluster");
 
     // Atualizar ambas as tabelas com os dados já filtrados no backend
     atualizarTabelaCluster(dados, meses);
@@ -217,17 +233,23 @@ function carregarDadosCluster() {
   // Preparar parâmetros da requisição
 const params = {};
 const grupoSelecionado = $("#filtroGrupoCluster").val();
+const regionalSelecionada = $("#filtroRegionalCluster").val();
 if (grupoSelecionado) {
     params.grupo = grupoSelecionado;
 }
+if (regionalSelecionada) {
+    params.regional = regionalSelecionada;
+}
 
-  // Fazer as duas requisições simultaneamente: dados filtrados e lista completa de grupos
+  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos e lista completa de regionais
   $.when(
     $.get("/tmr/data", params),
-    $.get("/tmr/grupos")
-  ).done(function(dataResponse, gruposResponse) {
+    $.get("/tmr/grupos"),
+    $.get("/tmr/regionais")
+  ).done(function(dataResponse, gruposResponse, regionaisResponse) {
     const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
     const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+    const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
 
     // Obter os últimos 3 meses únicos dos dados recebidos
     const meses = obterUltimos3MesesDosDados(dados);
@@ -237,6 +259,9 @@ if (grupoSelecionado) {
 
     // Preencher os seletores de grupo com a lista completa de grupos
     atualizarOpcoesGrupoCompleta(grupos, "filtroGrupoCluster", "filtroGrupoRegional");
+
+    // Preencher o seletor de regional com a lista completa de regionais
+    atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalCluster");
 
     atualizarTabelaCluster(dados, meses);
 
@@ -263,13 +288,15 @@ if (grupoSelecionado) {
     params.grupo = grupoSelecionado;
 }
 
-  // Fazer as duas requisições simultaneamente: dados filtrados e lista completa de grupos
+  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos e lista completa de regionais
   $.when(
     $.get("/tmr/data", params),
-    $.get("/tmr/grupos")
-  ).done(function(dataResponse, gruposResponse) {
+    $.get("/tmr/grupos"),
+    $.get("/tmr/regionais")
+  ).done(function(dataResponse, gruposResponse, regionaisResponse) {
     const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
     const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+    const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
 
     // Obter os últimos 3 meses únicos dos dados recebidos (já feito na função de cluster)
     const meses = obterUltimos3MesesDosDados(dados);
@@ -672,6 +699,21 @@ function atualizarSelectComValoresPreservados(seletor, novasOpcoes, valorAtual) 
     seletor.val(valorAntigo);
   }
   // Caso contrário, mantém o padrão ("Todos os Grupos" que é vazio)
+}
+
+// Função para atualizar as opções do seletor de regional com a lista completa
+function atualizarOpcoesRegionalCompleta(regionais, idSelect) {
+  // Ordenar as regionais alfabeticamente
+  regionais.sort();
+
+  // Atualizar o seletor com as opções
+  const seletor = $(`#${idSelect}`);
+
+  // Salvar valor atual selecionado
+  const valorAtual = seletor.val();
+
+  // Atualizar as opções mantendo o valor atual selecionado
+  atualizarSelectComValoresPreservados(seletor, regionais, valorAtual);
 }
 
 // Função para verificar se o valor é um número válido
