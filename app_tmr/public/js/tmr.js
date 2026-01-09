@@ -730,7 +730,15 @@ function agruparPorCluster(dados) {
     agrupado[cluster].push(item);
   });
 
-  return agrupado;
+  // Ordenar os clusters alfabeticamente (A a Z)
+  const agrupadoOrdenado = {};
+  Object.keys(agrupado)
+    .sort()
+    .forEach(key => {
+      agrupadoOrdenado[key] = agrupado[key];
+    });
+
+  return agrupadoOrdenado;
 }
 
 function agruparPorRegional(dados) {
