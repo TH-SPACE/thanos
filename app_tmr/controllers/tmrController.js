@@ -106,6 +106,21 @@ router.post('/sincronizar', tmrAuth, async (req, res) => {
     }
 });
 
+// Rota para obter dados do perfil do usuário
+router.get('/perfil-usuario', tmrAuth, (req, res) => {
+    if (!req.session.usuario) {
+        return res.status(401).json({ error: "Não autenticado" });
+    }
+
+    res.json({
+        id: req.session.usuario.id,
+        nome: req.session.usuario.nome,
+        email: req.session.usuario.email,
+        perfil: req.session.usuario.perfil,
+        cargo: req.session.usuario.cargo,
+    });
+});
+
 async function getDadosTMR(grupoFiltro = null, regionalFiltro = null, procedenciaFiltro = null) {
     // Esta função buscará os dados da tabela reparos_b2b_tmr
     const connection = await db.mysqlPool.getConnection();

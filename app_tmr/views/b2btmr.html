@@ -46,7 +46,7 @@
                             <i class="fas fa-user"></i> <span id="nomeUsuarioNav">Carregando...</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle"></i> Perfil</a></li>
+                            <li><a class="dropdown-item" href="#" id="perfilLink"><i class="fas fa-user-circle"></i> Perfil</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
@@ -251,6 +251,39 @@
         </main>
     </div>
 
+    <!-- Modal de Perfil do Usuário -->
+    <div class="modal fade" id="perfilModal" tabindex="-1" aria-labelledby="perfilModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="perfilModalLabel"><i class="fas fa-user"></i> Perfil do Usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="perfilNome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="perfilNome" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="perfilEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="perfilEmail" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="perfilCargo" class="form-label">Cargo</label>
+                        <input type="text" class="form-control" id="perfilCargo" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="perfilPerfil" class="form-label">Perfil</label>
+                        <input type="text" class="form-control" id="perfilPerfil" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
@@ -276,6 +309,27 @@
             }).fail(function () {
                 $('#nomeUsuario').text('Não identificado');
                 $('#nomeUsuarioNav').text('Não identificado');
+            });
+
+            // Evento de clique para o link de perfil
+            $('#perfilLink').on('click', function(e) {
+                e.preventDefault();
+
+                // Buscar dados do perfil do usuário
+                $.get('/tmr/perfil-usuario')
+                    .done(function(data) {
+                        // Preencher os campos do modal com os dados do usuário
+                        $('#perfilNome').val(data.nome || '');
+                        $('#perfilEmail').val(data.email || '');
+                        $('#perfilCargo').val(data.cargo || '');
+                        $('#perfilPerfil').val(data.perfil || '');
+
+                        // Exibir o modal
+                        $('#perfilModal').modal('show');
+                    })
+                    .fail(function() {
+                        alert('Erro ao carregar os dados do perfil.');
+                    });
             });
         });
     </script>
