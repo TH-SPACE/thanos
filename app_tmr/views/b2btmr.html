@@ -63,11 +63,19 @@
         <header class="border-bottom mb-2">
             <div class="row align-items-center py-2">
                 <div class="col-md-8">
-                    <h1><i class="fas fa-clock"></i> TMR - Tempo Médio de Reparos</h1>
+                    <h1>
+                        <i class="fas fa-clock"></i> TMR - Tempo Médio de Reparos
+                        <!-- Botões de ação -->
+                        <span id="botoesAcao" style="margin-left: 15px;">
+                            <button class="btn btn-sm btn-outline-info" id="sincronizarManual" title="Sincronizar Dados">
+                                <i class="fas fa-database"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" id="atualizarAmbas" title="Atualizar Tudo">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </span>
+                    </h1>
                     <p class="text-muted">Sistema para cálculo do tempo médio dos reparos B2B</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <span class="badge bg-primary">Usuário: <span id="nomeUsuario">Carregando...</span></span>
                 </div>
             </div>
         </header>
@@ -111,15 +119,15 @@
                                 <button class="btn btn-sm btn-outline-primary me-2" id="aplicarFiltrosCluster">
                                     <i class="fas fa-filter"></i> Aplicar Filtros
                                 </button>
-                                <button class="btn btn-sm btn-outline-info me-2" id="sincronizarManual">
-                                    <i class="fas fa-database"></i> Sincronizar Dados
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" id="atualizarCluster">
-                                    <i class="fas fa-sync-alt"></i> Atualizar
-                                </button>
                             </div>
                         </div>
                         <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <!-- Espaço reservado para mensagens de status -->
+                                    <small class="text-muted" id="statusMensagemCluster"></small>
+                                </div>
+                            </div>
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="tabelaCluster">
                                     <thead class="table-dark">
@@ -171,15 +179,15 @@
                                 <button class="btn btn-sm btn-outline-primary me-2" id="aplicarFiltrosRegional">
                                     <i class="fas fa-filter"></i> Aplicar Filtros
                                 </button>
-                                <button class="btn btn-sm btn-outline-info me-2" id="sincronizarManualRegional">
-                                    <i class="fas fa-database"></i> Sincronizar Dados
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" id="atualizarRegional">
-                                    <i class="fas fa-sync-alt"></i> Atualizar
-                                </button>
                             </div>
                         </div>
                         <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <!-- Espaço reservado para mensagens de status -->
+                                    <small class="text-muted" id="statusMensagemRegional"></small>
+                                </div>
+                            </div>
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="tabelaRegional">
                                     <thead class="table-dark">

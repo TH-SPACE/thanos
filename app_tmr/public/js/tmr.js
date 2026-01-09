@@ -18,6 +18,11 @@ $(document).ready(function () {
     carregarDadosRegional();
   });
 
+  // Botão de atualizar ambas as visões
+  $("#atualizarAmbas").click(function () {
+    carregarDadosTMR();
+  });
+
   // Botão de aplicar filtros na aba de cluster
   $("#aplicarFiltrosCluster").click(function () {
     carregarDadosCluster();
