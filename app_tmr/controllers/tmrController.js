@@ -32,7 +32,7 @@ router.get('/data', tmrAuth, async (req, res) => {
 });
 
 // Rota para obter todos os grupos disponíveis
-router.get('/grupos', tmrAuth, async (req, res) => {
+router.get('/grupos-lista', tmrAuth, async (req, res) => {
     try {
         const connection = await db.mysqlPool.getConnection();
         try {

@@ -262,6 +262,52 @@ h1, h2, h3, h4, h5, h6 {
     cursor: not-allowed;
 }
 
+/* Estilos específicos para a visão por grupos */
+#tabelaGrupos .table-header {
+    background-color: #343a40;
+    color: white;
+}
+
+#tabelaGrupos .table-subheader {
+    background-color: #495057;
+    color: white;
+}
+
+/* Estilo para o container de opções de procedência específico da aba de grupos */
+.procedencia-options-container-grupos {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    background-color: #f9f9f9;
+}
+
+.procedencia-option-grupos {
+    padding: 5px 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.procedencia-option-grupos:last-child {
+    border-bottom: none;
+}
+
+.procedencia-option-grupos:hover {
+    background-color: #e9ecef;
+}
+
+.procedencia-option-grupos.selected {
+    background-color: #d4edda;
+    font-weight: bold;
+}
+
+.procedencia-option-grupos input[type="checkbox"] {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .procedencia-dropdown-menu {
@@ -269,6 +315,10 @@ h1, h2, h3, h4, h5, h6 {
     }
 
     .procedencia-options-container {
+        max-height: 200px;
+    }
+
+    .procedencia-options-container-grupos {
         max-height: 200px;
     }
 }

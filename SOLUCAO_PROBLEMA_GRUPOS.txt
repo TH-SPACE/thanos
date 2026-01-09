@@ -1,0 +1,73 @@
+Solução do Problema: Tabela de Grupos Não Carregava
+
+Problema Original
+A aba "Visão por Grupos" no sistema TMR não estava carregando os dados corretamente. A tela permanecia mostrando apenas "Carregando dados dos grupos..." e a tabela não era exibida.
+
+Causas Raiz Identificadas
+
+1. Conflito de Rotas
+- A rota /tmr/grupos no tmrController.js conflitava com a nova funcionalidade de grupos
+- Ambas as funcionalidades estavam usando o mesmo caminho de rota
+
+2. Query SQL Incorreta
+- A query original não estava formatando corretamente os meses
+- O agrupamento estava incorreto, causando problemas na contagem de reparos
+- Não estava usando parâmetros preparados, o que poderia causar problemas de segurança e formatação
+
+3. Filtros Incorretos
+- A aba de grupos estava inicialmente com filtro de grupo, o que não era desejado
+- Apenas filtros de regional e procedência deveriam estar presentes
+
+Soluções Implementadas
+
+1. Correção de Rotas
+- Renomeada a rota /tmr/grupos para /tmr/grupos-lista no tmrController.js
+- Atualizadas todas as chamadas no JavaScript para usar a nova rota
+- Mantida a rota /tmr/grupos/grupos-data para a nova funcionalidade
+
+2. Correção da Query SQL
+- Substituída a query original por uma versão corrigida que:
+  - Usa DATE_FORMAT(r.tqi_abertura, '%M %Y') para obter o nome do mês corretamente
+  - Aplica parâmetros preparados para segurança e formatação adequada
+  - Faz o agrupamento correto por grupo e mês
+  - Usa COUNT(DISTINCT r.tqi_codigo) para garantir que cada reparo seja contado apenas uma vez por grupo
+  - Usa COALESCE(AVG(r.tmr_total), 0) para tratar valores nulos
+
+3. Correção dos Filtros
+- Removido o seletor de grupo da aba de grupos no HTML
+- Atualizado o JavaScript para não usar mais o filtro de grupo na aba de grupos
+- Mantidos apenas os filtros de regional e procedência
+
+4. Melhorias no Processamento de Dados
+- Adicionado mapeamento de nomes de meses de inglês para português
+- Melhor tratamento dos dados no frontend para garantir exibição correta
+- Adicionados logs de debug para facilitar diagnósticos futuros
+
+Arquivos Modificados
+
+1. app_tmr/controllers/tmrController.js
+   - Renomeada rota /grupos para /grupos-lista
+
+2. app_tmr/controllers/gruposController.js
+   - Corrigida query SQL para agrupamento e formatação adequados
+   - Adicionado tratamento correto de nomes de meses
+
+3. app_tmr/routes/tmrRoutes.js
+   - Mantida a rota /grupos para o controller de grupos
+
+4. app_tmr/views/b2btmr.html
+   - Removido seletor de grupo da aba de grupos
+
+5. app_tmr/public/js/tmr.js
+   - Atualizadas chamadas para usar nova rota /grupos-lista
+   - Removido código relacionado ao filtro de grupo
+   - Adicionado evento para carregar dados quando aba de grupos é ativada
+
+Resultado Final
+- A aba "Visão por Grupos" agora carrega corretamente
+- A tabela exibe todos os grupos com:
+  - Quantidade de reparos (contados corretamente, sem duplicação)
+  - TMR médio por grupo
+  - Dados organizados por mês (últimos 3 meses)
+- Funciona com os filtros de regional e procedência
+- Cada reparo é contado apenas uma vez por grupo, mesmo que tenha múltiplas vidas

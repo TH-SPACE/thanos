@@ -91,6 +91,10 @@
                     <button class="nav-link" id="regional-tab" data-bs-toggle="tab" data-bs-target="#regional"
                         type="button" role="tab">Visão por Regional</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="grupos-tab" data-bs-toggle="tab" data-bs-target="#grupos"
+                        type="button" role="tab">Visão por Grupos</button>
+                </li>
             </ul>
 
             <div class="tab-content" id="visualizacaoTabContent">
@@ -241,6 +245,83 @@
                                             <td>Total</td>
                                             <!-- Total será preenchido dinamicamente -->
                                         </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba de Grupos -->
+                <div class="tab-pane fade" id="grupos" role="tabpanel">
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-users"></i> Visão por Grupos</h5>
+                            <div>
+                                <select class="form-select form-select-sm me-2" id="filtroRegionalGrupos"
+                                    style="display: inline-block; width: auto;">
+                                    <option value="">Todas as Regionais</option>
+                                </select>
+                                <div class="dropdown me-2" style="display: inline-block;">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                                            id="filtroProcedenciaGruposBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span id="filtroProcedenciaGruposLabel">Procedência</span>
+                                    </button>
+                                    <div class="dropdown-menu procedencia-dropdown-menu" id="filtroProcedenciaGruposMenu"
+                                         style="width: 300px; padding: 10px;">
+
+                                        <!-- Select All Checkbox -->
+                                        <div class="mb-2 px-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="selectAllProcedenciaGrupos">
+                                                <label class="form-check-label" for="selectAllProcedenciaGrupos">
+                                                    <strong>Selecionar Todos</strong>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <hr class="my-2">
+
+                                        <!-- Scrollable Container for Options -->
+                                        <div class="procedencia-options-container-grupos" style="max-height: 300px; overflow-y: auto;">
+                                            <!-- Options will be populated dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary me-2" id="aplicarFiltrosGrupos">
+                                    <i class="fas fa-filter"></i> Aplicar Filtros
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <!-- Espaço reservado para mensagens de status -->
+                                    <small class="text-muted" id="statusMensagemGrupos"></small>
+                                </div>
+                            </div>
+
+                            <!-- Elemento de carregamento para a tabela de grupos -->
+                            <div id="loadingGrupos" class="text-center my-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <p class="mt-2">Carregando dados dos grupos...</p>
+                            </div>
+
+                            <div class="table-responsive" id="tabelaGruposContainer" style="display: none;">
+                                <table class="table table-bordered" id="tabelaGrupos">
+                                    <thead class="table-dark">
+                                        <tr id="headerGrupos">
+                                            <th rowspan="2">Grupo</th>
+                                            <!-- Cabeçalhos serão gerados dinamicamente pelo JavaScript -->
+                                        </tr>
+                                        <tr id="subheaderGrupos">
+                                            <!-- Subcabeçalhos serão gerados dinamicamente pelo JavaScript -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dados serão carregados via JavaScript -->
                                     </tbody>
                                 </table>
                             </div>

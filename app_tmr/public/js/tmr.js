@@ -8,6 +8,12 @@ $(document).ready(function () {
   // Carregar dados iniciais e atualizar cabeçalhos
   carregarDadosTMR();
 
+  // Adicionar evento para quando a aba de grupos for ativada
+  $('#grupos-tab').on('shown.bs.tab', function (e) {
+    console.log('Aba de grupos ativada'); // Log de debug
+    carregarDadosGrupos();
+  });
+
   // Botão de atualizar na aba de cluster
   $("#atualizarCluster").click(function () {
     // Fechar o dropdown de procedência
@@ -20,6 +26,14 @@ $(document).ready(function () {
     // Fechar o dropdown de procedência
     $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     carregarDadosRegional();
+  });
+
+  // Botão de atualizar na aba de grupos
+  $("#atualizarGrupos").click(function () {
+    console.log('Botão atualizarGrupos clicado'); // Log de debug
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaGruposMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    carregarDadosGrupos();
   });
 
   // Botão de atualizar ambas as visões
@@ -41,6 +55,13 @@ $(document).ready(function () {
     // Fechar o dropdown de procedência
     $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     carregarDadosRegional();
+  });
+
+  // Botão de aplicar filtros na aba de grupos
+  $("#aplicarFiltrosGrupos").click(function () {
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaGruposMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    carregarDadosGrupos();
   });
 
   // Botão de sincronização manual de dados
@@ -72,7 +93,38 @@ $(document).ready(function () {
     // Apenas atualiza o estado visual do filtro
   });
 
-  // Select all functionality
+  // Filtro de regional para grupos - atualiza visualmente mas não carrega dados até o botão ser pressionado
+  $("#filtroRegionalGrupos").change(function () {
+    // Apenas atualiza o estado visual do filtro
+  });
+
+  // Select all functionality for grupos tab
+  $('#selectAllProcedenciaGrupos').change(function () {
+    const isChecked = $(this).is(':checked');
+    $('.procedencia-checkbox-grupos').prop('checked', isChecked);
+
+    if (isChecked) {
+      // Add all options to selection
+      $('.procedencia-checkbox-grupos').each(function () {
+        const value = $(this).val();
+        if (!procedenciasSelecionadas.includes(value)) {
+          procedenciasSelecionadas.push(value);
+        }
+      });
+    } else {
+      // Remove all options from selection
+      $('.procedencia-checkbox-grupos').each(function () {
+        const value = $(this).val();
+        procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== value);
+      });
+    }
+
+    // Update UI
+    $('.procedencia-option-grupos').toggleClass('selected', isChecked);
+    atualizarRotuloProcedenciaGrupos();
+  });
+
+  // Select all functionality for cluster tab
   $('#selectAllProcedencia').change(function () {
     const isChecked = $(this).is(':checked');
     $('.procedencia-checkbox').prop('checked', isChecked);
@@ -98,7 +150,31 @@ $(document).ready(function () {
     atualizarRotuloProcedencia();
   });
 
-  // Individual checkbox change
+  // Individual checkbox change for grupos tab
+  $(document).on('change', '.procedencia-checkbox-grupos', function () {
+    const procedencia = $(this).val();
+    const isChecked = $(this).is(':checked');
+
+    if (isChecked) {
+      if (!procedenciasSelecionadas.includes(procedencia)) {
+        procedenciasSelecionadas.push(procedencia);
+      }
+      $(this).closest('.procedencia-option-grupos').addClass('selected');
+    } else {
+      // Allow unchecking default options
+      procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== procedencia);
+      $(this).closest('.procedencia-option-grupos').removeClass('selected');
+    }
+
+    // Update "Select All" checkbox state
+    const allCheckboxes = $('.procedencia-checkbox-grupos');
+    const checkedCheckboxes = allCheckboxes.filter(':checked');
+    $('#selectAllProcedenciaGrupos').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+
+    atualizarRotuloProcedenciaGrupos();
+  });
+
+  // Individual checkbox change for cluster tab
   $(document).on('change', '.procedencia-checkbox', function () {
     const procedencia = $(this).val();
     const isChecked = $(this).is(':checked');
@@ -128,6 +204,34 @@ $(document).ready(function () {
   });
 });
 
+// Função para atualizar o rótulo do botão de procedência para a aba de grupos
+function atualizarRotuloProcedenciaGrupos() {
+  if (procedenciasSelecionadas.length === 0) {
+    $("#filtroProcedenciaGruposLabel").text("Procedência");
+    $("#filtroProcedenciaGruposBtn").removeClass("btn-procedencia-selected");
+  } else if (procedenciasSelecionadas.length === 1) {
+    $("#filtroProcedenciaGruposLabel").text(procedenciasSelecionadas[0]);
+    $("#filtroProcedenciaGruposBtn").addClass("btn-procedencia-selected");
+  } else {
+    // Mostrar os nomes das procedências selecionadas (limitado a 2 para evitar texto muito longo)
+    if (procedenciasSelecionadas.length <= 2) {
+      $("#filtroProcedenciaGruposLabel").text(
+        procedenciasSelecionadas.join(", ")
+      );
+    } else {
+      $("#filtroProcedenciaGruposLabel").text(
+        `${procedenciasSelecionadas.length} selecionadas`
+      );
+    }
+    $("#filtroProcedenciaGruposBtn").addClass("btn-procedencia-selected");
+  }
+
+  // Atualizar o estado do checkbox "Selecionar Todos"
+  const allCheckboxes = $('.procedencia-checkbox-grupos');
+  const checkedCheckboxes = allCheckboxes.filter(':checked');
+  $('#selectAllProcedenciaGrupos').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+}
+
 // Função para atualizar o rótulo do botão de procedência
 function atualizarRotuloProcedencia() {
   if (procedenciasSelecionadas.length === 0) {
@@ -154,6 +258,279 @@ function atualizarRotuloProcedencia() {
   const allCheckboxes = $('.procedencia-checkbox');
   const checkedCheckboxes = allCheckboxes.filter(':checked');
   $('#selectAllProcedencia').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+}
+
+// Função para carregar dados da aba de grupos
+function carregarDadosGrupos() {
+  // Mostrar animação de carregamento e ocultar tabela
+  $("#loadingGrupos").show();
+  $("#tabelaGruposContainer").hide();
+
+  // Desabilitar botões de filtro durante o carregamento
+  desabilitarBotoesFiltro(true);
+
+  // Obter parâmetros de filtro atuais
+  const params = obterParametrosFiltroGrupos();
+
+  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
+  $.when(
+    $.get("/tmr/grupos/grupos-data", params),
+    $.get("/tmr/grupos-lista"),
+    $.get("/tmr/regionais"),
+    $.get("/tmr/procedencias")
+  )
+    .done(function (
+      dataResponse,
+      gruposResponse,
+      regionaisResponse,
+      procedenciasResponse
+    ) {
+      const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
+      const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
+      const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
+      const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
+
+      console.log('Dados recebidos para grupos:', dados); // Log de debug
+      console.log('Meses encontrados:', dados.length > 0 ? Object.keys(dados[0].meses) : []); // Log de debug
+
+      // Obter os últimos 3 meses únicos dos dados recebidos
+      const meses = obterUltimos3MesesDosDadosGrupos(dados);
+      console.log('Meses processados:', meses); // Log de debug
+
+      // Atualizar cabeçalhos com os meses encontrados
+      atualizarCabecalhoTabelaGrupos(meses);
+
+
+      // Preencher o seletor de regional com a lista completa de regionais
+      atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalGrupos");
+
+      // Preencher o menu de procedência com a lista completa de procedências
+      atualizarMenuProcedenciaCompletoGrupos(procedencias);
+
+      atualizarTabelaGrupos(dados, meses);
+
+      // Após carregar os dados, ocultar animação de carregamento e mostrar tabela
+      $("#loadingGrupos").hide();
+      $("#tabelaGruposContainer").show();
+
+      // Reabilitar botões de filtro após o carregamento
+      desabilitarBotoesFiltro(false);
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      console.error('Erro nas requisições:', jqXHR, textStatus, errorThrown); // Log de debug
+      $("#loadingGrupos").hide();
+      $("#tabelaGruposContainer").show();
+
+      $("#tabelaGrupos tbody").html(
+        '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de grupos</td></tr>'
+      );
+
+      // Reabilitar botões de filtro mesmo em caso de erro
+      desabilitarBotoesFiltro(false);
+
+      alert("Erro ao carregar dados de grupos: " + textStatus);
+    });
+}
+
+// Função para obter os parâmetros de filtro atuais para a aba de grupos
+function obterParametrosFiltroGrupos() {
+  const params = {};
+  const regionalSelecionadaGrupos = $("#filtroRegionalGrupos").val();
+
+  // Usar a regional selecionada na aba de grupos
+  if (regionalSelecionadaGrupos) {
+    params.regional = regionalSelecionadaGrupos;
+  }
+
+  // Usar as procedências selecionadas na aba de grupos
+  if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
+    // Converter array em string separada por vírgulas
+    params.procedencia = procedenciasSelecionadas.join(",");
+  }
+
+  return params;
+}
+
+// Função para obter os últimos 3 meses únicos dos dados recebidos para a aba de grupos
+function obterUltimos3MesesDosDadosGrupos(dados) {
+  // Extrair todos os meses únicos dos dados
+  const mesesUnicos = [...new Set(dados.flatMap(item => Object.keys(item.meses)))];
+
+  // Ordenar os meses em ordem cronológica considerando o ano
+  const ordemMeses = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+
+  // Função para extrair mês e ano de uma string no formato "Mês Ano"
+  function extrairMesAno(mesStr) {
+    const partes = mesStr.split(" ");
+    if (partes.length === 2) {
+      const mes = partes[0];
+      const ano = parseInt(partes[1]);
+      return { mes, ano };
+    }
+    return { mes: mesStr, ano: 0 };
+  }
+
+  // Filtrar meses válidos e ordenar de acordo com a ordem cronológica
+  const mesesOrdenados = mesesUnicos
+    .filter((mes) => {
+      const { mes: nomeMes } = extrairMesAno(mes);
+      return ordemMeses.includes(nomeMes);
+    })
+    .sort((a, b) => {
+      const { mes: mesA, ano: anoA } = extrairMesAno(a);
+      const { mes: mesB, ano: anoB } = extrairMesAno(b);
+
+      // Primeiro compara por ano
+      if (anoA !== anoB) {
+        return anoA - anoB;
+      }
+      // Se o ano for igual, compara por mês
+      return ordemMeses.indexOf(mesA) - ordemMeses.indexOf(mesB);
+    });
+
+  // Pegar os últimos 3 meses, ou todos se houver menos de 3
+  const ultimos3Meses = mesesOrdenados.slice(-3);
+
+  // Se tivermos menos de 3 meses, completar com meses anteriores (se necessário)
+  return ultimos3Meses;
+}
+
+// Função para atualizar os cabeçalhos das tabelas com os meses dos dados para a aba de grupos
+function atualizarCabecalhoTabelaGrupos(meses) {
+  // Atualizar cabeçalho da tabela de grupos (com rowspan)
+  let headerGruposHtml = '<th rowspan="2">Grupo</th>';
+
+  // Processar meses para determinar quando mostrar o ano
+  const mesesProcessados = meses.map((mes) => {
+    const [nomeMes, ano] = mes.split(" ");
+    return { nomeMes, ano };
+  });
+
+  // Identificar anos únicos
+  const anosUnicos = [...new Set(mesesProcessados.map((item) => item.ano))];
+
+  mesesProcessados.forEach((mesInfo, index) => {
+    let mesDisplay = mesInfo.nomeMes;
+
+    // Se houver mais de um ano nos dados, mostrar o ano para cada mês
+    if (anosUnicos.length > 1) {
+      mesDisplay = `${mesInfo.nomeMes} ${mesInfo.ano}`;
+    } else {
+      // Se for o primeiro mês ou o ano mudou em relação ao anterior, mostrar o ano
+      if (index === 0 || mesInfo.ano !== mesesProcessados[index - 1].ano) {
+        mesDisplay = `${mesInfo.nomeMes} ${mesInfo.ano}`;
+      }
+    }
+
+    headerGruposHtml += `<th colspan="2">${mesDisplay}</th>`;
+  });
+
+  $("#headerGrupos").html(headerGruposHtml);
+
+  // Atualizar subcabeçalho da tabela de grupos com rótulos das colunas
+  let subheaderGruposHtml = "";
+  meses.forEach((mes) => {
+    subheaderGruposHtml += `
+            <th>Qtde. Reparos</th>
+            <th>TMR Médio</th>
+        `;
+  });
+  $("#subheaderGrupos").html(subheaderGruposHtml);
+}
+
+// Função para atualizar o menu de procedência com a lista completa para a aba de grupos
+function atualizarMenuProcedenciaCompletoGrupos(procedencias) {
+  // Ordenar as procedências alfabeticamente
+  procedencias.sort();
+
+  // Limpar o container de opções
+  const container = $('.procedencia-options-container-grupos');
+  container.empty();
+
+  // Adicionar novos itens de procedência
+  procedencias.forEach((procedencia) => {
+    const isSelected = procedenciasSelecionadas.includes(procedencia);
+
+    const optionElement = $(`
+      <div class="procedencia-option-grupos ${isSelected ? 'selected' : ''}">
+        <div class="form-check">
+          <input class="form-check-input procedencia-checkbox-grupos" type="checkbox"
+                 value="${procedencia}" id="proc_grupos_${procedencia}"
+                 ${isSelected ? 'checked' : ''}>
+          <label class="form-check-label" for="proc_grupos_${procedencia}">
+            ${procedencia}
+          </label>
+        </div>
+      </div>
+    `);
+
+    container.append(optionElement);
+  });
+
+  // Atualizar o rótulo do botão
+  atualizarRotuloProcedenciaGrupos();
+}
+
+// Função para atualizar tabela de grupos
+function atualizarTabelaGrupos(dados, meses) {
+  console.log('Atualizando tabela de grupos com', dados.length, 'grupos e meses:', meses); // Log de debug
+
+  // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
+  let tableHtml = "";
+
+  // Verificar se há dados para processar
+  if (!dados || dados.length === 0) {
+    console.log('Nenhum dado encontrado para grupos'); // Log de debug
+    tableHtml = '<tr><td colspan="' + (1 + meses.length * 2) + '" class="text-center">Nenhum dado encontrado</td></tr>';
+  } else {
+    console.log('Processando', dados.length, 'grupos'); // Log de debug
+
+    // Preencher a tabela com os dados
+    for (const item of dados) {
+      console.log('Processando grupo:', item.grupo, 'com meses:', Object.keys(item.meses)); // Log de debug
+      const grupo = item.grupo;
+
+      // Calcular métricas para cada mês individualmente
+      let allMesesCells = "";
+      for (const mes of meses) {
+        const mesData = item.meses[mes] || { qtde_reparos: 0, tmr_medio: 0 };
+        console.log('  Mês:', mes, 'Dados:', mesData); // Log de debug
+
+        // Adicionar as 2 colunas para este mês
+        allMesesCells += `
+                  <td class="text-center">${mesData.qtde_reparos}</td>
+                  <td class="text-center">${mesData.tmr_medio}h</td>
+              `;
+      }
+
+      tableHtml += `
+              <tr>
+                  <td class="fw-bold">${grupo}</td>
+                  ${allMesesCells}
+              </tr>
+          `;
+    }
+  }
+
+  console.log('HTML da tabela gerado:', tableHtml); // Log de debug
+
+  // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
+  $("#tabelaGrupos tbody").html(tableHtml);
+
+  console.log('Tabela atualizada com sucesso'); // Log de debug
 }
 
 // Função para obter os parâmetros de filtro atuais
@@ -343,7 +720,7 @@ function carregarDadosTMR() {
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
     $.get("/tmr/data", params),
-    $.get("/tmr/grupos"),
+    $.get("/tmr/grupos-lista"),
     $.get("/tmr/regionais"),
     $.get("/tmr/procedencias")
   )
@@ -427,7 +804,7 @@ function carregarDadosCluster() {
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
     $.get("/tmr/data", params),
-    $.get("/tmr/grupos"),
+    $.get("/tmr/grupos-lista"),
     $.get("/tmr/regionais"),
     $.get("/tmr/procedencias")
   )
@@ -502,7 +879,7 @@ function carregarDadosRegional() {
   // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
   $.when(
     $.get("/tmr/data", params),
-    $.get("/tmr/grupos"),
+    $.get("/tmr/grupos-lista"),
     $.get("/tmr/regionais"),
     $.get("/tmr/procedencias")
   )
