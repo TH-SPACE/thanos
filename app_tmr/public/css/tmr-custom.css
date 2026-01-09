@@ -200,3 +200,62 @@ h1, h2, h3, h4, h5, h6 {
     background-color: #e7f1ff;
     border-color: #86b7fe;
 }
+
+/* Enhanced styles for the procedência filter */
+.procedencia-dropdown-menu {
+    max-width: 350px;
+    min-width: 300px;
+}
+
+.procedencia-options-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    background-color: #f9f9f9;
+}
+
+.procedencia-option {
+    padding: 5px 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.procedencia-option:last-child {
+    border-bottom: none;
+}
+
+.procedencia-option:hover {
+    background-color: #e9ecef;
+}
+
+.procedencia-option.selected {
+    background-color: #d4edda;
+    font-weight: bold;
+}
+
+.procedencia-option input[type="checkbox"] {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+
+/* Style for the button when filters are applied */
+.btn-procedencia-selected {
+    background-color: #e7f1ff;
+    border-color: #86b7fe;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .procedencia-dropdown-menu {
+        width: 280px;
+    }
+
+    .procedencia-options-container {
+        max-height: 200px;
+    }
+}

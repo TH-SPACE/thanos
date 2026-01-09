@@ -1,8 +1,8 @@
 // Funções JavaScript para o sistema de TMR
 
 // Variáveis para armazenar as procedências selecionadas
-let procedenciasSelecionadas = ["proativo", "reativo"];
-const procedenciasPadrao = ["proativo", "reativo"]; // Filtros padrão que sempre devem estar selecionados
+let procedenciasSelecionadas = ["proativo", "reativo"]; // Começa com os itens padrão selecionados
+const procedenciasPadrao = ["proativo", "reativo"]; // Referência para os itens padrão
 
 $(document).ready(function () {
   // Carregar dados iniciais e atualizar cabeçalhos
@@ -10,36 +10,50 @@ $(document).ready(function () {
 
   // Botão de atualizar na aba de cluster
   $("#atualizarCluster").click(function () {
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     carregarDadosCluster();
   });
 
   // Botão de atualizar na aba de regional
   $("#atualizarRegional").click(function () {
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     carregarDadosRegional();
   });
 
   // Botão de atualizar ambas as visões
   $("#atualizarAmbas").click(function () {
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     carregarDadosTMR();
   });
 
   // Botão de aplicar filtros na aba de cluster
   $("#aplicarFiltrosCluster").click(function () {
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     carregarDadosCluster();
   });
 
   // Botão de aplicar filtros na aba de regional
   $("#aplicarFiltrosRegional").click(function () {
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     carregarDadosRegional();
   });
 
   // Botão de sincronização manual de dados
   $("#sincronizarManual").click(function () {
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     sincronizarDadosManually();
   });
 
   // Botão de sincronização manual de dados para regional
   $("#sincronizarManualRegional").click(function () {
+    // Fechar o dropdown de procedência
+    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     sincronizarDadosManually();
   });
 
@@ -58,46 +72,59 @@ $(document).ready(function () {
     // Apenas atualiza o estado visual do filtro
   });
 
-  // Evento para limpar todas as seleções (não mais necessário após remoção do "Todas as Procedências")
-  // A funcionalidade agora é apenas de seleção múltipla individual
+  // Select all functionality
+  $('#selectAllProcedencia').change(function() {
+    const isChecked = $(this).is(':checked');
+    $('.procedencia-checkbox').prop('checked', isChecked);
 
-  // Evento para os itens individuais de procedência
-  $(document).on("click", ".filtro-procedencia-item", function (e) {
-    e.preventDefault();
-    const checkbox = $(this).find('input[type="checkbox"]');
-    const isChecked = checkbox.is(":checked");
-    const procedencia = checkbox.val();
-
-    // Impedir que os filtros padrão sejam desmarcados
-    if (procedenciasPadrao.includes(procedencia) && isChecked) {
-      // Não permite desmarcar os filtros padrão
-      return;
-    }
-
-    // Atualizar o estado do checkbox
-    checkbox.prop("checked", !isChecked);
-
-    // Atualizar a lista de procedências selecionadas
     if (isChecked) {
-      // Se estava marcado e agora será desmarcado
-      procedenciasSelecionadas = procedenciasSelecionadas.filter(
-        (p) => p !== procedencia
-      );
+      // Add all options to selection
+      $('.procedencia-checkbox').each(function() {
+        const value = $(this).val();
+        if (!procedenciasSelecionadas.includes(value)) {
+          procedenciasSelecionadas.push(value);
+        }
+      });
     } else {
-      // Se estava desmarcado e agora será marcado
-      procedenciasSelecionadas.push(procedencia);
+      // Remove all options from selection
+      $('.procedencia-checkbox').each(function() {
+        const value = $(this).val();
+        procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== value);
+      });
     }
 
-    // Garantir que os filtros padrão estejam sempre presentes
-    procedenciasPadrao.forEach(padrao => {
-      if (!procedenciasSelecionadas.includes(padrao)) {
-        procedenciasSelecionadas.push(padrao);
-        $(`#filtroProcedenciaClusterMenu input[value="${padrao}"]`).prop("checked", true);
-      }
-    });
-
-    // Atualizar o rótulo do botão
+    // Update UI
+    $('.procedencia-option').toggleClass('selected', isChecked);
     atualizarRotuloProcedencia();
+  });
+
+  // Individual checkbox change
+  $(document).on('change', '.procedencia-checkbox', function() {
+    const procedencia = $(this).val();
+    const isChecked = $(this).is(':checked');
+
+    if (isChecked) {
+      if (!procedenciasSelecionadas.includes(procedencia)) {
+        procedenciasSelecionadas.push(procedencia);
+      }
+      $(this).closest('.procedencia-option').addClass('selected');
+    } else {
+      // Allow unchecking default options
+      procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== procedencia);
+      $(this).closest('.procedencia-option').removeClass('selected');
+    }
+
+    // Update "Select All" checkbox state
+    const allCheckboxes = $('.procedencia-checkbox');
+    const checkedCheckboxes = allCheckboxes.filter(':checked');
+    $('#selectAllProcedencia').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+
+    atualizarRotuloProcedencia();
+  });
+
+  // Prevent dropdown from closing when clicking inside
+  $('.procedencia-dropdown-menu').click(function(e) {
+    e.stopPropagation();
   });
 });
 
@@ -122,6 +149,11 @@ function atualizarRotuloProcedencia() {
     }
     $("#filtroProcedenciaClusterBtn").addClass("btn-procedencia-selected");
   }
+
+  // Atualizar o estado do checkbox "Selecionar Todos"
+  const allCheckboxes = $('.procedencia-checkbox');
+  const checkedCheckboxes = allCheckboxes.filter(':checked');
+  $('#selectAllProcedencia').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
 }
 
 // Função para obter os parâmetros de filtro atuais
@@ -795,43 +827,28 @@ function atualizarMenuProcedenciaCompleto(procedencias) {
   // Ordenar as procedências alfabeticamente
   procedencias.sort();
 
-  // Limpar o menu
-  const menu = $("#filtroProcedenciaClusterMenu");
-  menu.empty();
+  // Limpar o container de opções
+  const container = $('.procedencia-options-container');
+  container.empty();
 
   // Adicionar novos itens de procedência
   procedencias.forEach((procedencia) => {
-    const item = $(
-      `<li><a class="dropdown-item filtro-procedencia-item" href="#"><input type="checkbox" value="${procedencia}"> ${procedencia}</a></li>`
-    );
-    menu.append(item);
-  });
+    const isSelected = procedenciasSelecionadas.includes(procedencia);
 
-  // Atualizar os estados dos checkboxes com base nas seleções atuais
-  procedencias.forEach((procedencia) => {
-    if (procedenciasSelecionadas.includes(procedencia)) {
-      $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
-        "checked",
-        true
-      );
-    } else {
-      // Impedir que os filtros padrão fiquem desmarcados
-      if (procedenciasPadrao.includes(procedencia)) {
-        $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
-          "checked",
-          true
-        );
-        // Garantir que os filtros padrão estejam na lista
-        if (!procedenciasSelecionadas.includes(procedencia)) {
-          procedenciasSelecionadas.push(procedencia);
-        }
-      } else {
-        $(`#filtroProcedenciaClusterMenu input[value="${procedencia}"]`).prop(
-          "checked",
-          false
-        );
-      }
-    }
+    const optionElement = $(`
+      <div class="procedencia-option ${isSelected ? 'selected' : ''}">
+        <div class="form-check">
+          <input class="form-check-input procedencia-checkbox" type="checkbox"
+                 value="${procedencia}" id="proc_${procedencia}"
+                 ${isSelected ? 'checked' : ''}>
+          <label class="form-check-label" for="proc_${procedencia}">
+            ${procedencia}
+          </label>
+        </div>
+      </div>
+    `);
+
+    container.append(optionElement);
   });
 
   // Atualizar o rótulo do botão
