@@ -146,7 +146,16 @@
                                     <small class="text-muted" id="statusMensagemCluster"></small>
                                 </div>
                             </div>
-                            <div class="table-responsive">
+
+                            <!-- Elemento de carregamento para a tabela de cluster -->
+                            <div id="loadingCluster" class="text-center my-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <p class="mt-2">Carregando dados do cluster...</p>
+                            </div>
+
+                            <div class="table-responsive" id="tabelaClusterContainer" style="display: none;">
                                 <table class="table table-bordered" id="tabelaCluster">
                                     <thead class="table-dark">
                                         <tr id="headerCluster">
@@ -206,7 +215,16 @@
                                     <small class="text-muted" id="statusMensagemRegional"></small>
                                 </div>
                             </div>
-                            <div class="table-responsive">
+
+                            <!-- Elemento de carregamento para a tabela de regional -->
+                            <div id="loadingRegional" class="text-center my-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <p class="mt-2">Carregando dados da regional...</p>
+                            </div>
+
+                            <div class="table-responsive" id="tabelaRegionalContainer" style="display: none;">
                                 <table class="table table-bordered" id="tabelaRegional">
                                     <thead class="table-dark">
                                         <tr id="headerRegional">

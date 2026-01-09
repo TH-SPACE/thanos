@@ -249,6 +249,19 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 500;
 }
 
+/* Estilo para botões desabilitados */
+.btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Estilo específico para elementos desabilitados */
+.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .procedencia-dropdown-menu {

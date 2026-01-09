@@ -73,13 +73,13 @@ $(document).ready(function () {
   });
 
   // Select all functionality
-  $('#selectAllProcedencia').change(function() {
+  $('#selectAllProcedencia').change(function () {
     const isChecked = $(this).is(':checked');
     $('.procedencia-checkbox').prop('checked', isChecked);
 
     if (isChecked) {
       // Add all options to selection
-      $('.procedencia-checkbox').each(function() {
+      $('.procedencia-checkbox').each(function () {
         const value = $(this).val();
         if (!procedenciasSelecionadas.includes(value)) {
           procedenciasSelecionadas.push(value);
@@ -87,7 +87,7 @@ $(document).ready(function () {
       });
     } else {
       // Remove all options from selection
-      $('.procedencia-checkbox').each(function() {
+      $('.procedencia-checkbox').each(function () {
         const value = $(this).val();
         procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== value);
       });
@@ -99,7 +99,7 @@ $(document).ready(function () {
   });
 
   // Individual checkbox change
-  $(document).on('change', '.procedencia-checkbox', function() {
+  $(document).on('change', '.procedencia-checkbox', function () {
     const procedencia = $(this).val();
     const isChecked = $(this).is(':checked');
 
@@ -123,7 +123,7 @@ $(document).ready(function () {
   });
 
   // Prevent dropdown from closing when clicking inside
-  $('.procedencia-dropdown-menu').click(function(e) {
+  $('.procedencia-dropdown-menu').click(function (e) {
     e.stopPropagation();
   });
 });
@@ -195,7 +195,7 @@ function resetarFiltrosPadrao() {
 
   // Atualizar o menu de procedência para refletir as seleções
   // Obter novamente a lista completa de procedências para atualizar o menu
-  $.get("/tmr/procedencias", function(procedencias) {
+  $.get("/tmr/procedencias", function (procedencias) {
     atualizarMenuProcedenciaCompleto(procedencias);
   });
 
@@ -316,9 +316,9 @@ function sincronizarDadosManually() {
       console.error("Erro na sincronização:", error);
       alert(
         "Erro ao sincronizar dados: " +
-          (xhr.responseJSON && xhr.responseJSON.error
-            ? xhr.responseJSON.error
-            : error)
+        (xhr.responseJSON && xhr.responseJSON.error
+          ? xhr.responseJSON.error
+          : error)
       );
     })
     .always(function () {
@@ -328,13 +328,14 @@ function sincronizarDadosManually() {
 }
 
 function carregarDadosTMR() {
-  // Carregar dados uma vez e atualizar ambas as tabelas
-  $("#tabelaCluster tbody").html(
-    '<tr><td colspan="100" class="text-center p-4">Carregando dados do cluster...</td></tr>'
-  );
-  $("#tabelaRegional tbody").html(
-    '<tr><td colspan="100" class="text-center p-4">Carregando dados da regional...</td></tr>'
-  );
+  // Mostrar animações de carregamento e ocultar tabelas
+  $("#loadingCluster").show();
+  $("#tabelaClusterContainer").hide();
+  $("#loadingRegional").show();
+  $("#tabelaRegionalContainer").hide();
+
+  // Desabilitar botões de filtro durante o carregamento
+  desabilitarBotoesFiltro(true);
 
   // Obter parâmetros de filtro atuais
   const params = obterParametrosFiltro();
@@ -382,23 +383,43 @@ function carregarDadosTMR() {
 
       // Atualizar o gráfico com os dados atuais
       atualizarGraficoCluster(dados, meses);
+
+      // Após carregar os dados, ocultar animações de carregamento e mostrar tabelas
+      $("#loadingCluster").hide();
+      $("#tabelaClusterContainer").show();
+      $("#loadingRegional").hide();
+      $("#tabelaRegionalContainer").show();
+
+      // Reabilitar botões de filtro após o carregamento
+      desabilitarBotoesFiltro(false);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      $("#loadingCluster").hide();
+      $("#tabelaClusterContainer").show();
+      $("#loadingRegional").hide();
+      $("#tabelaRegionalContainer").show();
+
       $("#tabelaCluster tbody").html(
         '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
       );
       $("#tabelaRegional tbody").html(
         '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
       );
+
+      // Reabilitar botões de filtro mesmo em caso de erro
+      desabilitarBotoesFiltro(false);
+
       alert("Erro ao carregar dados de cluster e regional: " + textStatus);
     });
 }
 
 function carregarDadosCluster() {
-  // Mostrar indicador de carregamento
-  $("#tabelaCluster tbody").html(
-    '<tr><td colspan="100" class="text-center p-4">Carregando dados do cluster...</td></tr>'
-  );
+  // Mostrar animação de carregamento e ocultar tabela
+  $("#loadingCluster").show();
+  $("#tabelaClusterContainer").hide();
+
+  // Desabilitar botões de filtro durante o carregamento
+  desabilitarBotoesFiltro(true);
 
   // Obter parâmetros de filtro atuais
   const params = obterParametrosFiltro();
@@ -444,20 +465,36 @@ function carregarDadosCluster() {
 
       // Atualizar o gráfico com os dados atuais
       atualizarGraficoCluster(dados, meses);
+
+      // Após carregar os dados, ocultar animação de carregamento e mostrar tabela
+      $("#loadingCluster").hide();
+      $("#tabelaClusterContainer").show();
+
+      // Reabilitar botões de filtro após o carregamento
+      desabilitarBotoesFiltro(false);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      $("#loadingCluster").hide();
+      $("#tabelaClusterContainer").show();
+
       $("#tabelaCluster tbody").html(
         '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
       );
+
+      // Reabilitar botões de filtro mesmo em caso de erro
+      desabilitarBotoesFiltro(false);
+
       alert("Erro ao carregar dados de cluster: " + textStatus);
     });
 }
 
 function carregarDadosRegional() {
-  // Mostrar indicador de carregamento
-  $("#tabelaRegional tbody").html(
-    '<tr><td colspan="100" class="text-center p-4">Carregando dados da regional...</td></tr>'
-  );
+  // Mostrar animação de carregamento e ocultar tabela
+  $("#loadingRegional").show();
+  $("#tabelaRegionalContainer").hide();
+
+  // Desabilitar botões de filtro durante o carregamento
+  desabilitarBotoesFiltro(true);
 
   // Obter parâmetros de filtro atuais
   const params = obterParametrosFiltro();
@@ -500,11 +537,25 @@ function carregarDadosRegional() {
       atualizarMenuProcedenciaCompleto(procedencias);
 
       atualizarTabelaRegional(dados, meses);
+
+      // Após carregar os dados, ocultar animação de carregamento e mostrar tabela
+      $("#loadingRegional").hide();
+      $("#tabelaRegionalContainer").show();
+
+      // Reabilitar botões de filtro após o carregamento
+      desabilitarBotoesFiltro(false);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      $("#loadingRegional").hide();
+      $("#tabelaRegionalContainer").show();
+
       $("#tabelaRegional tbody").html(
         '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
       );
+
+      // Reabilitar botões de filtro mesmo em caso de erro
+      desabilitarBotoesFiltro(false);
+
       alert("Erro ao carregar dados de regional: " + textStatus);
     });
 }
@@ -581,9 +632,9 @@ function atualizarTabelaGenerico(
       const tmrMedio =
         total > 0
           ? (
-              dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
-              total
-            ).toFixed(2)
+            dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
+            total
+          ).toFixed(2)
           : 0;
 
       // Atualizar totais por mês
@@ -968,6 +1019,14 @@ function criarGraficoCluster(dados, meses) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 20, // Aumentar o espaçamento superior para afastar a legenda do gráfico
+          bottom: 20,
+          left: 10,
+          right: 10
+        }
+      },
       scales: {
         y: {
           type: "linear",
@@ -1027,15 +1086,16 @@ function criarGraficoCluster(dados, meses) {
       },
       plugins: {
         legend: {
-          position: "top", //para afastar mais do gráfico é só colocar 'top' por 'top: 20'
-          align: "start",
+          padding: { top: 20, bottom: 30 },
+          position: "bottom", //tipos de posicao: top, bottom, left, right
+          align: "start", //tipos de alinhamento: start, center, end
           labels: {
             font: {
               size: 12,
               weight: "bold",
             },
             usePointStyle: true,
-            padding: 20,
+            padding: 20
           },
         },
         tooltip: {
@@ -1074,4 +1134,27 @@ function atualizarGraficoCluster(dados, meses) {
   if (dados && meses && meses.length > 0) {
     criarGraficoCluster(dados, meses);
   }
+}
+
+// Função para habilitar/desabilitar botões de filtro
+function desabilitarBotoesFiltro(desabilitar) {
+  const botoesFiltro = [
+    "#filtroGrupoCluster",
+    "#filtroRegionalCluster",
+    "#filtroGrupoRegional",
+    "#filtroProcedenciaClusterBtn",
+    "#aplicarFiltrosCluster",
+    "#aplicarFiltrosRegional"
+  ];
+
+  botoesFiltro.forEach(function (seletor) {
+    $(seletor).prop('disabled', desabilitar);
+
+    // Adicionar ou remover classe visual para indicar estado desabilitado
+    if (desabilitar) {
+      $(seletor).addClass('disabled');
+    } else {
+      $(seletor).removeClass('disabled');
+    }
+  });
 }
