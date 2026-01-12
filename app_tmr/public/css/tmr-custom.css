@@ -249,6 +249,13 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 500;
 }
 
+/* Estilo para o botão do dropdown de tipo de cidade */
+.btn-tipo-cidade-selected {
+    background-color: #e7f1ff;
+    border-color: #86b7fe;
+    font-weight: 500;
+}
+
 /* Estilo para botões desabilitados */
 .btn.disabled {
     opacity: 0.6;
@@ -308,6 +315,41 @@ h1, h2, h3, h4, h5, h6 {
     vertical-align: middle;
 }
 
+/* Estilo para o container de opções de tipo de cidade */
+.tipo-cidade-options-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    background-color: #f9f9f9;
+}
+
+.tipo-cidade-option {
+    padding: 5px 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.tipo-cidade-option:last-child {
+    border-bottom: none;
+}
+
+.tipo-cidade-option:hover {
+    background-color: #e9ecef;
+}
+
+.tipo-cidade-option.selected {
+    background-color: #d4edda;
+    font-weight: bold;
+}
+
+.tipo-cidade-option input[type="checkbox"] {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .procedencia-dropdown-menu {
@@ -319,6 +361,10 @@ h1, h2, h3, h4, h5, h6 {
     }
 
     .procedencia-options-container-grupos {
+        max-height: 200px;
+    }
+
+    .tipo-cidade-options-container {
         max-height: 200px;
     }
 }

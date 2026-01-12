@@ -21,9 +21,10 @@ router.get('/data', tmrAuth, async (req, res) => {
         const grupoFiltro = req.query.grupo || null;
         const regionalFiltro = req.query.regional || null;
         const procedenciaFiltro = req.query.procedencia || null; // Pode ser uma string com valores separados por vírgula
+        const tipoCidadeFiltro = req.query.tipo_cidade || null; // Pode ser uma string com valores separados por vírgula
 
         // Obter dados do banco de dados
-        const dados = await getDadosTMR(grupoFiltro, regionalFiltro, procedenciaFiltro);
+        const dados = await getDadosTMR(grupoFiltro, regionalFiltro, procedenciaFiltro, tipoCidadeFiltro);
         res.json(dados);
     } catch (error) {
         console.error('Erro ao obter dados de TMR:', error);
@@ -94,6 +95,27 @@ router.get('/procedencias', tmrAuth, async (req, res) => {
     }
 });
 
+// Rota para obter todos os tipos de cidade disponíveis
+router.get('/tipos-cidade', tmrAuth, async (req, res) => {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+        try {
+            // Buscar todos os tipos de cidade distintos da tabela reparos_b2b_tmr
+            const [rows] = await connection.execute(
+                'SELECT DISTINCT tipo_cidade FROM reparos_b2b_tmr WHERE tipo_cidade IS NOT NULL AND tipo_cidade != "" ORDER BY tipo_cidade ASC'
+            );
+
+            const tiposCidade = rows.map(row => row.tipo_cidade);
+            res.json(tiposCidade);
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao obter tipos de cidade:', error);
+        res.status(500).json({ error: 'Erro ao obter tipos de cidade' });
+    }
+});
+
 // Rota para sincronização manual de dados
 router.post('/sincronizar', tmrAuth, async (req, res) => {
     try {
@@ -121,7 +143,7 @@ router.get('/perfil-usuario', tmrAuth, (req, res) => {
     });
 });
 
-async function getDadosTMR(grupoFiltro = null, regionalFiltro = null, procedenciaFiltro = null) {
+async function getDadosTMR(grupoFiltro = null, regionalFiltro = null, procedenciaFiltro = null, tipoCidadeFiltro = null) {
     // Esta função buscará os dados da tabela reparos_b2b_tmr
     const connection = await db.mysqlPool.getConnection();
     try {
@@ -141,10 +163,10 @@ async function getDadosTMR(grupoFiltro = null, regionalFiltro = null, procedenci
         const dataInicioStr = primeiroDiaTresMesesAtras.toISOString().split('T')[0];
         const dataFinalStr = dataFinal.toISOString().split('T')[0];
 
-        let query = `SELECT * FROM reparos_b2b_tmr WHERE tqi_abertura >= '${dataInicioStr}' AND tqi_abertura <= '${dataFinalStr}'`;
+        let query = `SELECT * FROM reparos_b2b_tmr WHERE tqi_abertura >= ? AND tqi_abertura <= ?`;
 
         // Adicionar filtros se especificados
-        let params = [];
+        let params = [dataInicioStr, dataFinalStr];
         if (grupoFiltro) {
             query += ' AND grp_nome = ?';
             params.push(grupoFiltro);
@@ -165,6 +187,19 @@ async function getDadosTMR(grupoFiltro = null, regionalFiltro = null, procedenci
             const placeholders = procedenciasArray.map(() => '?').join(',');
             query += ` AND procedencia IN (${placeholders})`;
             params = params.concat(procedenciasArray);
+        }
+
+        // Adicionar filtro por tipo de cidade
+        if (tipoCidadeFiltro) {
+            // Converter a string de tipos de cidade em array
+            const tiposCidadeArray = Array.isArray(tipoCidadeFiltro)
+                ? tipoCidadeFiltro
+                : tipoCidadeFiltro.split(',');
+
+            // Criar placeholders para cada tipo de cidade
+            const placeholders = tiposCidadeArray.map(() => '?').join(',');
+            query += ` AND tipo_cidade IN (${placeholders})`;
+            params = params.concat(tiposCidadeArray);
         }
 
         query += ' ORDER BY tqi_abertura DESC';

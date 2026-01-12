@@ -4,6 +4,9 @@
 let procedenciasSelecionadas = ["proativo", "reativo"]; // Começa com os itens padrão selecionados
 const procedenciasPadrao = ["proativo", "reativo"]; // Referência para os itens padrão
 
+// Variáveis para armazenar os tipos de cidade selecionados
+let tiposCidadeSelecionados = []; // Começa sem itens selecionados
+
 $(document).ready(function () {
   // Carregar dados iniciais e atualizar cabeçalhos
   carregarDadosTMR();
@@ -202,6 +205,60 @@ $(document).ready(function () {
   $('.procedencia-dropdown-menu').click(function (e) {
     e.stopPropagation();
   });
+
+  // Select all functionality for tipo cidade
+  $('#selectAllTipoCidade').change(function () {
+    const isChecked = $(this).is(':checked');
+    $('.tipo-cidade-checkbox').prop('checked', isChecked);
+
+    if (isChecked) {
+      // Add all options to selection
+      $('.tipo-cidade-checkbox').each(function () {
+        const value = $(this).val();
+        if (!tiposCidadeSelecionados.includes(value)) {
+          tiposCidadeSelecionados.push(value);
+        }
+      });
+    } else {
+      // Remove all options from selection
+      $('.tipo-cidade-checkbox').each(function () {
+        const value = $(this).val();
+        tiposCidadeSelecionados = tiposCidadeSelecionados.filter(p => p !== value);
+      });
+    }
+
+    // Update UI
+    $('.tipo-cidade-option').toggleClass('selected', isChecked);
+    atualizarRotuloTipoCidade();
+  });
+
+  // Individual checkbox change for tipo cidade
+  $(document).on('change', '.tipo-cidade-checkbox', function () {
+    const tipoCidade = $(this).val();
+    const isChecked = $(this).is(':checked');
+
+    if (isChecked) {
+      if (!tiposCidadeSelecionados.includes(tipoCidade)) {
+        tiposCidadeSelecionados.push(tipoCidade);
+      }
+      $(this).closest('.tipo-cidade-option').addClass('selected');
+    } else {
+      tiposCidadeSelecionados = tiposCidadeSelecionados.filter(p => p !== tipoCidade);
+      $(this).closest('.tipo-cidade-option').removeClass('selected');
+    }
+
+    // Update "Select All" checkbox state
+    const allCheckboxes = $('.tipo-cidade-checkbox');
+    const checkedCheckboxes = allCheckboxes.filter(':checked');
+    $('#selectAllTipoCidade').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+
+    atualizarRotuloTipoCidade();
+  });
+
+  // Prevent dropdown from closing when clicking inside
+  $('.tipo-cidade-dropdown-menu').click(function (e) {
+    e.stopPropagation();
+  });
 });
 
 // Função para atualizar o rótulo do botão de procedência para a aba de grupos
@@ -258,6 +315,34 @@ function atualizarRotuloProcedencia() {
   const allCheckboxes = $('.procedencia-checkbox');
   const checkedCheckboxes = allCheckboxes.filter(':checked');
   $('#selectAllProcedencia').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+}
+
+// Função para atualizar o rótulo do botão de tipo de cidade
+function atualizarRotuloTipoCidade() {
+  if (tiposCidadeSelecionados.length === 0) {
+    $("#filtroTipoCidadeClusterLabel").text("Tipo de Cidade");
+    $("#filtroTipoCidadeClusterBtn").removeClass("btn-tipo-cidade-selected");
+  } else if (tiposCidadeSelecionados.length === 1) {
+    $("#filtroTipoCidadeClusterLabel").text(tiposCidadeSelecionados[0]);
+    $("#filtroTipoCidadeClusterBtn").addClass("btn-tipo-cidade-selected");
+  } else {
+    // Mostrar os nomes dos tipos de cidade selecionados (limitado a 2 para evitar texto muito longo)
+    if (tiposCidadeSelecionados.length <= 2) {
+      $("#filtroTipoCidadeClusterLabel").text(
+        tiposCidadeSelecionados.join(", ")
+      );
+    } else {
+      $("#filtroTipoCidadeClusterLabel").text(
+        `${tiposCidadeSelecionados.length} selecionados`
+      );
+    }
+    $("#filtroTipoCidadeClusterBtn").addClass("btn-tipo-cidade-selected");
+  }
+
+  // Atualizar o estado do checkbox "Selecionar Todos"
+  const allCheckboxes = $('.tipo-cidade-checkbox');
+  const checkedCheckboxes = allCheckboxes.filter(':checked');
+  $('#selectAllTipoCidade').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
 }
 
 // Função para carregar dados da aba de grupos
@@ -557,6 +642,12 @@ function obterParametrosFiltro() {
     params.procedencia = procedenciasSelecionadas.join(",");
   }
 
+  // Usar os tipos de cidade selecionados apenas na aba de cluster
+  if (tiposCidadeSelecionados && tiposCidadeSelecionados.length > 0) {
+    // Converter array em string separada por vírgulas
+    params.tipo_cidade = tiposCidadeSelecionados.join(",");
+  }
+
   return params;
 }
 
@@ -570,14 +661,24 @@ function resetarFiltrosPadrao() {
   // Resetar as procedências selecionadas para o padrão
   procedenciasSelecionadas = [...procedenciasPadrao];
 
+  // Resetar os tipos de cidade selecionados
+  tiposCidadeSelecionados = [];
+
   // Atualizar o menu de procedência para refletir as seleções
   // Obter novamente a lista completa de procedências para atualizar o menu
   $.get("/tmr/procedencias", function (procedencias) {
     atualizarMenuProcedenciaCompleto(procedencias);
   });
 
-  // Atualizar o rótulo do botão
+  // Atualizar o menu de tipo de cidade para refletir as seleções
+  // Obter novamente a lista completa de tipos de cidade para atualizar o menu
+  $.get("/tmr/tipos-cidade", function (tiposCidade) {
+    atualizarMenuTipoCidadeCompleto(tiposCidade);
+  });
+
+  // Atualizar os rótulos dos botões
   atualizarRotuloProcedencia();
+  atualizarRotuloTipoCidade();
 }
 
 // Função para atualizar os cabeçalhos das tabelas com os meses dos dados
@@ -717,23 +818,26 @@ function carregarDadosTMR() {
   // Obter parâmetros de filtro atuais
   const params = obterParametrosFiltro();
 
-  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
+  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais, procedências e tipos de cidade
   $.when(
     $.get("/tmr/data", params),
     $.get("/tmr/grupos-lista"),
     $.get("/tmr/regionais"),
-    $.get("/tmr/procedencias")
+    $.get("/tmr/procedencias"),
+    $.get("/tmr/tipos-cidade")
   )
     .done(function (
       dataResponse,
       gruposResponse,
       regionaisResponse,
-      procedenciasResponse
+      procedenciasResponse,
+      tiposCidadeResponse
     ) {
       const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
       const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
       const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
       const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
+      const tiposCidade = tiposCidadeResponse[0]; // Quinto resultado é a resposta da requisição de tipos de cidade
 
       // Obter os últimos 3 meses únicos dos dados recebidos
       const meses = obterUltimos3MesesDosDados(dados);
@@ -753,6 +857,9 @@ function carregarDadosTMR() {
 
       // Preencher o menu de procedência com a lista completa de procedências
       atualizarMenuProcedenciaCompleto(procedencias);
+
+      // Preencher o menu de tipo de cidade com a lista completa de tipos de cidade
+      atualizarMenuTipoCidadeCompleto(tiposCidade);
 
       // Atualizar ambas as tabelas com os dados já filtrados no backend
       atualizarTabelaCluster(dados, meses);
@@ -801,23 +908,26 @@ function carregarDadosCluster() {
   // Obter parâmetros de filtro atuais
   const params = obterParametrosFiltro();
 
-  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
+  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais, procedências e tipos de cidade
   $.when(
     $.get("/tmr/data", params),
     $.get("/tmr/grupos-lista"),
     $.get("/tmr/regionais"),
-    $.get("/tmr/procedencias")
+    $.get("/tmr/procedencias"),
+    $.get("/tmr/tipos-cidade")
   )
     .done(function (
       dataResponse,
       gruposResponse,
       regionaisResponse,
-      procedenciasResponse
+      procedenciasResponse,
+      tiposCidadeResponse
     ) {
       const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
       const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
       const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
       const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
+      const tiposCidade = tiposCidadeResponse[0]; // Quinto resultado é a resposta da requisição de tipos de cidade
 
       // Obter os últimos 3 meses únicos dos dados recebidos
       const meses = obterUltimos3MesesDosDados(dados);
@@ -837,6 +947,9 @@ function carregarDadosCluster() {
 
       // Preencher o menu de procedência com a lista completa de procedências
       atualizarMenuProcedenciaCompleto(procedencias);
+
+      // Preencher o menu de tipo de cidade com a lista completa de tipos de cidade
+      atualizarMenuTipoCidadeCompleto(tiposCidade);
 
       atualizarTabelaCluster(dados, meses);
 
@@ -876,23 +989,26 @@ function carregarDadosRegional() {
   // Obter parâmetros de filtro atuais
   const params = obterParametrosFiltro();
 
-  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais e procedências
+  // Fazer as requisições simultaneamente: dados filtrados, lista completa de grupos, regionais, procedências e tipos de cidade
   $.when(
     $.get("/tmr/data", params),
     $.get("/tmr/grupos-lista"),
     $.get("/tmr/regionais"),
-    $.get("/tmr/procedencias")
+    $.get("/tmr/procedencias"),
+    $.get("/tmr/tipos-cidade")
   )
     .done(function (
       dataResponse,
       gruposResponse,
       regionaisResponse,
-      procedenciasResponse
+      procedenciasResponse,
+      tiposCidadeResponse
     ) {
       const dados = dataResponse[0]; // Primeiro resultado é a resposta da requisição de dados
       const grupos = gruposResponse[0]; // Segundo resultado é a resposta da requisição de grupos
       const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
       const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
+      const tiposCidade = tiposCidadeResponse[0]; // Quinto resultado é a resposta da requisição de tipos de cidade
 
       // Obter os últimos 3 meses únicos dos dados recebidos (já feito na função de cluster)
       const meses = obterUltimos3MesesDosDados(dados);
@@ -912,6 +1028,9 @@ function carregarDadosRegional() {
 
       // Preencher o menu de procedência com a lista completa de procedências
       atualizarMenuProcedenciaCompleto(procedencias);
+
+      // Preencher o menu de tipo de cidade com a lista completa de tipos de cidade
+      atualizarMenuTipoCidadeCompleto(tiposCidade);
 
       atualizarTabelaRegional(dados, meses);
 
@@ -1291,6 +1410,39 @@ function atualizarMenuProcedenciaCompleto(procedencias) {
   atualizarRotuloProcedencia();
 }
 
+// Função para atualizar o menu de tipo de cidade com a lista completa
+function atualizarMenuTipoCidadeCompleto(tiposCidade) {
+  // Ordenar os tipos de cidade alfabeticamente
+  tiposCidade.sort();
+
+  // Limpar o container de opções
+  const container = $('.tipo-cidade-options-container');
+  container.empty();
+
+  // Adicionar novos itens de tipo de cidade
+  tiposCidade.forEach((tipoCidade) => {
+    const isSelected = tiposCidadeSelecionados.includes(tipoCidade);
+
+    const optionElement = $(`
+      <div class="tipo-cidade-option ${isSelected ? 'selected' : ''}">
+        <div class="form-check">
+          <input class="form-check-input tipo-cidade-checkbox" type="checkbox"
+                 value="${tipoCidade}" id="tipo_cidade_${tipoCidade}"
+                 ${isSelected ? 'checked' : ''}>
+          <label class="form-check-label" for="tipo_cidade_${tipoCidade}">
+            ${tipoCidade}
+          </label>
+        </div>
+      </div>
+    `);
+
+    container.append(optionElement);
+  });
+
+  // Atualizar o rótulo do botão
+  atualizarRotuloTipoCidade();
+}
+
 // Função para criar o gráfico de total de reparos por mês na visão por cluster
 function criarGraficoCluster(dados, meses) {
   // Calcular totais por mês
@@ -1528,6 +1680,7 @@ function desabilitarBotoesFiltro(desabilitar) {
     "#filtroRegionalCluster",
     "#filtroGrupoRegional",
     "#filtroProcedenciaClusterBtn",
+    "#filtroTipoCidadeClusterBtn",
     "#aplicarFiltrosCluster",
     "#aplicarFiltrosRegional"
   ];

@@ -138,6 +138,32 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="dropdown me-2" style="display: inline-block;">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                                            id="filtroTipoCidadeClusterBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span id="filtroTipoCidadeClusterLabel">Tipo de Cidade</span>
+                                    </button>
+                                    <div class="dropdown-menu tipo-cidade-dropdown-menu" id="filtroTipoCidadeClusterMenu"
+                                         style="width: 300px; padding: 10px;">
+
+                                        <!-- Select All Checkbox -->
+                                        <div class="mb-2 px-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="selectAllTipoCidade">
+                                                <label class="form-check-label" for="selectAllTipoCidade">
+                                                    <strong>Selecionar Todos</strong>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <hr class="my-2">
+
+                                        <!-- Scrollable Container for Options -->
+                                        <div class="tipo-cidade-options-container" style="max-height: 300px; overflow-y: auto;">
+                                            <!-- Options will be populated dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
                                 <button class="btn btn-sm btn-outline-primary me-2" id="aplicarFiltrosCluster">
                                     <i class="fas fa-filter"></i> Aplicar Filtros
                                 </button>
