@@ -51,7 +51,7 @@ async function getDadosGrupos(grupoFiltro = null, regionalFiltro = null, procede
         // Corrigido para calcular o mês com base na tqi_abertura e agrupar por grupo+mês
         let query = `
             SELECT
-                r.grp_nome,
+                r.grupo_agrupado,
                 DATE_FORMAT(r.tqi_abertura, '%M %Y') as mes_nome_formatado,
                 COUNT(DISTINCT r.tqi_codigo) as qtde_reparos,
                 CASE
@@ -61,15 +61,15 @@ async function getDadosGrupos(grupoFiltro = null, regionalFiltro = null, procede
                 END as tmr_medio
             FROM reparos_b2b_tmr r
             WHERE r.tqi_abertura >= ? AND r.tqi_abertura <= ?
-              AND r.grp_nome IS NOT NULL
-              AND r.grp_nome != ''
+              AND r.grupo_agrupado IS NOT NULL
+              AND r.grupo_agrupado != ''
               AND r.tqi_abertura IS NOT NULL
         `;
 
         // Adicionar filtros se especificados
         let params = [dataInicioStr, dataFinalStr];
         if (grupoFiltro) {
-            query += ' AND r.grp_nome = ?';
+            query += ' AND r.grupo_agrupado = ?';
             params.push(grupoFiltro);
         }
         if (regionalFiltro) {
@@ -90,7 +90,7 @@ async function getDadosGrupos(grupoFiltro = null, regionalFiltro = null, procede
             params = params.concat(procedenciasArray);
         }
 
-        query += ' GROUP BY r.grp_nome, DATE_FORMAT(r.tqi_abertura, "%Y-%m") ORDER BY r.grp_nome, r.tqi_abertura';
+        query += ' GROUP BY r.grupo_agrupado, DATE_FORMAT(r.tqi_abertura, "%Y-%m") ORDER BY r.grupo_agrupado, r.tqi_abertura';
 
         // Buscar dados dos últimos 3 meses com base na tqi_abertura
         const [rows] = await connection.execute(query, params);
@@ -123,7 +123,7 @@ async function getDadosGrupos(grupoFiltro = null, regionalFiltro = null, procede
                 const mesPortugues = mesesPortugues[mesIngles] || mesIngles;
                 const mesFormatado = `${mesPortugues} ${ano}`;
 
-                const grupo = row.grp_nome;
+                const grupo = row.grupo_agrupado;
 
                 if (!dadosPorGrupo[grupo]) {
                     dadosPorGrupo[grupo] = {

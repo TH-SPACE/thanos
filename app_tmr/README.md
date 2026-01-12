@@ -18,7 +18,7 @@ Sistema web para calcular o tempo médio dos reparos B2B, com interface para vis
 - Possibilidade de sincronização manual através da interface
 
 ### Página Principal
-- Filtro por Grupo: filtro por grupo (`grp_nome`) nas abas de Cluster e Regional
+- Filtro por Grupo: filtro por grupo (`grupo_agrupado`) nas abas de Cluster e Regional
 - Filtro por Regional: filtro por regional disponível na aba de Cluster
 - Filtro por Procedência: multisseleção de procedências (reativo, proativo, etc.) disponível na aba de Cluster
 - Página com abas: Primeira aba com visão por Cluster, segunda por Regional
@@ -28,7 +28,7 @@ Sistema web para calcular o tempo médio dos reparos B2B, com interface para vis
 - Gráficos interativos: Visualização de total de reparos e TMR médio por mês na visão por cluster
 
 ### Funcionalidades Recentes
-- **Filtro por Grupo**: Adicionado filtro por grupo (`grp_nome`) nas abas de Cluster e Regional. O filtro é aplicado no backend antes do agrupamento por `tqi_codigo`.
+- **Filtro por Grupo**: Adicionado filtro por grupo (`grupo_agrupado`) nas abas de Cluster e Regional. O filtro é aplicado no backend antes do agrupamento por `tqi_codigo`.
 - **Filtro por Regional**: Implementado filtro por regional na aba de Cluster.
 - **Filtro por Procedência**: Implementado filtro multisseleção por procedência na aba de Cluster.
 - **Cálculo por Mês**: Corrigido cálculo do TMR para considerar apenas o tempo do reparo no mês específico, não o tempo acumulado.
@@ -124,7 +124,7 @@ Execute o script de criação da tabela `reparos_b2b_tmr` no banco MariaDB. A es
 - nom_cluster
 - nome_cliente
 - grp_codigo
-- grp_nome
+- grupo_agrupado (preenchido automaticamente com base em regras definidas no arquivo grupo_agrupado_mapping.json)
 - grupo_baixa
 - tqi_diagnostico
 - dgn_descricao

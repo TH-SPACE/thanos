@@ -39,10 +39,10 @@ router.get('/grupos-lista', tmrAuth, async (req, res) => {
         try {
             // Buscar todos os grupos distintos da tabela reparos_b2b_tmr
             const [rows] = await connection.execute(
-                'SELECT DISTINCT grp_nome FROM reparos_b2b_tmr WHERE grp_nome IS NOT NULL AND grp_nome != "" ORDER BY grp_nome ASC'
+                'SELECT DISTINCT grupo_agrupado FROM reparos_b2b_tmr WHERE grupo_agrupado IS NOT NULL AND grupo_agrupado != "" ORDER BY grupo_agrupado ASC'
             );
 
-            const grupos = rows.map(row => row.grp_nome);
+            const grupos = rows.map(row => row.grupo_agrupado);
             res.json(grupos);
         } finally {
             connection.release();
@@ -168,7 +168,7 @@ async function getDadosTMR(grupoFiltro = null, regionalFiltro = null, procedenci
         // Adicionar filtros se especificados
         let params = [dataInicioStr, dataFinalStr];
         if (grupoFiltro) {
-            query += ' AND grp_nome = ?';
+            query += ' AND grupo_agrupado = ?';
             params.push(grupoFiltro);
         }
         if (regionalFiltro) {
