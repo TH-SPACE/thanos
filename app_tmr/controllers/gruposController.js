@@ -54,7 +54,11 @@ async function getDadosGrupos(grupoFiltro = null, regionalFiltro = null, procede
                 r.grp_nome,
                 DATE_FORMAT(r.tqi_abertura, '%M %Y') as mes_nome_formatado,
                 COUNT(DISTINCT r.tqi_codigo) as qtde_reparos,
-                COALESCE(AVG(r.tmr_total), 0) as tmr_medio
+                CASE
+                    WHEN COUNT(DISTINCT r.tqi_codigo) > 0 THEN
+                        COALESCE(SUM(r.tmr_total) / COUNT(DISTINCT r.tqi_codigo), 0)
+                    ELSE 0
+                END as tmr_medio
             FROM reparos_b2b_tmr r
             WHERE r.tqi_abertura >= ? AND r.tqi_abertura <= ?
               AND r.grp_nome IS NOT NULL
