@@ -350,6 +350,36 @@ h1, h2, h3, h4, h5, h6 {
     vertical-align: middle;
 }
 
+/* Estilo para o cabeçalho da regional na tabela regional */
+.regional-header {
+    background-color: #e9ecef;
+    font-size: 1.1em;
+    text-align: center;
+    padding: 0.75rem 0 !important;
+}
+
+/* Estilo para distinguir CAPITAL e INTERIOR - com alta especificidade para sobrepor outros estilos */
+#tabelaRegional tbody tr.tipo-cidade-row td {
+    font-weight: 500 !important; /* Menos intensa que bold */
+    font-size: 0.8em !important; /* Mais pequena que o padrão da tabela (0.85em) */
+    background-color: #f8f9fa !important;
+}
+
+/* Estilo específico para a célula de tipo de cidade (onde aparece "CAPITAL" ou "INTERIOR") */
+#tabelaRegional tbody tr.tipo-cidade-row td:first-child {
+    text-align: left !important;
+    padding-left: 2rem !important;
+    border-left: 2px solid #dee2e6 !important; /* Linha sutil para indicar que são subníveis */
+}
+
+/* Estilo para a linha de total de cada regional */
+.regional-total {
+    font-weight: bold;
+    background-color: #f1f1f1;
+    text-align: left;
+    padding-left: 1rem !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .procedencia-dropdown-menu {

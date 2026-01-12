@@ -1302,14 +1302,220 @@ function atualizarTabelaCluster(dados, meses) {
 }
 
 function atualizarTabelaRegional(dados, meses) {
-  atualizarTabelaGenerico(
+  // Usar a nova função de agrupamento para regional e tipo de cidade
+  atualizarTabelaRegionalComTipoCidade(
     dados,
-    meses,
-    "#tabelaRegional tbody",
-    "totalRegional",
-    agruparPorRegional,
-    "regional"
+    meses
   );
+}
+
+// Função específica para atualizar a tabela regional com distinção entre CAPITAL e INTERIOR
+function atualizarTabelaRegionalComTipoCidade(dados, meses) {
+  // Agrupar dados por regional e tipo de cidade
+  const dadosAgrupados = agruparPorRegionalETipoCidade(dados);
+
+  // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
+  let tableHtml = "";
+  let totalCells = '<td class="fw-bold">TOTAL</td>'; // Célula do total geral para a coluna de agrupamento
+
+  // Calcular totais por mês
+  const totaisPorMes = {};
+
+  // Inicializar os meses
+  meses.forEach((mes) => {
+    totaisPorMes[mes] = {
+      dentroPrazo: 0,
+      foraPrazo: 0,
+      total: 0,
+      tmrTotal: 0,
+      tmrCount: 0,
+    };
+  });
+
+  // Preencher a tabela com os dados
+  for (const regional in dadosAgrupados) {
+    const dadosRegional = dadosAgrupados[regional];
+
+    // Calcular totais por mês para esta regional específica
+    const totaisRegionalPorMes = {};
+    meses.forEach((mes) => {
+      totaisRegionalPorMes[mes] = {
+        dentroPrazo: 0,
+        foraPrazo: 0,
+        total: 0,
+        tmrTotal: 0,
+        tmrCount: 0,
+      };
+    });
+
+    // Calcular métricas para cada mês individualmente para a regional completa (somando CAPITAL e INTERIOR)
+    const dadosRegionalCompleta = [...dadosRegional['CAPITAL'], ...dadosRegional['INTERIOR']];
+
+    // Primeiro, vamos organizar os dados por mês para a regional completa
+    const dadosPorMesRegional = {};
+    meses.forEach((mes) => {
+      dadosPorMesRegional[mes] = [];
+    });
+
+    dadosRegionalCompleta.forEach((item) => {
+      const mes = item.mes;
+      if (meses.includes(mes)) {
+        dadosPorMesRegional[mes].push(item);
+      }
+    });
+
+    // Calcular as métricas para a regional completa
+    let allMesesCellsRegional = "";
+    for (const mes of meses) {
+      const dadosMes = dadosPorMesRegional[mes] || [];
+
+      // Calcular métricas para este mês específico
+      const dentroPrazo = dadosMes.filter(
+        (item) => item.tmr_total !== null && parseFloat(item.tmr_total) < 4
+      ).length;
+      const foraPrazo = dadosMes.filter(
+        (item) => item.tmr_total !== null && parseFloat(item.tmr_total) >= 4
+      ).length;
+      const total = dadosMes.length;
+      const percDentroPrazo =
+        total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+      const tmrMedio =
+        total > 0
+          ? (
+            dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
+            total
+          ).toFixed(2)
+          : 0;
+
+      // Atualizar totais por mês para esta regional
+      totaisRegionalPorMes[mes].dentroPrazo += dentroPrazo;
+      totaisRegionalPorMes[mes].foraPrazo += foraPrazo;
+      totaisRegionalPorMes[mes].total += total;
+      totaisRegionalPorMes[mes].tmrTotal += dadosMes.reduce(
+        (sum, item) => sum + (item.tmr_total || 0),
+        0
+      );
+      totaisRegionalPorMes[mes].tmrCount += dadosMes.length;
+
+      // Atualizar totais por mês para o total geral
+      totaisPorMes[mes].dentroPrazo += dentroPrazo;
+      totaisPorMes[mes].foraPrazo += foraPrazo;
+      totaisPorMes[mes].total += total;
+      totaisPorMes[mes].tmrTotal += dadosMes.reduce(
+        (sum, item) => sum + (item.tmr_total || 0),
+        0
+      );
+      totaisPorMes[mes].tmrCount += dadosMes.length;
+
+      // Adicionar as 5 colunas para este mês
+      allMesesCellsRegional += `
+                <td class="text-center value-within">${dentroPrazo}</td>
+                <td class="text-center value-over">${foraPrazo}</td>
+                <td class="text-center perc-dentro-prazo">${percDentroPrazo}%</td>
+                <td class="text-center">${total}</td>
+                <td class="text-center tmr-value">${tmrMedio}h</td>
+            `;
+    }
+
+    // Adicionar linha com os valores totais da regional
+    tableHtml += `
+            <tr>
+                <td class="fw-bold">${regional}</td>
+                ${allMesesCellsRegional}
+            </tr>
+        `;
+
+    // Adicionar linhas para CAPITAL e INTERIOR abaixo da linha principal da regional
+    for (const tipoCidade of ['CAPITAL', 'INTERIOR']) {
+      const dadosTipoCidade = dadosRegional[tipoCidade] || [];
+
+      // Calcular métricas para cada mês individualmente
+      // Primeiro, vamos organizar os dados por mês
+      const dadosPorMes = {};
+
+      // Inicializar os meses
+      meses.forEach((mes) => {
+        dadosPorMes[mes] = [];
+      });
+
+      // Agrupar os dados por mês
+      dadosTipoCidade.forEach((item) => {
+        // Usar o mês calculado no backend
+        const mes = item.mes;
+
+        // Se o mês fizer parte dos meses encontrados, adicionar ao array
+        if (meses.includes(mes)) {
+          dadosPorMes[mes].push(item);
+        }
+      });
+
+      // Para cada mês, calcular as métricas
+      let allMesesCells = "";
+      for (const mes of meses) {
+        const dadosMes = dadosPorMes[mes] || [];
+
+        // Calcular métricas para este mês específico
+        const dentroPrazo = dadosMes.filter(
+          (item) => item.tmr_total !== null && parseFloat(item.tmr_total) < 4
+        ).length;
+        const foraPrazo = dadosMes.filter(
+          (item) => item.tmr_total !== null && parseFloat(item.tmr_total) >= 4
+        ).length;
+        const total = dadosMes.length;
+        const percDentroPrazo =
+          total > 0 ? ((dentroPrazo / total) * 100).toFixed(2) : 0;
+        const tmrMedio =
+          total > 0
+            ? (
+              dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
+              total
+            ).toFixed(2)
+            : 0;
+
+        // Adicionar as 5 colunas para este mês
+        allMesesCells += `
+                  <td class="text-center value-within">${dentroPrazo}</td>
+                  <td class="text-center value-over">${foraPrazo}</td>
+                  <td class="text-center perc-dentro-prazo">${percDentroPrazo}%</td>
+                  <td class="text-center">${total}</td>
+                  <td class="text-center tmr-value">${tmrMedio}h</td>
+              `;
+      }
+
+      tableHtml += `
+              <tr class="tipo-cidade-row">
+                  <td class="fw-bold tipo-cidade">${tipoCidade}</td>
+                  ${allMesesCells}
+              </tr>
+          `;
+    }
+  }
+
+  // Calcular e adicionar linha de totais geral
+  for (const mes of meses) {
+    const mesTotais = totaisPorMes[mes];
+    const tmrMedioTotal =
+      mesTotais.tmrCount > 0
+        ? (mesTotais.tmrTotal / mesTotais.tmrCount).toFixed(2)
+        : 0;
+    const percDentroPrazoTotal =
+      mesTotais.total > 0
+        ? ((mesTotais.dentroPrazo / mesTotais.total) * 100).toFixed(2)
+        : 0;
+
+    totalCells += `
+            <td class="text-center value-within fw-bold">${mesTotais.dentroPrazo}</td>
+            <td class="text-center value-over fw-bold">${mesTotais.foraPrazo}</td>
+            <td class="text-center perc-dentro-prazo fw-bold">${percDentroPrazoTotal}%</td>
+            <td class="text-center fw-bold">${mesTotais.total}</td>
+            <td class="text-center tmr-value fw-bold">${tmrMedioTotal}h</td>
+        `;
+  }
+
+  tableHtml += `<tr id="totalRegional" class="table-info">${totalCells}</tr>`;
+
+  // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
+  $("#tabelaRegional tbody").html(tableHtml);
 }
 
 function agruparPorCluster(dados) {
@@ -1347,6 +1553,34 @@ function agruparPorRegional(dados) {
     }
 
     agrupado[regional].push(item);
+  });
+
+  return agrupado;
+}
+
+function agruparPorRegionalETipoCidade(dados) {
+  const agrupado = {};
+
+  dados.forEach((item) => {
+    const regional = item.regional || "OUTRA";
+
+    // Garantir que a regional exista no objeto
+    if (!agrupado[regional]) {
+      agrupado[regional] = {
+        CAPITAL: [],
+        INTERIOR: []
+      };
+    }
+
+    // Determinar o tipo de cidade (padronizando possíveis variações)
+    let tipoCidade = item.tipo_cidade ? item.tipo_cidade.toUpperCase() : '';
+    if (tipoCidade === 'CAPITAL' || tipoCidade === 'INTERIOR') {
+      agrupado[regional][tipoCidade].push(item);
+    } else {
+      // Se não for nem CAPITAL nem INTERIOR, adicionar a ambos para não perder dados
+      agrupado[regional]['CAPITAL'].push(item);
+      agrupado[regional]['INTERIOR'].push(item);
+    }
   });
 
   return agrupado;
