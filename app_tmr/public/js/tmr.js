@@ -56,7 +56,7 @@ $(document).ready(function () {
   // Botão de aplicar filtros na aba de regional
   $("#aplicarFiltrosRegional").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $('#filtroProcedenciaRegionalMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     carregarDadosRegional();
   });
 
@@ -79,6 +79,24 @@ $(document).ready(function () {
     // Fechar o dropdown de procedência
     $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
     sincronizarDadosManually();
+  });
+
+  // Botão de resetar filtros na aba de cluster
+  $("#resetarFiltrosCluster").click(function () {
+    resetarFiltrosPadrao();
+    carregarDadosCluster();
+  });
+
+  // Botão de resetar filtros na aba de regional
+  $("#resetarFiltrosRegional").click(function () {
+    resetarFiltrosPadrao();
+    carregarDadosRegional();
+  });
+
+  // Botão de resetar filtros na aba de grupos
+  $("#resetarFiltrosGrupos").click(function () {
+    resetarFiltrosPadrao();
+    carregarDadosGrupos();
   });
 
   // Filtro de grupo para cluster - atualiza visualmente mas não carrega dados até o botão ser pressionado
@@ -153,6 +171,32 @@ $(document).ready(function () {
     atualizarRotuloProcedencia();
   });
 
+  // Select all functionality for regional tab
+  $('#selectAllProcedenciaRegional').change(function () {
+    const isChecked = $(this).is(':checked');
+    $('.procedencia-checkbox-regional').prop('checked', isChecked);
+
+    if (isChecked) {
+      // Add all options to selection
+      $('.procedencia-checkbox-regional').each(function () {
+        const value = $(this).val();
+        if (!procedenciasSelecionadas.includes(value)) {
+          procedenciasSelecionadas.push(value);
+        }
+      });
+    } else {
+      // Remove all options from selection
+      $('.procedencia-checkbox-regional').each(function () {
+        const value = $(this).val();
+        procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== value);
+      });
+    }
+
+    // Update UI
+    $('.procedencia-option-regional').toggleClass('selected', isChecked);
+    atualizarRotuloProcedenciaRegional();
+  });
+
   // Individual checkbox change for grupos tab
   $(document).on('change', '.procedencia-checkbox-grupos', function () {
     const procedencia = $(this).val();
@@ -199,6 +243,30 @@ $(document).ready(function () {
     $('#selectAllProcedencia').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
 
     atualizarRotuloProcedencia();
+  });
+
+  // Individual checkbox change for regional tab
+  $(document).on('change', '.procedencia-checkbox-regional', function () {
+    const procedencia = $(this).val();
+    const isChecked = $(this).is(':checked');
+
+    if (isChecked) {
+      if (!procedenciasSelecionadas.includes(procedencia)) {
+        procedenciasSelecionadas.push(procedencia);
+      }
+      $(this).closest('.procedencia-option-regional').addClass('selected');
+    } else {
+      // Allow unchecking default options
+      procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== procedencia);
+      $(this).closest('.procedencia-option-regional').removeClass('selected');
+    }
+
+    // Update "Select All" checkbox state
+    const allCheckboxes = $('.procedencia-checkbox-regional');
+    const checkedCheckboxes = allCheckboxes.filter(':checked');
+    $('#selectAllProcedenciaRegional').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+
+    atualizarRotuloProcedenciaRegional();
   });
 
   // Prevent dropdown from closing when clicking inside
@@ -315,6 +383,34 @@ function atualizarRotuloProcedencia() {
   const allCheckboxes = $('.procedencia-checkbox');
   const checkedCheckboxes = allCheckboxes.filter(':checked');
   $('#selectAllProcedencia').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+}
+
+// Função para atualizar o rótulo do botão de procedência para a aba de regional
+function atualizarRotuloProcedenciaRegional() {
+  if (procedenciasSelecionadas.length === 0) {
+    $("#filtroProcedenciaRegionalLabel").text("Procedência");
+    $("#filtroProcedenciaRegionalBtn").removeClass("btn-procedencia-selected");
+  } else if (procedenciasSelecionadas.length === 1) {
+    $("#filtroProcedenciaRegionalLabel").text(procedenciasSelecionadas[0]);
+    $("#filtroProcedenciaRegionalBtn").addClass("btn-procedencia-selected");
+  } else {
+    // Mostrar os nomes das procedências selecionadas (limitado a 2 para evitar texto muito longo)
+    if (procedenciasSelecionadas.length <= 2) {
+      $("#filtroProcedenciaRegionalLabel").text(
+        procedenciasSelecionadas.join(", ")
+      );
+    } else {
+      $("#filtroProcedenciaRegionalLabel").text(
+        `${procedenciasSelecionadas.length} selecionadas`
+      );
+    }
+    $("#filtroProcedenciaRegionalBtn").addClass("btn-procedencia-selected");
+  }
+
+  // Atualizar o estado do checkbox "Selecionar Todos"
+  const allCheckboxes = $('.procedencia-checkbox-regional');
+  const checkedCheckboxes = allCheckboxes.filter(':checked');
+  $('#selectAllProcedenciaRegional').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
 }
 
 // Função para atualizar o rótulo do botão de tipo de cidade
@@ -636,7 +732,7 @@ function obterParametrosFiltro() {
     params.regional = regionalSelecionadaCluster;
   }
 
-  // Usar as procedências selecionadas apenas na aba de cluster
+  // Usar as procedências selecionadas (agora aplicável a todas as abas)
   if (procedenciasSelecionadas && procedenciasSelecionadas.length > 0) {
     // Converter array em string separada por vírgulas
     params.procedencia = procedenciasSelecionadas.join(",");
@@ -668,6 +764,7 @@ function resetarFiltrosPadrao() {
   // Obter novamente a lista completa de procedências para atualizar o menu
   $.get("/tmr/procedencias", function (procedencias) {
     atualizarMenuProcedenciaCompleto(procedencias);
+    atualizarMenuProcedenciaCompletoRegional(procedencias);
   });
 
   // Atualizar o menu de tipo de cidade para refletir as seleções
@@ -678,6 +775,7 @@ function resetarFiltrosPadrao() {
 
   // Atualizar os rótulos dos botões
   atualizarRotuloProcedencia();
+  atualizarRotuloProcedenciaRegional();
   atualizarRotuloTipoCidade();
 }
 
@@ -1028,6 +1126,7 @@ function carregarDadosRegional() {
 
       // Preencher o menu de procedência com a lista completa de procedências
       atualizarMenuProcedenciaCompleto(procedencias);
+      atualizarMenuProcedenciaCompletoRegional(procedencias);
 
       // Preencher o menu de tipo de cidade com a lista completa de tipos de cidade
       atualizarMenuTipoCidadeCompleto(tiposCidade);
@@ -1408,6 +1507,39 @@ function atualizarMenuProcedenciaCompleto(procedencias) {
 
   // Atualizar o rótulo do botão
   atualizarRotuloProcedencia();
+}
+
+// Função para atualizar o menu de procedência com a lista completa para a aba de regional
+function atualizarMenuProcedenciaCompletoRegional(procedencias) {
+  // Ordenar as procedências alfabeticamente
+  procedencias.sort();
+
+  // Limpar o container de opções
+  const container = $('.procedencia-options-container-regional');
+  container.empty();
+
+  // Adicionar novos itens de procedência
+  procedencias.forEach((procedencia) => {
+    const isSelected = procedenciasSelecionadas.includes(procedencia);
+
+    const optionElement = $(`
+      <div class="procedencia-option-regional ${isSelected ? 'selected' : ''}">
+        <div class="form-check">
+          <input class="form-check-input procedencia-checkbox-regional" type="checkbox"
+                 value="${procedencia}" id="proc_regional_${procedencia}"
+                 ${isSelected ? 'checked' : ''}>
+          <label class="form-check-label" for="proc_regional_${procedencia}">
+            ${procedencia}
+          </label>
+        </div>
+      </div>
+    `);
+
+    container.append(optionElement);
+  });
+
+  // Atualizar o rótulo do botão
+  atualizarRotuloProcedenciaRegional();
 }
 
 // Função para atualizar o menu de tipo de cidade com a lista completa
