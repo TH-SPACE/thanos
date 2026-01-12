@@ -1733,7 +1733,26 @@ function gerarComparativoCapitalInterior(dados) {
     // Calcular TMR mensal para esta regional
     const dadosPorMes = {};
 
-    for (const mes of mesesUnicos) {
+    // Ordenar os meses em ordem cronológica (considerando o formato "Mês Ano")
+    const mesesOrdenados = mesesUnicos.sort((a, b) => {
+      // Converter os nomes dos meses para índices numéricos para ordenação
+      const mesesMap = {
+        'Janeiro': 1, 'Fevereiro': 2, 'Março': 3, 'Abril': 4, 'Maio': 5, 'Junho': 6,
+        'Julho': 7, 'Agosto': 8, 'Setembro': 9, 'Outubro': 10, 'Novembro': 11, 'Dezembro': 12
+      };
+
+      // Separar mês e ano
+      const [mesA, anoA] = a.split(' ');
+      const [mesB, anoB] = b.split(' ');
+
+      // Comparar primeiro por ano, depois por mês
+      if (parseInt(anoA) !== parseInt(anoB)) {
+        return parseInt(anoA) - parseInt(anoB);
+      }
+      return mesesMap[mesA] - mesesMap[mesB];
+    });
+
+    for (const mes of mesesOrdenados) {
       dadosPorMes[mes] = {
         CAPITAL: { totalTmr: 0, totalReparos: 0 },
         INTERIOR: { totalTmr: 0, totalReparos: 0 },
