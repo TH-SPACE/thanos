@@ -1,0 +1,364 @@
+{
+  "grupo_agrupado_rules": [
+    {
+      "contains": "ATENDIMENTO CORPORATIVO",
+      "group": "Cidade"
+    },
+    {
+      "contains": "AUTOMACOES_COE_B2B",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "Bucle Centro Oeste ABILITY",
+      "group": "Rede Externa Bucle"
+    },
+    {
+      "contains": "Bucle Centro Oeste ONDACOM",
+      "group": "Rede Externa Bucle"
+    },
+    {
+      "contains": "CAMPO GIFT",
+      "group": "Triagem"
+    },
+    {
+      "contains": "CCR_GPON_TELEMONT",
+      "group": "CCR"
+    },
+    {
+      "contains": "COE QUALIDADE",
+      "group": "Triagem"
+    },
+    {
+      "contains": "CSGPJ - RESIDENTE",
+      "group": "Triagem"
+    },
+    {
+      "contains": "DIAGNOSTICO_B2B",
+      "group": "Triagem"
+    },
+    {
+      "contains": "DIAGNOSTICO_B2B_N2",
+      "group": "Triagem"
+    },
+    {
+      "contains": "ESSE CERTIFICAÇÃO",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "ESSE FIBRA SWT ICOMON",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "ESSE FSP GESTAO",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "ESSE FSP OPERADORA",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "ESSE-CCR-CONTROLE",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "ESSE-CONTROLE",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "ESSE-SEM ACESSO-VPK",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "ESSE-SUPORTE TÉCNICO-G-K",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "GA-SPC1 CX",
+      "group": "GA"
+    },
+    {
+      "contains": "GA-SPC1 TX",
+      "group": "GA"
+    },
+    {
+      "contains": "GA-SPI CX",
+      "group": "GA"
+    },
+    {
+      "contains": "GA-SPI TX",
+      "group": "GA"
+    },
+    {
+      "contains": "HD1-E",
+      "group": "Triagem"
+    },
+    {
+      "contains": "Integrador Centro Oeste",
+      "group": "MamInfo"
+    },
+    {
+      "contains": "Integrador Norte",
+      "group": "MamInfo"
+    },
+    {
+      "contains": "INTERNACIONAL",
+      "group": "Triagem"
+    },
+    {
+      "contains": "INTERNACIONAL CARRIERS",
+      "group": "Triagem"
+    },
+    {
+      "contains": "INTERNACIONAL MULTI-CLIENTES",
+      "group": "Triagem"
+    },
+    {
+      "contains": "LP_FSP",
+      "group": "Rede Externa"
+    },
+    {
+      "contains": "LP_FSP_Rede Atenuada",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "MASSIVA ITX VOZ B2B",
+      "group": "MASSIVA ITX VOZ B2B"
+    },
+    {
+      "contains": "MASSIVA_ATIVA",
+      "group": "MASSIVA_ATIVA"
+    },
+    {
+      "contains": "N2 DADOS B2B",
+      "group": "NOC Centralizado"
+    },
+    {
+      "contains": "N2 TX - ACESSO B2B",
+      "group": "NOC Centralizado"
+    },
+    {
+      "contains": "N2 VOZ B2B",
+      "group": "NOC Centralizado"
+    },
+    {
+      "contains": "NOC ARCOS DOURADOS",
+      "group": "NOC Centralizado"
+    },
+    {
+      "contains": "OSP CENTRO-OESTE B2B",
+      "group": "Cidade"
+    },
+    {
+      "contains": "OSP NORTE",
+      "group": "Cidade"
+    },
+    {
+      "contains": "OUTSOURCING",
+      "group": "Triagem"
+    },
+    {
+      "contains": "OUTSOURCING - BRADESCO",
+      "group": "Triagem"
+    },
+    {
+      "contains": "OUTSOURCING - ITAU",
+      "group": "Triagem"
+    },
+    {
+      "contains": "OUTSOURCING - SANTANDER",
+      "group": "Triagem"
+    },
+    {
+      "contains": "OUTSOURCING SDWAN",
+      "group": "Triagem"
+    },
+    {
+      "contains": "Parada Relógio Avançados B2B",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "Parceiros Centro Oeste",
+      "group": "Tel Planta Interna"
+    },
+    {
+      "contains": "Parceiros FIELD B2B-Centro Oes",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "Parceiros FIELD B2B-Nordeste",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "Parceiros Norte",
+      "group": "Tel Planta Interna"
+    },
+    {
+      "contains": "Parceiros SP",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "Parceiros Sudeste - RJ ES",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "Planta Interna - FiBrasil",
+      "group": "TTK FiBrasil"
+    },
+    {
+      "contains": "PRE_MASSIVA",
+      "group": "MASSIVA_ATIVA"
+    },
+    {
+      "contains": "PREV_DIAGNOSTICO",
+      "group": "Triagem"
+    },
+    {
+      "contains": "PREV_ESSE FSP",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "PREV_OUTSOURCING BRADESCO",
+      "group": "Triagem"
+    },
+    {
+      "contains": "PREV_OUTSOURCING ITAU",
+      "group": "Triagem"
+    },
+    {
+      "contains": "PREV_REGIONAL CENTRO OESTE",
+      "group": "Cidade"
+    },
+    {
+      "contains": "PREV_REGIONAL NORTE",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "PREV_REGIONAL SUDESTE",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "PROATIVIDADE - INTRAGOV",
+      "group": "Triagem"
+    },
+    {
+      "contains": "PROATIVIDADE AVANCADA",
+      "group": "Triagem"
+    },
+    {
+      "contains": "Rede Externa Ability CO-NO",
+      "group": "Rede Externa"
+    },
+    {
+      "contains": "Rede Externa Ondacom CO-NO",
+      "group": "Rede Externa"
+    },
+    {
+      "contains": "Rede Externa TEL CO-NO",
+      "group": "Rede Externa"
+    },
+    {
+      "contains": "Rede Externa Telemont CO-NO",
+      "group": "Rede Externa"
+    },
+    {
+      "contains": "REGIONAIS V2",
+      "group": "Cidade"
+    },
+    {
+      "contains": "REGIONAIS V2 - DESPACHO",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "REGIONAL CENTRO OESTE",
+      "group": "Cidade"
+    },
+    {
+      "contains": "REGIONAL NORTE",
+      "group": "Cidade"
+    },
+    {
+      "contains": "REGIONAL SAO PAULO",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "REGIONAL SUDESTE",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "REGIONAL SUL",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "SDWAN SOLO",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "SGMC B2B",
+      "group": "MASSIVA_ATIVA"
+    },
+    {
+      "contains": "SISTEMAS",
+      "group": "NOC Centralizado"
+    },
+    {
+      "contains": "SOC TBRA",
+      "group": "Triagem"
+    },
+    {
+      "contains": "SOLUCOES DIGITAL",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "SOLUCOES_SIP_PABX_UC",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "SUD B2B CC",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "SUD B2B PI",
+      "group": "Centralizado"
+    },
+    {
+      "contains": "SUPORTE BANCO DO BRASIL",
+      "group": "Triagem"
+    },
+    {
+      "contains": "SUPORTE CEF",
+      "group": "Triagem"
+    },
+    {
+      "contains": "TEMS_N1 PROATIVIDADE",
+      "group": "Triagem"
+    },
+    {
+      "contains": "TRIAGEM B2B",
+      "group": "Triagem"
+    },
+    {
+      "contains": "TRIAGEM B2B_CAMPO_GIFT",
+      "group": "Triagem"
+    },
+    {
+      "contains": "TV_CDN",
+      "group": "OUTROS"
+    },
+    {
+      "contains": "VALIDA COE B2B",
+      "group": "Cidade"
+    },
+    {
+      "contains": "VALIDA MASSIVA",
+      "group": "Cidade"
+    },
+    {
+      "contains": "VITA - Grupo lojas SIGITM",
+      "group": "Triagem"
+    },
+    {
+      "contains": "MIGRAÇÃO_HADES_CENTRO OESTE",
+      "group": "HADES"
+    }
+  ]
+}

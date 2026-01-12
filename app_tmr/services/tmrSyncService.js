@@ -1,6 +1,50 @@
+const fs = require('fs');
+const path = require('path');
 const db = require('../../db/db');
 const { obterDadosOracle } = require('../controllers/dadosTmrController');
 const { parseOracleDate } = require('../utils/dateUtils');
+
+// Função para atualizar a coluna grupo_agrupado com base no JSON de mapeamento
+async function atualizarGrupoAgrupado(connection) {
+    try {
+        // Ler o arquivo JSON de mapeamento
+        const jsonPath = path.join(__dirname, '../grupo_agrupado_mapping.json');
+        const jsonData = fs.readFileSync(jsonPath, 'utf8');
+        const rules = JSON.parse(jsonData).grupo_agrupado_rules;
+
+        console.log('Aplicando regras de agrupamento:', rules.length, 'regras encontradas');
+
+        // Aplicar as regras de mapeamento
+        for (const rule of rules) {
+            const searchTerm = `%${rule.contains.toLowerCase()}%`;
+
+            console.log(`Aplicando regra: "${rule.contains}" -> "${rule.group}"`);
+
+            // Atualizar registros que contenham o termo de busca (case-insensitive)
+            const [result] = await connection.execute(`
+                UPDATE reparos_b2b_tmr
+                SET grupo_agrupado = ?
+                WHERE LOWER(grp_nome) LIKE ?
+                AND (grupo_agrupado IS NULL OR grupo_agrupado = '')
+            `, [rule.group, searchTerm]);
+
+            console.log(`  Registros atualizados: ${result.affectedRows}`);
+        }
+
+        // Definir como 'NAO MAPEADO' os registros que ainda não foram agrupados
+        const [resultOutros] = await connection.execute(`
+            UPDATE reparos_b2b_tmr
+            SET grupo_agrupado = 'NÃO MAPEADO'
+            WHERE grupo_agrupado IS NULL OR grupo_agrupado = ''
+        `);
+
+        console.log(`Registros marcados como 'NÃO MAPEADO': ${resultOutros.affectedRows}`);
+        console.log('Atualização de grupo_agrupado concluída!');
+    } catch (error) {
+        console.error('Erro ao atualizar grupo_agrupado:', error);
+        throw error;
+    }
+}
 
 // Função para sincronizar dados do Oracle para o MariaDB
 async function syncDadosTmr() {
@@ -82,6 +126,9 @@ async function syncDadosTmr() {
             }
 
             console.log(`Sincronização concluída. ${dadosOracle.length} registros transferidos.`);
+
+            // Atualizar a coluna grupo_agrupado após a sincronização
+            await atualizarGrupoAgrupado(connection);
         } finally {
             connection.release();
         }
