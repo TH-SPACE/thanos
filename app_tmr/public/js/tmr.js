@@ -12,72 +12,99 @@ $(document).ready(function () {
   carregarDadosTMR();
 
   // Adicionar evento para quando a aba de grupos for ativada
-  $('#grupos-tab').on('shown.bs.tab', function (e) {
-    console.log('Aba de grupos ativada'); // Log de debug
+  $("#grupos-tab").on("shown.bs.tab", function (e) {
+    console.log("Aba de grupos ativada"); // Log de debug
     carregarDadosGrupos();
   });
 
   // Botão de atualizar na aba de cluster
   $("#atualizarCluster").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaClusterMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     carregarDadosCluster();
   });
 
   // Botão de atualizar na aba de regional
   $("#atualizarRegional").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaClusterMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     carregarDadosRegional();
   });
 
   // Botão de atualizar na aba de grupos
   $("#atualizarGrupos").click(function () {
-    console.log('Botão atualizarGrupos clicado'); // Log de debug
+    console.log("Botão atualizarGrupos clicado"); // Log de debug
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaGruposMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaGruposMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     carregarDadosGrupos();
   });
 
   // Botão de atualizar ambas as visões
   $("#atualizarAmbas").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaClusterMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     carregarDadosTMR();
   });
 
   // Botão de aplicar filtros na aba de cluster
   $("#aplicarFiltrosCluster").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaClusterMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     carregarDadosCluster();
   });
 
   // Botão de aplicar filtros na aba de regional
   $("#aplicarFiltrosRegional").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaRegionalMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaRegionalMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     carregarDadosRegional();
   });
 
   // Botão de aplicar filtros na aba de grupos
   $("#aplicarFiltrosGrupos").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaGruposMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaGruposMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     carregarDadosGrupos();
   });
 
   // Botão de sincronização manual de dados
   $("#sincronizarManual").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaClusterMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     sincronizarDadosManually();
   });
 
   // Botão de sincronização manual de dados para regional
   $("#sincronizarManualRegional").click(function () {
     // Fechar o dropdown de procedência
-    $('#filtroProcedenciaClusterMenu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    $("#filtroProcedenciaClusterMenu")
+      .parent()
+      .find('[data-bs-toggle="dropdown"]')
+      .dropdown("hide");
     sincronizarDadosManually();
   });
 
@@ -120,13 +147,13 @@ $(document).ready(function () {
   });
 
   // Select all functionality for grupos tab
-  $('#selectAllProcedenciaGrupos').change(function () {
-    const isChecked = $(this).is(':checked');
-    $('.procedencia-checkbox-grupos').prop('checked', isChecked);
+  $("#selectAllProcedenciaGrupos").change(function () {
+    const isChecked = $(this).is(":checked");
+    $(".procedencia-checkbox-grupos").prop("checked", isChecked);
 
     if (isChecked) {
       // Add all options to selection
-      $('.procedencia-checkbox-grupos').each(function () {
+      $(".procedencia-checkbox-grupos").each(function () {
         const value = $(this).val();
         if (!procedenciasSelecionadas.includes(value)) {
           procedenciasSelecionadas.push(value);
@@ -134,25 +161,27 @@ $(document).ready(function () {
       });
     } else {
       // Remove all options from selection
-      $('.procedencia-checkbox-grupos').each(function () {
+      $(".procedencia-checkbox-grupos").each(function () {
         const value = $(this).val();
-        procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== value);
+        procedenciasSelecionadas = procedenciasSelecionadas.filter(
+          (p) => p !== value
+        );
       });
     }
 
     // Update UI
-    $('.procedencia-option-grupos').toggleClass('selected', isChecked);
+    $(".procedencia-option-grupos").toggleClass("selected", isChecked);
     atualizarRotuloProcedenciaGrupos();
   });
 
   // Select all functionality for cluster tab
-  $('#selectAllProcedencia').change(function () {
-    const isChecked = $(this).is(':checked');
-    $('.procedencia-checkbox').prop('checked', isChecked);
+  $("#selectAllProcedencia").change(function () {
+    const isChecked = $(this).is(":checked");
+    $(".procedencia-checkbox").prop("checked", isChecked);
 
     if (isChecked) {
       // Add all options to selection
-      $('.procedencia-checkbox').each(function () {
+      $(".procedencia-checkbox").each(function () {
         const value = $(this).val();
         if (!procedenciasSelecionadas.includes(value)) {
           procedenciasSelecionadas.push(value);
@@ -160,25 +189,27 @@ $(document).ready(function () {
       });
     } else {
       // Remove all options from selection
-      $('.procedencia-checkbox').each(function () {
+      $(".procedencia-checkbox").each(function () {
         const value = $(this).val();
-        procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== value);
+        procedenciasSelecionadas = procedenciasSelecionadas.filter(
+          (p) => p !== value
+        );
       });
     }
 
     // Update UI
-    $('.procedencia-option').toggleClass('selected', isChecked);
+    $(".procedencia-option").toggleClass("selected", isChecked);
     atualizarRotuloProcedencia();
   });
 
   // Select all functionality for regional tab
-  $('#selectAllProcedenciaRegional').change(function () {
-    const isChecked = $(this).is(':checked');
-    $('.procedencia-checkbox-regional').prop('checked', isChecked);
+  $("#selectAllProcedenciaRegional").change(function () {
+    const isChecked = $(this).is(":checked");
+    $(".procedencia-checkbox-regional").prop("checked", isChecked);
 
     if (isChecked) {
       // Add all options to selection
-      $('.procedencia-checkbox-regional').each(function () {
+      $(".procedencia-checkbox-regional").each(function () {
         const value = $(this).val();
         if (!procedenciasSelecionadas.includes(value)) {
           procedenciasSelecionadas.push(value);
@@ -186,102 +217,119 @@ $(document).ready(function () {
       });
     } else {
       // Remove all options from selection
-      $('.procedencia-checkbox-regional').each(function () {
+      $(".procedencia-checkbox-regional").each(function () {
         const value = $(this).val();
-        procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== value);
+        procedenciasSelecionadas = procedenciasSelecionadas.filter(
+          (p) => p !== value
+        );
       });
     }
 
     // Update UI
-    $('.procedencia-option-regional').toggleClass('selected', isChecked);
+    $(".procedencia-option-regional").toggleClass("selected", isChecked);
     atualizarRotuloProcedenciaRegional();
   });
 
   // Individual checkbox change for grupos tab
-  $(document).on('change', '.procedencia-checkbox-grupos', function () {
+  $(document).on("change", ".procedencia-checkbox-grupos", function () {
     const procedencia = $(this).val();
-    const isChecked = $(this).is(':checked');
+    const isChecked = $(this).is(":checked");
 
     if (isChecked) {
       if (!procedenciasSelecionadas.includes(procedencia)) {
         procedenciasSelecionadas.push(procedencia);
       }
-      $(this).closest('.procedencia-option-grupos').addClass('selected');
+      $(this).closest(".procedencia-option-grupos").addClass("selected");
     } else {
       // Allow unchecking default options
-      procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== procedencia);
-      $(this).closest('.procedencia-option-grupos').removeClass('selected');
+      procedenciasSelecionadas = procedenciasSelecionadas.filter(
+        (p) => p !== procedencia
+      );
+      $(this).closest(".procedencia-option-grupos").removeClass("selected");
     }
 
     // Update "Select All" checkbox state
-    const allCheckboxes = $('.procedencia-checkbox-grupos');
-    const checkedCheckboxes = allCheckboxes.filter(':checked');
-    $('#selectAllProcedenciaGrupos').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+    const allCheckboxes = $(".procedencia-checkbox-grupos");
+    const checkedCheckboxes = allCheckboxes.filter(":checked");
+    $("#selectAllProcedenciaGrupos").prop(
+      "checked",
+      checkedCheckboxes.length === allCheckboxes.length
+    );
 
     atualizarRotuloProcedenciaGrupos();
   });
 
   // Individual checkbox change for cluster tab
-  $(document).on('change', '.procedencia-checkbox', function () {
+  $(document).on("change", ".procedencia-checkbox", function () {
     const procedencia = $(this).val();
-    const isChecked = $(this).is(':checked');
+    const isChecked = $(this).is(":checked");
 
     if (isChecked) {
       if (!procedenciasSelecionadas.includes(procedencia)) {
         procedenciasSelecionadas.push(procedencia);
       }
-      $(this).closest('.procedencia-option').addClass('selected');
+      $(this).closest(".procedencia-option").addClass("selected");
     } else {
       // Allow unchecking default options
-      procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== procedencia);
-      $(this).closest('.procedencia-option').removeClass('selected');
+      procedenciasSelecionadas = procedenciasSelecionadas.filter(
+        (p) => p !== procedencia
+      );
+      $(this).closest(".procedencia-option").removeClass("selected");
     }
 
     // Update "Select All" checkbox state
-    const allCheckboxes = $('.procedencia-checkbox');
-    const checkedCheckboxes = allCheckboxes.filter(':checked');
-    $('#selectAllProcedencia').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+    const allCheckboxes = $(".procedencia-checkbox");
+    const checkedCheckboxes = allCheckboxes.filter(":checked");
+    $("#selectAllProcedencia").prop(
+      "checked",
+      checkedCheckboxes.length === allCheckboxes.length
+    );
 
     atualizarRotuloProcedencia();
   });
 
   // Individual checkbox change for regional tab
-  $(document).on('change', '.procedencia-checkbox-regional', function () {
+  $(document).on("change", ".procedencia-checkbox-regional", function () {
     const procedencia = $(this).val();
-    const isChecked = $(this).is(':checked');
+    const isChecked = $(this).is(":checked");
 
     if (isChecked) {
       if (!procedenciasSelecionadas.includes(procedencia)) {
         procedenciasSelecionadas.push(procedencia);
       }
-      $(this).closest('.procedencia-option-regional').addClass('selected');
+      $(this).closest(".procedencia-option-regional").addClass("selected");
     } else {
       // Allow unchecking default options
-      procedenciasSelecionadas = procedenciasSelecionadas.filter(p => p !== procedencia);
-      $(this).closest('.procedencia-option-regional').removeClass('selected');
+      procedenciasSelecionadas = procedenciasSelecionadas.filter(
+        (p) => p !== procedencia
+      );
+      $(this).closest(".procedencia-option-regional").removeClass("selected");
     }
 
     // Update "Select All" checkbox state
-    const allCheckboxes = $('.procedencia-checkbox-regional');
-    const checkedCheckboxes = allCheckboxes.filter(':checked');
-    $('#selectAllProcedenciaRegional').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+    const allCheckboxes = $(".procedencia-checkbox-regional");
+    const checkedCheckboxes = allCheckboxes.filter(":checked");
+    $("#selectAllProcedenciaRegional").prop(
+      "checked",
+      checkedCheckboxes.length === allCheckboxes.length
+    );
 
     atualizarRotuloProcedenciaRegional();
   });
 
   // Prevent dropdown from closing when clicking inside
-  $('.procedencia-dropdown-menu').click(function (e) {
+  $(".procedencia-dropdown-menu").click(function (e) {
     e.stopPropagation();
   });
 
   // Select all functionality for tipo cidade
-  $('#selectAllTipoCidade').change(function () {
-    const isChecked = $(this).is(':checked');
-    $('.tipo-cidade-checkbox').prop('checked', isChecked);
+  $("#selectAllTipoCidade").change(function () {
+    const isChecked = $(this).is(":checked");
+    $(".tipo-cidade-checkbox").prop("checked", isChecked);
 
     if (isChecked) {
       // Add all options to selection
-      $('.tipo-cidade-checkbox').each(function () {
+      $(".tipo-cidade-checkbox").each(function () {
         const value = $(this).val();
         if (!tiposCidadeSelecionados.includes(value)) {
           tiposCidadeSelecionados.push(value);
@@ -289,42 +337,49 @@ $(document).ready(function () {
       });
     } else {
       // Remove all options from selection
-      $('.tipo-cidade-checkbox').each(function () {
+      $(".tipo-cidade-checkbox").each(function () {
         const value = $(this).val();
-        tiposCidadeSelecionados = tiposCidadeSelecionados.filter(p => p !== value);
+        tiposCidadeSelecionados = tiposCidadeSelecionados.filter(
+          (p) => p !== value
+        );
       });
     }
 
     // Update UI
-    $('.tipo-cidade-option').toggleClass('selected', isChecked);
+    $(".tipo-cidade-option").toggleClass("selected", isChecked);
     atualizarRotuloTipoCidade();
   });
 
   // Individual checkbox change for tipo cidade
-  $(document).on('change', '.tipo-cidade-checkbox', function () {
+  $(document).on("change", ".tipo-cidade-checkbox", function () {
     const tipoCidade = $(this).val();
-    const isChecked = $(this).is(':checked');
+    const isChecked = $(this).is(":checked");
 
     if (isChecked) {
       if (!tiposCidadeSelecionados.includes(tipoCidade)) {
         tiposCidadeSelecionados.push(tipoCidade);
       }
-      $(this).closest('.tipo-cidade-option').addClass('selected');
+      $(this).closest(".tipo-cidade-option").addClass("selected");
     } else {
-      tiposCidadeSelecionados = tiposCidadeSelecionados.filter(p => p !== tipoCidade);
-      $(this).closest('.tipo-cidade-option').removeClass('selected');
+      tiposCidadeSelecionados = tiposCidadeSelecionados.filter(
+        (p) => p !== tipoCidade
+      );
+      $(this).closest(".tipo-cidade-option").removeClass("selected");
     }
 
     // Update "Select All" checkbox state
-    const allCheckboxes = $('.tipo-cidade-checkbox');
-    const checkedCheckboxes = allCheckboxes.filter(':checked');
-    $('#selectAllTipoCidade').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+    const allCheckboxes = $(".tipo-cidade-checkbox");
+    const checkedCheckboxes = allCheckboxes.filter(":checked");
+    $("#selectAllTipoCidade").prop(
+      "checked",
+      checkedCheckboxes.length === allCheckboxes.length
+    );
 
     atualizarRotuloTipoCidade();
   });
 
   // Prevent dropdown from closing when clicking inside
-  $('.tipo-cidade-dropdown-menu').click(function (e) {
+  $(".tipo-cidade-dropdown-menu").click(function (e) {
     e.stopPropagation();
   });
 });
@@ -352,9 +407,12 @@ function atualizarRotuloProcedenciaGrupos() {
   }
 
   // Atualizar o estado do checkbox "Selecionar Todos"
-  const allCheckboxes = $('.procedencia-checkbox-grupos');
-  const checkedCheckboxes = allCheckboxes.filter(':checked');
-  $('#selectAllProcedenciaGrupos').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+  const allCheckboxes = $(".procedencia-checkbox-grupos");
+  const checkedCheckboxes = allCheckboxes.filter(":checked");
+  $("#selectAllProcedenciaGrupos").prop(
+    "checked",
+    checkedCheckboxes.length === allCheckboxes.length
+  );
 }
 
 // Função para atualizar o rótulo do botão de procedência
@@ -380,9 +438,12 @@ function atualizarRotuloProcedencia() {
   }
 
   // Atualizar o estado do checkbox "Selecionar Todos"
-  const allCheckboxes = $('.procedencia-checkbox');
-  const checkedCheckboxes = allCheckboxes.filter(':checked');
-  $('#selectAllProcedencia').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+  const allCheckboxes = $(".procedencia-checkbox");
+  const checkedCheckboxes = allCheckboxes.filter(":checked");
+  $("#selectAllProcedencia").prop(
+    "checked",
+    checkedCheckboxes.length === allCheckboxes.length
+  );
 }
 
 // Função para atualizar o rótulo do botão de procedência para a aba de regional
@@ -408,9 +469,12 @@ function atualizarRotuloProcedenciaRegional() {
   }
 
   // Atualizar o estado do checkbox "Selecionar Todos"
-  const allCheckboxes = $('.procedencia-checkbox-regional');
-  const checkedCheckboxes = allCheckboxes.filter(':checked');
-  $('#selectAllProcedenciaRegional').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+  const allCheckboxes = $(".procedencia-checkbox-regional");
+  const checkedCheckboxes = allCheckboxes.filter(":checked");
+  $("#selectAllProcedenciaRegional").prop(
+    "checked",
+    checkedCheckboxes.length === allCheckboxes.length
+  );
 }
 
 // Função para atualizar o rótulo do botão de tipo de cidade
@@ -436,9 +500,12 @@ function atualizarRotuloTipoCidade() {
   }
 
   // Atualizar o estado do checkbox "Selecionar Todos"
-  const allCheckboxes = $('.tipo-cidade-checkbox');
-  const checkedCheckboxes = allCheckboxes.filter(':checked');
-  $('#selectAllTipoCidade').prop('checked', checkedCheckboxes.length === allCheckboxes.length);
+  const allCheckboxes = $(".tipo-cidade-checkbox");
+  const checkedCheckboxes = allCheckboxes.filter(":checked");
+  $("#selectAllTipoCidade").prop(
+    "checked",
+    checkedCheckboxes.length === allCheckboxes.length
+  );
 }
 
 // Função para carregar dados da aba de grupos
@@ -471,16 +538,18 @@ function carregarDadosGrupos() {
       const regionais = regionaisResponse[0]; // Terceiro resultado é a resposta da requisição de regionais
       const procedencias = procedenciasResponse[0]; // Quarto resultado é a resposta da requisição de procedências
 
-      console.log('Dados recebidos para grupos:', dados); // Log de debug
-      console.log('Meses encontrados:', dados.length > 0 ? Object.keys(dados[0].meses) : []); // Log de debug
+      console.log("Dados recebidos para grupos:", dados); // Log de debug
+      console.log(
+        "Meses encontrados:",
+        dados.length > 0 ? Object.keys(dados[0].meses) : []
+      ); // Log de debug
 
       // Obter os últimos 3 meses únicos dos dados recebidos
       const meses = obterUltimos3MesesDosDadosGrupos(dados);
-      console.log('Meses processados:', meses); // Log de debug
+      console.log("Meses processados:", meses); // Log de debug
 
       // Atualizar cabeçalhos com os meses encontrados
       atualizarCabecalhoTabelaGrupos(meses);
-
 
       // Preencher o seletor de regional com a lista completa de regionais
       atualizarOpcoesRegionalCompleta(regionais, "filtroRegionalGrupos");
@@ -498,7 +567,7 @@ function carregarDadosGrupos() {
       desabilitarBotoesFiltro(false);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
-      console.error('Erro nas requisições:', jqXHR, textStatus, errorThrown); // Log de debug
+      console.error("Erro nas requisições:", jqXHR, textStatus, errorThrown); // Log de debug
       $("#loadingGrupos").hide();
       $("#tabelaGruposContainer").show();
 
@@ -535,7 +604,9 @@ function obterParametrosFiltroGrupos() {
 // Função para obter os últimos 3 meses únicos dos dados recebidos para a aba de grupos
 function obterUltimos3MesesDosDadosGrupos(dados) {
   // Extrair todos os meses únicos dos dados
-  const mesesUnicos = [...new Set(dados.flatMap(item => Object.keys(item.meses)))];
+  const mesesUnicos = [
+    ...new Set(dados.flatMap((item) => Object.keys(item.meses))),
+  ];
 
   // Ordenar os meses em ordem cronológica considerando o ano
   const ordemMeses = [
@@ -638,7 +709,7 @@ function atualizarMenuProcedenciaCompletoGrupos(procedencias) {
   procedencias.sort();
 
   // Limpar o container de opções
-  const container = $('.procedencia-options-container-grupos');
+  const container = $(".procedencia-options-container-grupos");
   container.empty();
 
   // Adicionar novos itens de procedência
@@ -646,11 +717,11 @@ function atualizarMenuProcedenciaCompletoGrupos(procedencias) {
     const isSelected = procedenciasSelecionadas.includes(procedencia);
 
     const optionElement = $(`
-      <div class="procedencia-option-grupos ${isSelected ? 'selected' : ''}">
+      <div class="procedencia-option-grupos ${isSelected ? "selected" : ""}">
         <div class="form-check">
           <input class="form-check-input procedencia-checkbox-grupos" type="checkbox"
                  value="${procedencia}" id="proc_grupos_${procedencia}"
-                 ${isSelected ? 'checked' : ''}>
+                 ${isSelected ? "checked" : ""}>
           <label class="form-check-label" for="proc_grupos_${procedencia}">
             ${procedencia}
           </label>
@@ -667,28 +738,41 @@ function atualizarMenuProcedenciaCompletoGrupos(procedencias) {
 
 // Função para atualizar tabela de grupos
 function atualizarTabelaGrupos(dados, meses) {
-  console.log('Atualizando tabela de grupos com', dados.length, 'grupos e meses:', meses); // Log de debug
+  console.log(
+    "Atualizando tabela de grupos com",
+    dados.length,
+    "grupos e meses:",
+    meses
+  ); // Log de debug
 
   // Criar o conteúdo da tabela primeiro, depois adicionar ao DOM para melhor performance
   let tableHtml = "";
 
   // Verificar se há dados para processar
   if (!dados || dados.length === 0) {
-    console.log('Nenhum dado encontrado para grupos'); // Log de debug
-    tableHtml = '<tr><td colspan="' + (1 + meses.length * 2) + '" class="text-center">Nenhum dado encontrado</td></tr>';
+    console.log("Nenhum dado encontrado para grupos"); // Log de debug
+    tableHtml =
+      '<tr><td colspan="' +
+      (1 + meses.length * 2) +
+      '" class="text-center">Nenhum dado encontrado</td></tr>';
   } else {
-    console.log('Processando', dados.length, 'grupos'); // Log de debug
+    console.log("Processando", dados.length, "grupos"); // Log de debug
 
     // Preencher a tabela com os dados
     for (const item of dados) {
-      console.log('Processando grupo:', item.grupo, 'com meses:', Object.keys(item.meses)); // Log de debug
+      console.log(
+        "Processando grupo:",
+        item.grupo,
+        "com meses:",
+        Object.keys(item.meses)
+      ); // Log de debug
       const grupo = item.grupo;
 
       // Calcular métricas para cada mês individualmente
       let allMesesCells = "";
       for (const mes of meses) {
         const mesData = item.meses[mes] || { qtde_reparos: 0, tmr_medio: 0 };
-        console.log('  Mês:', mes, 'Dados:', mesData); // Log de debug
+        console.log("  Mês:", mes, "Dados:", mesData); // Log de debug
 
         // Adicionar as 2 colunas para este mês
         allMesesCells += `
@@ -706,12 +790,12 @@ function atualizarTabelaGrupos(dados, meses) {
     }
   }
 
-  console.log('HTML da tabela gerado:', tableHtml); // Log de debug
+  console.log("HTML da tabela gerado:", tableHtml); // Log de debug
 
   // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
   $("#tabelaGrupos tbody").html(tableHtml);
 
-  console.log('Tabela atualizada com sucesso'); // Log de debug
+  console.log("Tabela atualizada com sucesso"); // Log de debug
 }
 
 // Função para obter os parâmetros de filtro atuais
@@ -892,9 +976,9 @@ function sincronizarDadosManually() {
       console.error("Erro na sincronização:", error);
       alert(
         "Erro ao sincronizar dados: " +
-        (xhr.responseJSON && xhr.responseJSON.error
-          ? xhr.responseJSON.error
-          : error)
+          (xhr.responseJSON && xhr.responseJSON.error
+            ? xhr.responseJSON.error
+            : error)
       );
     })
     .always(function () {
@@ -1227,9 +1311,9 @@ function atualizarTabelaGenerico(
       const tmrMedio =
         total > 0
           ? (
-            dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
-            total
-          ).toFixed(2)
+              dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
+              total
+            ).toFixed(2)
           : 0;
 
       // Atualizar totais por mês
@@ -1303,10 +1387,7 @@ function atualizarTabelaCluster(dados, meses) {
 
 function atualizarTabelaRegional(dados, meses) {
   // Usar a nova função de agrupamento para regional e tipo de cidade
-  atualizarTabelaRegionalComTipoCidade(
-    dados,
-    meses
-  );
+  atualizarTabelaRegionalComTipoCidade(dados, meses);
 }
 
 // Função específica para atualizar a tabela regional com distinção entre CAPITAL e INTERIOR
@@ -1349,7 +1430,10 @@ function atualizarTabelaRegionalComTipoCidade(dados, meses) {
     });
 
     // Calcular métricas para cada mês individualmente para a regional completa (somando CAPITAL e INTERIOR)
-    const dadosRegionalCompleta = [...dadosRegional['CAPITAL'], ...dadosRegional['INTERIOR']];
+    const dadosRegionalCompleta = [
+      ...dadosRegional["CAPITAL"],
+      ...dadosRegional["INTERIOR"],
+    ];
 
     // Primeiro, vamos organizar os dados por mês para a regional completa
     const dadosPorMesRegional = {};
@@ -1382,9 +1466,9 @@ function atualizarTabelaRegionalComTipoCidade(dados, meses) {
       const tmrMedio =
         total > 0
           ? (
-            dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
-            total
-          ).toFixed(2)
+              dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
+              total
+            ).toFixed(2)
           : 0;
 
       // Atualizar totais por mês para esta regional
@@ -1426,7 +1510,7 @@ function atualizarTabelaRegionalComTipoCidade(dados, meses) {
         `;
 
     // Adicionar linhas para CAPITAL e INTERIOR abaixo da linha principal da regional
-    for (const tipoCidade of ['CAPITAL', 'INTERIOR']) {
+    for (const tipoCidade of ["CAPITAL", "INTERIOR"]) {
       const dadosTipoCidade = dadosRegional[tipoCidade] || [];
 
       // Calcular métricas para cada mês individualmente
@@ -1467,9 +1551,9 @@ function atualizarTabelaRegionalComTipoCidade(dados, meses) {
         const tmrMedio =
           total > 0
             ? (
-              dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
-              total
-            ).toFixed(2)
+                dadosMes.reduce((sum, item) => sum + (item.tmr_total || 0), 0) /
+                total
+              ).toFixed(2)
             : 0;
 
         // Adicionar as 5 colunas para este mês
@@ -1516,6 +1600,439 @@ function atualizarTabelaRegionalComTipoCidade(dados, meses) {
 
   // Adicionar todo o conteúdo ao tbody de uma vez para melhor performance
   $("#tabelaRegional tbody").html(tableHtml);
+
+  // Gerar e exibir o comparativo CAPITAL vs INTERIOR
+  gerarComparativoCapitalInterior(dados);
+}
+
+// Função para gerar o comparativo entre CAPITAL e INTERIOR
+function gerarComparativoCapitalInterior(dados) {
+  // Agrupar dados por tipo de cidade
+  const dadosAgrupados = agruparPorRegionalETipoCidade(dados);
+
+  // Obter os meses únicos dos dados
+  const mesesUnicos = [...new Set(dados.map((item) => item.mes))];
+
+  // Obter as regionais únicas
+  const regionaisUnicas = Object.keys(dadosAgrupados);
+
+  // Calcular TMR médio para CAPITAL e INTERIOR mês a mês e regional a regional
+  let htmlComparativo = "";
+
+  // Adicionar comparativo geral
+  let totalTmrCapital = 0;
+  let totalReparosCapital = 0;
+  let totalTmrInterior = 0;
+  let totalReparosInterior = 0;
+
+  for (const regional in dadosAgrupados) {
+    const dadosRegional = dadosAgrupados[regional];
+
+    // Calcular para CAPITAL
+    for (const item of dadosRegional["CAPITAL"]) {
+      if (item.tmr_total !== null && item.tmr_total !== undefined) {
+        totalTmrCapital += parseFloat(item.tmr_total);
+        totalReparosCapital++;
+      }
+    }
+
+    // Calcular para INTERIOR
+    for (const item of dadosRegional["INTERIOR"]) {
+      if (item.tmr_total !== null && item.tmr_total !== undefined) {
+        totalTmrInterior += parseFloat(item.tmr_total);
+        totalReparosInterior++;
+      }
+    }
+  }
+
+  // Calcular TMR médio geral
+  const tmrMedioCapital =
+    totalReparosCapital > 0 ? totalTmrCapital / totalReparosCapital : 0;
+  const tmrMedioInterior =
+    totalReparosInterior > 0 ? totalTmrInterior / totalReparosInterior : 0;
+
+  // Formatando para 2 casas decimais
+  const tmrFormatadoCapital = tmrMedioCapital.toFixed(2);
+  const tmrFormatadoInterior = tmrMedioInterior.toFixed(2);
+
+  // Determinar qual TMR é maior e gerar recomendações
+  let comparativoGeralHtml = "";
+  let recomendacoesHtml = "";
+
+  if (tmrMedioCapital > tmrMedioInterior) {
+    const diferenca = tmrMedioCapital - tmrMedioInterior;
+    comparativoGeralHtml = `
+      <div class="alert alert-info mt-4">
+        <h5><i class="fas fa-exchange-alt"></i> Comparativo Geral CAPITAL vs INTERIOR</h5>
+        <p><strong>CAPITAL:</strong> ${tmrFormatadoCapital}h | <strong>INTERIOR:</strong> ${tmrFormatadoInterior}h</p>
+        <p class="mb-2"><strong>CAPITAL tem TMR geral maior que INTERIOR (+${diferenca.toFixed(
+          2
+        )}h)</strong></p>
+        <p class="mb-0"><small class="text-muted">* Detalhes mês a mês e por regional disponíveis abaixo</small></p>
+      </div>
+    `;
+
+    recomendacoesHtml = `
+      <div class="card mt-3">
+        <div class="card-header bg-warning text-dark">
+          <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Recomendações para CAPITAL</h6>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>Analisar processos de reparo nas áreas metropolitanas</li>
+            <li>Verificar se há gargalos específicos em zonas urbanas densas</li>
+            <li>Avaliar a distribuição de recursos técnicos nas capitais</li>
+            <li>Investigar se a complexidade dos circuitos é maior nas áreas urbanas</li>
+          </ul>
+        </div>
+      </div>
+    `;
+  } else if (tmrMedioInterior > tmrMedioCapital) {
+    const diferenca = tmrMedioInterior - tmrMedioCapital;
+    comparativoGeralHtml = `
+      <div class="alert alert-info mt-4">
+        <h5><i class="fas fa-exchange-alt"></i> Comparativo Geral CAPITAL vs INTERIOR</h5>
+        <p><strong>CAPITAL:</strong> ${tmrFormatadoCapital}h | <strong>INTERIOR:</strong> ${tmrFormatadoInterior}h</p>
+        <p class="mb-2"><strong>INTERIOR tem TMR geral maior que CAPITAL (+${diferenca.toFixed(
+          2
+        )}h)</strong></p>
+        <p class="mb-0"><small class="text-muted">* Detalhes mês a mês e por regional disponíveis abaixo</small></p>
+      </div>
+    `;
+
+    recomendacoesHtml = `
+      <div class="card mt-3">
+        <div class="card-header bg-warning text-dark">
+          <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Recomendações para INTERIOR</h6>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>Verificar disponibilidade de técnicos em áreas remotas</li>
+            <li>Avaliar logística de transporte de equipamentos para interior</li>
+            <li>Considerar desafios geográficos e infraestrutura de comunicação</li>
+            <li>Analizar se os prazos são adequados considerando distâncias maiores</li>
+          </ul>
+        </div>
+      </div>
+    `;
+  } else {
+    comparativoGeralHtml = `
+      <div class="alert alert-info mt-4">
+        <h5><i class="fas fa-exchange-alt"></i> Comparativo Geral CAPITAL vs INTERIOR</h5>
+        <p><strong>CAPITAL:</strong> ${tmrFormatadoCapital}h | <strong>INTERIOR:</strong> ${tmrFormatadoInterior}h</p>
+        <p class="mb-2"><strong>Os TMRs gerais são iguais</strong></p>
+        <p class="mb-0"><small class="text-muted">* Detalhes mês a mês e por regional disponíveis abaixo</small></p>
+      </div>
+    `;
+  }
+
+  // Adicionar comparativo por regional e mês
+  for (const regional of regionaisUnicas) {
+    const dadosRegional = dadosAgrupados[regional];
+
+    // Calcular TMR mensal para esta regional
+    const dadosPorMes = {};
+
+    for (const mes of mesesUnicos) {
+      dadosPorMes[mes] = {
+        CAPITAL: { totalTmr: 0, totalReparos: 0 },
+        INTERIOR: { totalTmr: 0, totalReparos: 0 },
+      };
+    }
+
+    // Preencher os dados mês a mês para esta regional
+    // Calcular para CAPITAL mês a mês
+    for (const item of dadosRegional["CAPITAL"]) {
+      const mes = item.mes;
+      if (mes && item.tmr_total !== null && item.tmr_total !== undefined) {
+        dadosPorMes[mes].CAPITAL.totalTmr += parseFloat(item.tmr_total);
+        dadosPorMes[mes].CAPITAL.totalReparos++;
+      }
+    }
+
+    // Calcular para INTERIOR mês a mês
+    for (const item of dadosRegional["INTERIOR"]) {
+      const mes = item.mes;
+      if (mes && item.tmr_total !== null && item.tmr_total !== undefined) {
+        dadosPorMes[mes].INTERIOR.totalTmr += parseFloat(item.tmr_total);
+        dadosPorMes[mes].INTERIOR.totalReparos++;
+      }
+    }
+
+    // Calcular TMR médio mês a mês para esta regional
+    const tmrMensal = {};
+    for (const mes of mesesUnicos) {
+      tmrMensal[mes] = {
+        CAPITAL:
+          dadosPorMes[mes].CAPITAL.totalReparos > 0
+            ? dadosPorMes[mes].CAPITAL.totalTmr /
+              dadosPorMes[mes].CAPITAL.totalReparos
+            : 0,
+        INTERIOR:
+          dadosPorMes[mes].INTERIOR.totalReparos > 0
+            ? dadosPorMes[mes].INTERIOR.totalTmr /
+              dadosPorMes[mes].INTERIOR.totalReparos
+            : 0,
+      };
+    }
+
+    // Adicionar seção para esta regional
+    htmlComparativo += `
+      <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+          <h6 class="mb-0"><i class="fas fa-globe-americas"></i> Regional: ${regional}</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+              <thead class="table-dark">
+                <tr>
+                  <th>Mês</th>
+                  <th>CAPITAL (h)</th>
+                  <th>INTERIOR (h)</th>
+                  <th>Diferença (h)</th>
+                  <th>Destaque</th>
+                </tr>
+              </thead>
+              <tbody>
+    `;
+
+    for (const mes of mesesUnicos) {
+      const tmrCapital = tmrMensal[mes].CAPITAL;
+      const tmrInterior = tmrMensal[mes].INTERIOR;
+      const diferenca = Math.abs(tmrCapital - tmrInterior);
+      const maior =
+        tmrCapital > tmrInterior
+          ? "CAPITAL"
+          : tmrInterior > tmrCapital
+          ? "INTERIOR"
+          : "IGUAL";
+
+      htmlComparativo += `
+                <tr>
+                  <td>${mes}</td>
+                  <td class="${
+                    maior === "CAPITAL" ? "fw-bold text-danger" : ""
+                  }">${tmrCapital.toFixed(2)}</td>
+                  <td class="${
+                    maior === "INTERIOR" ? "fw-bold text-primary" : ""
+                  }">${tmrInterior.toFixed(2)}</td>
+                  <td>${diferenca.toFixed(2)}</td>
+                  <td>${maior}</td>
+                </tr>
+      `;
+    }
+
+    htmlComparativo += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Preparar dados para o gráfico geral
+  // Ordenar os meses em ordem cronológica (considerando o formato "Mês Ano")
+  const labels = mesesUnicos.sort((a, b) => {
+    // Converter os nomes dos meses para índices numéricos para ordenação
+    const mesesMap = {
+      'Janeiro': 1, 'Fevereiro': 2, 'Março': 3, 'Abril': 4, 'Maio': 5, 'Junho': 6,
+      'Julho': 7, 'Agosto': 8, 'Setembro': 9, 'Outubro': 10, 'Novembro': 11, 'Dezembro': 12
+    };
+
+    // Separar mês e ano
+    const [mesA, anoA] = a.split(' ');
+    const [mesB, anoB] = b.split(' ');
+
+    // Comparar primeiro por ano, depois por mês
+    if (parseInt(anoA) !== parseInt(anoB)) {
+      return parseInt(anoA) - parseInt(anoB);
+    }
+    return mesesMap[mesA] - mesesMap[mesB];
+  });
+  const dadosCapital = labels.map((mes) => {
+    let totalTmr = 0;
+    let totalReparos = 0;
+
+    for (const regional in dadosAgrupados) {
+      const dadosRegional = dadosAgrupados[regional];
+
+      // Calcular para CAPITAL mês a mês
+      for (const item of dadosRegional["CAPITAL"]) {
+        if (
+          item.mes === mes &&
+          item.tmr_total !== null &&
+          item.tmr_total !== undefined
+        ) {
+          totalTmr += parseFloat(item.tmr_total);
+          totalReparos++;
+        }
+      }
+    }
+
+    return totalReparos > 0 ? (totalTmr / totalReparos).toFixed(2) : 0;
+  });
+
+  const dadosInterior = labels.map((mes) => {
+    let totalTmr = 0;
+    let totalReparos = 0;
+
+    for (const regional in dadosAgrupados) {
+      const dadosRegional = dadosAgrupados[regional];
+
+      // Calcular para INTERIOR mês a mês
+      for (const item of dadosRegional["INTERIOR"]) {
+        if (
+          item.mes === mes &&
+          item.tmr_total !== null &&
+          item.tmr_total !== undefined
+        ) {
+          totalTmr += parseFloat(item.tmr_total);
+          totalReparos++;
+        }
+      }
+    }
+
+    return totalReparos > 0 ? (totalTmr / totalReparos).toFixed(2) : 0;
+  });
+
+  // Gerar HTML para o gráfico
+  const graficoHtml = `
+    <div class="card mt-4">
+      <div class="card-header bg-primary text-white">
+        <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Comparativo Mensal CAPITAL vs INTERIOR (Geral)</h6>
+      </div>
+      <div class="card-body">
+        <div style="height: 200px;">
+          <canvas id="graficoComparativoCapitalInterior"></canvas>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Exibir o comparativo abaixo da tabela
+  const comparativoContainer = $(`
+    <div id="comparativoCapitalInterior">
+      ${comparativoGeralHtml}
+      ${recomendacoesHtml}
+      ${htmlComparativo}
+      ${graficoHtml}
+    </div>
+  `);
+
+  // Remover comparações anteriores e adicionar a nova
+  $("#comparativoCapitalInterior").remove();
+  $("#tabelaRegionalContainer").after(comparativoContainer);
+
+  // Gerar o gráfico após adicionar o HTML ao DOM
+  setTimeout(() => {
+    gerarGraficoComparativo(labels, dadosCapital, dadosInterior);
+  }, 100);
+}
+
+// Função para gerar o gráfico comparativo
+function gerarGraficoComparativo(labels, dadosCapital, dadosInterior) {
+  const ctx = document
+    .getElementById("graficoComparativoCapitalInterior")
+    .getContext("2d");
+
+  // Destruir instância anterior do gráfico, se existir
+  if (window.graficoComparativoCI) {
+    window.graficoComparativoCI.destroy();
+  }
+
+  // Calcular as diferenças para cada mês
+  const dadosDiferenca = labels.map((mes, index) => {
+    const capital = parseFloat(dadosCapital[index]);
+    const interior = parseFloat(dadosInterior[index]);
+    return Math.abs(capital - interior);
+  });
+
+  // Determinar cores com base em qual é maior
+  const coresCapital = labels.map((mes, index) => {
+    const capital = parseFloat(dadosCapital[index]);
+    const interior = parseFloat(dadosInterior[index]);
+    return capital > interior
+      ? "rgba(255, 99, 132, 0.7)"
+      : "rgba(255, 99, 132, 0.5)";
+  });
+
+  const coresInterior = labels.map((mes, index) => {
+    const capital = parseFloat(dadosCapital[index]);
+    const interior = parseFloat(dadosInterior[index]);
+    return interior > capital
+      ? "rgba(54, 162, 235, 0.7)"
+      : "rgba(54, 162, 235, 0.5)";
+  });
+
+  // Calcular o valor máximo para definir a escala do eixo X
+  const maxValor = Math.max(...dadosCapital, ...dadosInterior) * 1.2;
+
+  window.graficoComparativoCI = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels.map(
+        (mes) =>
+          `${mes}\nCAPITAL: ${dadosCapital[labels.indexOf(mes)]}h\nINTERIOR: ${
+            dadosInterior[labels.indexOf(mes)]
+          }h`
+      ),
+      datasets: [
+        {
+          label: "CAPITAL",
+          data: dadosCapital,
+          backgroundColor: coresCapital,
+          borderColor: "rgb(255, 99, 132)",
+          borderWidth: 1,
+        },
+        {
+          label: "INTERIOR",
+          data: dadosInterior,
+          backgroundColor: coresInterior,
+          borderColor: "rgb(54, 162, 235)",
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      indexAxis: "y", // Barras horizontais
+      responsive: true, // Desativar responsividade para manter tamanho fixo
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          beginAtZero: true,
+          max: maxValor,
+          title: {
+            display: true,
+            text: "TMR (horas)",
+          },
+        },
+        y: {
+          stacked: false,
+        },
+      },
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              let label = context.dataset.label || "";
+              if (label) {
+                label += ": ";
+              }
+              if (context.parsed.x !== null) {
+                label += context.parsed.x + "h";
+              }
+              return label;
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 function agruparPorCluster(dados) {
@@ -1535,7 +2052,7 @@ function agruparPorCluster(dados) {
   const agrupadoOrdenado = {};
   Object.keys(agrupado)
     .sort()
-    .forEach(key => {
+    .forEach((key) => {
       agrupadoOrdenado[key] = agrupado[key];
     });
 
@@ -1568,18 +2085,18 @@ function agruparPorRegionalETipoCidade(dados) {
     if (!agrupado[regional]) {
       agrupado[regional] = {
         CAPITAL: [],
-        INTERIOR: []
+        INTERIOR: [],
       };
     }
 
     // Determinar o tipo de cidade (padronizando possíveis variações)
-    let tipoCidade = item.tipo_cidade ? item.tipo_cidade.toUpperCase() : '';
-    if (tipoCidade === 'CAPITAL' || tipoCidade === 'INTERIOR') {
+    let tipoCidade = item.tipo_cidade ? item.tipo_cidade.toUpperCase() : "";
+    if (tipoCidade === "CAPITAL" || tipoCidade === "INTERIOR") {
       agrupado[regional][tipoCidade].push(item);
     } else {
       // Se não for nem CAPITAL nem INTERIOR, adicionar a ambos para não perder dados
-      agrupado[regional]['CAPITAL'].push(item);
-      agrupado[regional]['INTERIOR'].push(item);
+      agrupado[regional]["CAPITAL"].push(item);
+      agrupado[regional]["INTERIOR"].push(item);
     }
   });
 
@@ -1716,7 +2233,7 @@ function atualizarMenuProcedenciaCompleto(procedencias) {
   procedencias.sort();
 
   // Limpar o container de opções
-  const container = $('.procedencia-options-container');
+  const container = $(".procedencia-options-container");
   container.empty();
 
   // Adicionar novos itens de procedência
@@ -1724,11 +2241,11 @@ function atualizarMenuProcedenciaCompleto(procedencias) {
     const isSelected = procedenciasSelecionadas.includes(procedencia);
 
     const optionElement = $(`
-      <div class="procedencia-option ${isSelected ? 'selected' : ''}">
+      <div class="procedencia-option ${isSelected ? "selected" : ""}">
         <div class="form-check">
           <input class="form-check-input procedencia-checkbox" type="checkbox"
                  value="${procedencia}" id="proc_${procedencia}"
-                 ${isSelected ? 'checked' : ''}>
+                 ${isSelected ? "checked" : ""}>
           <label class="form-check-label" for="proc_${procedencia}">
             ${procedencia}
           </label>
@@ -1749,7 +2266,7 @@ function atualizarMenuProcedenciaCompletoRegional(procedencias) {
   procedencias.sort();
 
   // Limpar o container de opções
-  const container = $('.procedencia-options-container-regional');
+  const container = $(".procedencia-options-container-regional");
   container.empty();
 
   // Adicionar novos itens de procedência
@@ -1757,11 +2274,11 @@ function atualizarMenuProcedenciaCompletoRegional(procedencias) {
     const isSelected = procedenciasSelecionadas.includes(procedencia);
 
     const optionElement = $(`
-      <div class="procedencia-option-regional ${isSelected ? 'selected' : ''}">
+      <div class="procedencia-option-regional ${isSelected ? "selected" : ""}">
         <div class="form-check">
           <input class="form-check-input procedencia-checkbox-regional" type="checkbox"
                  value="${procedencia}" id="proc_regional_${procedencia}"
-                 ${isSelected ? 'checked' : ''}>
+                 ${isSelected ? "checked" : ""}>
           <label class="form-check-label" for="proc_regional_${procedencia}">
             ${procedencia}
           </label>
@@ -1782,7 +2299,7 @@ function atualizarMenuTipoCidadeCompleto(tiposCidade) {
   tiposCidade.sort();
 
   // Limpar o container de opções
-  const container = $('.tipo-cidade-options-container');
+  const container = $(".tipo-cidade-options-container");
   container.empty();
 
   // Adicionar novos itens de tipo de cidade
@@ -1790,11 +2307,11 @@ function atualizarMenuTipoCidadeCompleto(tiposCidade) {
     const isSelected = tiposCidadeSelecionados.includes(tipoCidade);
 
     const optionElement = $(`
-      <div class="tipo-cidade-option ${isSelected ? 'selected' : ''}">
+      <div class="tipo-cidade-option ${isSelected ? "selected" : ""}">
         <div class="form-check">
           <input class="form-check-input tipo-cidade-checkbox" type="checkbox"
                  value="${tipoCidade}" id="tipo_cidade_${tipoCidade}"
-                 ${isSelected ? 'checked' : ''}>
+                 ${isSelected ? "checked" : ""}>
           <label class="form-check-label" for="tipo_cidade_${tipoCidade}">
             ${tipoCidade}
           </label>
@@ -1927,8 +2444,8 @@ function criarGraficoCluster(dados, meses) {
           top: 20, // Aumentar o espaçamento superior para afastar a legenda do gráfico
           bottom: 20,
           left: 10,
-          right: 10
-        }
+          right: 10,
+        },
       },
       scales: {
         y: {
@@ -1998,7 +2515,7 @@ function criarGraficoCluster(dados, meses) {
               weight: "bold",
             },
             usePointStyle: true,
-            padding: 20
+            padding: 20,
           },
         },
         tooltip: {
@@ -2048,17 +2565,17 @@ function desabilitarBotoesFiltro(desabilitar) {
     "#filtroProcedenciaClusterBtn",
     "#filtroTipoCidadeClusterBtn",
     "#aplicarFiltrosCluster",
-    "#aplicarFiltrosRegional"
+    "#aplicarFiltrosRegional",
   ];
 
   botoesFiltro.forEach(function (seletor) {
-    $(seletor).prop('disabled', desabilitar);
+    $(seletor).prop("disabled", desabilitar);
 
     // Adicionar ou remover classe visual para indicar estado desabilitado
     if (desabilitar) {
-      $(seletor).addClass('disabled');
+      $(seletor).addClass("disabled");
     } else {
-      $(seletor).removeClass('disabled');
+      $(seletor).removeClass("disabled");
     }
   });
 }
