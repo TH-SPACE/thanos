@@ -5,6 +5,10 @@
       "group": "Cidade"
     },
     {
+      "contains": "AUTOMACOES_COE_B2B",
+      "group": "Centralizado"
+    },
+    {
       "contains": "Bucle Centro Oeste ABILITY",
       "group": "Rede Externa Bucle"
     },
@@ -13,16 +17,12 @@
       "group": "Rede Externa Bucle"
     },
     {
-      "contains": "AUTOMACOES_COE_B2B",
-      "group": "OUTROS"
-    },
-    {
       "contains": "CAMPO GIFT",
       "group": "Triagem"
     },
     {
       "contains": "CCR_GPON_TELEMONT",
-      "group": "CCR"
+      "group": "Cidade"
     },
     {
       "contains": "COE QUALIDADE",
@@ -102,15 +102,15 @@
     },
     {
       "contains": "INTERNACIONAL",
-      "group": "Triagem"
+      "group": "Centralizado"
     },
     {
       "contains": "INTERNACIONAL CARRIERS",
-      "group": "Triagem"
+      "group": "Centralizado"
     },
     {
       "contains": "INTERNACIONAL MULTI-CLIENTES",
-      "group": "Triagem"
+      "group": "Centralizado"
     },
     {
       "contains": "LP_FSP",
@@ -118,7 +118,7 @@
     },
     {
       "contains": "LP_FSP_Rede Atenuada",
-      "group": "OUTROS"
+      "group": "Cidade"
     },
     {
       "contains": "MASSIVA ITX VOZ B2B",
@@ -127,6 +127,10 @@
     {
       "contains": "MASSIVA_ATIVA",
       "group": "MASSIVA_ATIVA"
+    },
+    {
+      "contains": "MIGRAÇÃO_HADES_CENTRO OESTE",
+      "group": "HADES"
     },
     {
       "contains": "N2 DADOS B2B",
@@ -154,23 +158,23 @@
     },
     {
       "contains": "OUTSOURCING",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "OUTSOURCING - BRADESCO",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "OUTSOURCING - ITAU",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "OUTSOURCING - SANTANDER",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "OUTSOURCING SDWAN",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "Parada Relógio Avançados B2B",
@@ -182,11 +186,11 @@
     },
     {
       "contains": "Parceiros FIELD B2B-Centro Oes",
-      "group": "OUTROS"
+      "group": "Field Tel"
     },
     {
       "contains": "Parceiros FIELD B2B-Nordeste",
-      "group": "OUTROS"
+      "group": "Field Tel"
     },
     {
       "contains": "Parceiros Norte",
@@ -218,11 +222,11 @@
     },
     {
       "contains": "PREV_OUTSOURCING BRADESCO",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "PREV_OUTSOURCING ITAU",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "PREV_REGIONAL CENTRO OESTE",
@@ -230,19 +234,19 @@
     },
     {
       "contains": "PREV_REGIONAL NORTE",
-      "group": "OUTROS"
+      "group": "Cidade"
     },
     {
       "contains": "PREV_REGIONAL SUDESTE",
-      "group": "OUTROS"
+      "group": "Cidade"
     },
     {
       "contains": "PROATIVIDADE - INTRAGOV",
-      "group": "Triagem"
+      "group": "Centralizado"
     },
     {
       "contains": "PROATIVIDADE AVANCADA",
-      "group": "Triagem"
+      "group": "Centralizado"
     },
     {
       "contains": "Rede Externa Ability CO-NO",
@@ -266,7 +270,7 @@
     },
     {
       "contains": "REGIONAIS V2 - DESPACHO",
-      "group": "OUTROS"
+      "group": "Cidade"
     },
     {
       "contains": "REGIONAL CENTRO OESTE",
@@ -290,7 +294,7 @@
     },
     {
       "contains": "SDWAN SOLO",
-      "group": "OUTROS"
+      "group": "Triagem"
     },
     {
       "contains": "SGMC B2B",
@@ -322,11 +326,11 @@
     },
     {
       "contains": "SUPORTE BANCO DO BRASIL",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "SUPORTE CEF",
-      "group": "Triagem"
+      "group": "Outsourcing"
     },
     {
       "contains": "TEMS_N1 PROATIVIDADE",
@@ -346,19 +350,11 @@
     },
     {
       "contains": "VALIDA COE B2B",
-      "group": "Cidade"
+      "group": "Centralizado"
     },
     {
       "contains": "VALIDA MASSIVA",
       "group": "Cidade"
-    },
-    {
-      "contains": "VITA - Grupo lojas SIGITM",
-      "group": "Triagem"
-    },
-    {
-      "contains": "MIGRAÇÃO_HADES_CENTRO OESTE",
-      "group": "HADES"
     }
   ]
 }
