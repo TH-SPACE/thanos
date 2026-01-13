@@ -67,10 +67,10 @@
                         <i class="fas fa-clock"></i> TMR - Tempo Médio de Reparos
                         <!-- Botões de ação -->
                         <span id="botoesAcao" style="margin-left: 15px;">
-                            <button class="btn btn-sm btn-outline-info" id="sincronizarManual" title="Sincronizar Dados">
+                            <button class="btn btn-sm btn-outline-info" id="sincronizarManual" title="Sincronizar Dados" data-permissao="ADM">
                                 <i class="fas fa-database"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-secondary" id="atualizarAmbas" title="Atualizar Tudo">
+                            <button class="btn btn-sm btn-outline-secondary" id="atualizarAmbas" title="Atualizar Tudo" data-permissao="ADM">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
                         </span>
@@ -472,6 +472,50 @@
                     .fail(function() {
                         alert('Erro ao carregar os dados do perfil.');
                     });
+            });
+
+            // Carregar informações do usuário para verificação de permissões
+            $.get('/tmr/perfil-usuario', function (usuario) {
+                if (usuario && usuario.perfil) {
+                    // Atualizar a variável global de perfil do usuário
+                    window.perfilUsuario = usuario.perfil;
+
+                    // Verificar se o perfil do usuário contém "ADM"
+                    const usuarioTemPermissaoADM = usuario.perfil.includes("ADM");
+
+                    // Controlar visibilidade dos botões com base na permissão
+                    $('[data-permissao="ADM"]').each(function() {
+                        if (usuarioTemPermissaoADM) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+
+                            // Se o botão estiver dentro de um span com outros botões,
+                            // podemos querer ocultar o span inteiro se todos os botões dentro dele forem ocultos
+                            const parentSpan = $(this).parent('span');
+                            if (parentSpan.length > 0) {
+                                // Verificar se todos os botões filhos têm permissão ADM e estão ocultos
+                                const botoesComPermissao = parentSpan.find('[data-permissao="ADM"]');
+                                const botoesVisiveis = parentSpan.find('[data-permissao="ADM"]:visible');
+
+                                // Se todos os botões com permissão ADM estiverem ocultos, ocultar o span inteiro
+                                if (botoesComPermissao.length > 0 && botoesVisiveis.length === 0) {
+                                    parentSpan.hide();
+                                } else {
+                                    parentSpan.show();
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // Se não houver informações do usuário, ocultar todos os elementos com permissão ADM
+                    $('[data-permissao="ADM"]').hide();
+                    $('[data-permissao="ADM"]').parent('span').hide();
+                }
+            }).fail(function () {
+                // Em caso de falha na requisição, ocultar todos os elementos com permissão ADM
+                $('[data-permissao="ADM"]').hide();
+                $('[data-permissao="ADM"]').parent('span').hide();
             });
         });
     </script>

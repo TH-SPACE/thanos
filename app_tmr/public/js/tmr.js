@@ -7,6 +7,9 @@ const procedenciasPadrao = ["proativo", "reativo"]; // Referência para os itens
 // Variáveis para armazenar os tipos de cidade selecionados
 let tiposCidadeSelecionados = []; // Começa sem itens selecionados
 
+// Variável para armazenar o perfil do usuário
+let perfilUsuario = null;
+
 $(document).ready(function () {
   // Carregar dados iniciais e atualizar cabeçalhos
   carregarDadosTMR();
@@ -50,6 +53,12 @@ $(document).ready(function () {
 
   // Botão de atualizar ambas as visões
   $("#atualizarAmbas").click(function () {
+    // Verificar se o usuário tem permissão para executar esta ação
+    if (typeof window.perfilUsuario === 'undefined' || !window.perfilUsuario.includes("ADM")) {
+      alert("Você não tem permissão para executar esta ação.");
+      return;
+    }
+
     // Fechar o dropdown de procedência
     $("#filtroProcedenciaClusterMenu")
       .parent()
@@ -90,6 +99,12 @@ $(document).ready(function () {
 
   // Botão de sincronização manual de dados
   $("#sincronizarManual").click(function () {
+    // Verificar se o usuário tem permissão para executar esta ação
+    if (typeof window.perfilUsuario === 'undefined' || !window.perfilUsuario.includes("ADM")) {
+      alert("Você não tem permissão para executar esta ação.");
+      return;
+    }
+
     // Fechar o dropdown de procedência
     $("#filtroProcedenciaClusterMenu")
       .parent()
@@ -100,6 +115,12 @@ $(document).ready(function () {
 
   // Botão de sincronização manual de dados para regional
   $("#sincronizarManualRegional").click(function () {
+    // Verificar se o usuário tem permissão para executar esta ação
+    if (typeof window.perfilUsuario === 'undefined' || !window.perfilUsuario.includes("ADM")) {
+      alert("Você não tem permissão para executar esta ação.");
+      return;
+    }
+
     // Fechar o dropdown de procedência
     $("#filtroProcedenciaClusterMenu")
       .parent()
