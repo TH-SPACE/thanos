@@ -22,6 +22,16 @@
         .btn-move-up, .btn-move-down {
             cursor: pointer;
         }
+
+        /* Estilo para o campo de filtro */
+        #filtroRegras {
+            transition: border-color 0.3s ease;
+        }
+
+        #filtroRegras:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
     </style>
 </head>
 
@@ -126,7 +136,16 @@
                             <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                    <input type="text" id="filtroRegras" class="form-control" placeholder="Filtrar regras...">
+                                    <input type="text" id="filtroRegras" class="form-control" placeholder="Filtrar regras (digite texto a conter ou grupo)...">
+                                    <button class="btn btn-outline-secondary" type="button" id="limparFiltro" title="Limpar filtro">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Dica: Separe múltiplos termos com espaço para buscar em qualquer campo</small>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted" id="contadorResultados" style="padding-top: 0.375rem;">
+                                    <!-- Contador de resultados -->
                                 </div>
                             </div>
                         </div>
@@ -308,10 +327,38 @@
                 window.open('/tmr/config/download-modelo', '_blank');
             });
 
+            // Variável para controlar o temporizador do filtro
+            let filtroTimer = null;
+
             // Evento para filtro de regras
             $('#filtroRegras').on('input', function() {
-                const termoBusca = $(this).val().toLowerCase();
-                filtrarRegras(termoBusca);
+                const termoBusca = $(this).val();
+
+                // Limpar o temporizador anterior
+                clearTimeout(filtroTimer);
+
+                // Definir um novo temporizador para evitar buscas excessivas
+                filtroTimer = setTimeout(function() {
+                    filtrarRegras(termoBusca);
+                }, 300); // 300ms de delay após o usuário parar de digitar
+            });
+
+            // Evento para teclas especiais no campo de filtro
+            $('#filtroRegras').on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    // Limpar o filtro com a tecla ESC
+                    $('#limparFiltro').click();
+                }
+            });
+
+            // Evento para limpar o filtro
+            $('#limparFiltro').on('click', function() {
+                // Limpar o temporizador
+                clearTimeout(filtroTimer);
+
+                $('#filtroRegras').val('');
+                termoBuscaAtual = '';
+                filtrarRegras('');
             });
         });
 
@@ -335,16 +382,38 @@
             $('#rulesTableBody tr').show();
 
             if (termoBusca.trim() !== '') {
-                // Ocultar linhas que não correspondem ao filtro
+                // Dividir o termo de busca em múltiplos termos separados por espaços
+                const termos = termoBusca.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+
+                // Ocultar linhas que não correspondem a todos os termos
                 $('#rulesTableBody tr').each(function() {
                     const row = $(this);
                     const containsText = row.find('td:nth-child(2) input').val().toLowerCase(); // Texto a conter
                     const groupText = row.find('td:nth-child(3) input').val().toLowerCase(); // Grupo de destino
 
-                    if (!containsText.includes(termoBusca) && !groupText.includes(termoBusca)) {
+                    // Verificar se todos os termos estão presentes em pelo menos um dos campos
+                    const todosTermosEncontrados = termos.every(termo =>
+                        containsText.includes(termo) || groupText.includes(termo)
+                    );
+
+                    if (!todosTermosEncontrados) {
                         row.hide();
                     }
                 });
+            }
+
+            // Atualizar contador de resultados
+            atualizarContadorResultados();
+        }
+
+        function atualizarContadorResultados() {
+            const totalRegras = rules.length;
+            const regrasVisiveis = $('#rulesTableBody tr:visible').length;
+
+            if (termoBuscaAtual) {
+                $('#contadorResultados').text(`Mostrando ${regrasVisiveis} de ${totalRegras} regras (filtradas por "${termoBuscaAtual}")`);
+            } else {
+                $('#contadorResultados').text(`Total de regras: ${totalRegras}`);
             }
         }
 
@@ -358,6 +427,7 @@
                         <td colspan="4" class="text-center">Nenhuma regra cadastrada</td>
                     </tr>
                 `);
+                atualizarContadorResultados();
                 return;
             }
 
@@ -365,6 +435,13 @@
                 const ruleRow = criarLinhaRegra(rule, index);
                 tbody.append(ruleRow);
             });
+
+            // Aplicar o filtro novamente após renderizar
+            if (termoBuscaAtual) {
+                filtrarRegras(termoBuscaAtual);
+            } else {
+                atualizarContadorResultados();
+            }
         }
 
         function criarLinhaRegra(rule, index) {
@@ -409,6 +486,17 @@
             // Adicionar evento para atualizar a regra quando os inputs mudarem
             row.find('.rule-contains, .rule-group').on('input', function() {
                 atualizarRegra(index);
+            });
+
+            // Adicionar evento para atualizar o filtro quando os inputs mudarem
+            row.find('.rule-contains, .rule-group').on('input', function() {
+                atualizarRegra(index);
+
+                if (termoBuscaAtual) {
+                    setTimeout(function() {
+                        filtrarRegras(termoBuscaAtual);
+                    }, 10); // Pequeno delay para garantir que o valor foi atualizado
+                }
             });
 
             return row;
