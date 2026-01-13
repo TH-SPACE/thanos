@@ -13,19 +13,14 @@
     <link rel="stylesheet" href="/tmr/css/tmr-custom.css">
     <!-- CSS customizado -->
     <style>
-        .rule-item {
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            margin-bottom: 0.5rem;
-            padding: 0.75rem;
+        /* Estilo para inputs na tabela */
+        #rulesTable input.form-control {
+            width: 100%;
         }
 
-        .rule-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .btn-move {
-            cursor: move;
+        /* Estilo para botões de mover */
+        .btn-move-up, .btn-move-down {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -87,9 +82,6 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-edit"></i> Regras de Agrupamento de Grupos</h5>
                         <div id="botoesAcaoConfig">
-                            <button class="btn btn-sm btn-success me-2" id="adicionarRegra">
-                                <i class="fas fa-plus"></i> Adicionar Regra
-                            </button>
                             <button class="btn btn-sm btn-primary me-2" id="salvarConfiguracoes">
                                 <i class="fas fa-save"></i> Salvar Configurações
                             </button>
@@ -130,8 +122,35 @@
                                 Modelo</a>
                         </div>
 
-                        <div id="rulesContainer">
-                            <!-- As regras serão adicionadas aqui dinamicamente -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" id="filtroRegras" class="form-control" placeholder="Filtrar regras...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="rulesTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Texto a Conter</th>
+                                        <th>Grupo de Destino</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rulesTableBody">
+                                    <!-- As regras serão adicionadas aqui dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-success" id="adicionarRegraTabela">
+                                <i class="fas fa-plus"></i> Adicionar Nova Regra
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -216,11 +235,6 @@
             // Carregar as regras de mapeamento
             carregarRegras();
 
-            // Evento para adicionar nova regra
-            $('#adicionarRegra').click(function () {
-                adicionarNovaRegra();
-            });
-
             // Evento para salvar as configurações
             $('#salvarConfiguracoes').click(function () {
                 salvarConfiguracoes();
@@ -293,6 +307,12 @@
                 // Abrir a URL de download em uma nova aba/janela
                 window.open('/tmr/config/download-modelo', '_blank');
             });
+
+            // Evento para filtro de regras
+            $('#filtroRegras').on('input', function() {
+                const termoBusca = $(this).val().toLowerCase();
+                filtrarRegras(termoBusca);
+            });
         });
 
         function carregarRegras() {
@@ -305,71 +325,104 @@
             });
         }
 
+        // Variável para armazenar o termo de busca atual
+        let termoBuscaAtual = '';
+
+        function filtrarRegras(termoBusca) {
+            termoBuscaAtual = termoBusca;
+
+            // Mostrar todas as linhas primeiro
+            $('#rulesTableBody tr').show();
+
+            if (termoBusca.trim() !== '') {
+                // Ocultar linhas que não correspondem ao filtro
+                $('#rulesTableBody tr').each(function() {
+                    const row = $(this);
+                    const containsText = row.find('td:nth-child(2) input').val().toLowerCase(); // Texto a conter
+                    const groupText = row.find('td:nth-child(3) input').val().toLowerCase(); // Grupo de destino
+
+                    if (!containsText.includes(termoBusca) && !groupText.includes(termoBusca)) {
+                        row.hide();
+                    }
+                });
+            }
+        }
+
         function renderizarRegras() {
-            const container = $('#rulesContainer');
-            container.empty();
+            const tbody = $('#rulesTableBody');
+            tbody.empty();
+
+            if (rules.length === 0) {
+                tbody.append(`
+                    <tr>
+                        <td colspan="4" class="text-center">Nenhuma regra cadastrada</td>
+                    </tr>
+                `);
+                return;
+            }
 
             rules.forEach((rule, index) => {
-                const ruleElement = criarElementoRegra(rule, index);
-                container.append(ruleElement);
+                const ruleRow = criarLinhaRegra(rule, index);
+                tbody.append(ruleRow);
             });
         }
 
-        function criarElementoRegra(rule, index) {
-            const ruleDiv = $(`
-                <div class="rule-item" data-index="${index}">
-                    <div class="row align-items-center">
-                        <div class="col-md-5">
-                            <label class="form-label">Texto a conter</label>
-                            <input type="text" class="form-control form-control-sm rule-contains" value="${rule.contains || ''}" placeholder="Texto a ser procurado">
+        function criarLinhaRegra(rule, index) {
+            const row = $(`
+                <tr data-index="${index}">
+                    <td>${index + 1}</td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm rule-contains" value="${rule.contains || ''}" placeholder="Texto a ser procurado">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm rule-group" value="${rule.group || ''}" placeholder="Grupo para qual será mapeado">
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary btn-move-up" title="Mover para cima">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary btn-move-down" title="Mover para baixo">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-remove" title="Remover regra">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
-                        <div class="col-md-5">
-                            <label class="form-label">Grupo de destino</label>
-                            <input type="text" class="form-control form-control-sm rule-group" value="${rule.group || ''}" placeholder="Grupo para qual será mapeado">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">&nbsp;</label>
-                            <div class="d-flex gap-1">
-                                <button class="btn btn-sm btn-outline-primary btn-move" title="Mover para cima">
-                                    <i class="fas fa-arrow-up"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-primary btn-move" title="Mover para baixo">
-                                    <i class="fas fa-arrow-down"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-remove" title="Remover regra">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    </td>
+                </tr>
             `);
 
             // Adicionar eventos para os botões
-            ruleDiv.find('.btn-move:first').click(function () {
+            row.find('.btn-move-up').click(function() {
                 moverRegra(index, -1);
             });
 
-            ruleDiv.find('.btn-move:last').click(function () {
+            row.find('.btn-move-down').click(function() {
                 moverRegra(index, 1);
             });
 
-            ruleDiv.find('.btn-remove').click(function () {
+            row.find('.btn-remove').click(function() {
                 removerRegra(index);
             });
 
             // Adicionar evento para atualizar a regra quando os inputs mudarem
-            ruleDiv.find('.rule-contains, .rule-group').on('input', function () {
+            row.find('.rule-contains, .rule-group').on('input', function() {
                 atualizarRegra(index);
             });
 
-            return ruleDiv;
+            return row;
         }
 
         function adicionarNovaRegra() {
             rules.push({ contains: '', group: '' });
             renderizarRegras();
         }
+
+        // Evento para adicionar nova regra via botão da tabela
+        $(document).on('click', '#adicionarRegraTabela', function() {
+            adicionarNovaRegra();
+        });
 
         function removerRegra(index) {
             if (rules.length <= 1) {

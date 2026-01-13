@@ -5,16 +5,16 @@
       "group": "Cidade"
     },
     {
-      "contains": "AUTOMACOES_COE_B2B",
-      "group": "OUTROS"
-    },
-    {
       "contains": "Bucle Centro Oeste ABILITY",
       "group": "Rede Externa Bucle"
     },
     {
       "contains": "Bucle Centro Oeste ONDACOM",
       "group": "Rede Externa Bucle"
+    },
+    {
+      "contains": "AUTOMACOES_COE_B2B",
+      "group": "OUTROS"
     },
     {
       "contains": "CAMPO GIFT",
