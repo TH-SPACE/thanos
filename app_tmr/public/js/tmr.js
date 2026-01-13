@@ -1055,6 +1055,7 @@ function carregarDadosTMR() {
       $("#tabelaClusterContainer").show();
       $("#loadingRegional").hide();
       $("#tabelaRegionalContainer").show();
+      $("#tabelaRegionalTotalContainer").show();
 
       // Reabilitar botões de filtro após o carregamento
       desabilitarBotoesFiltro(false);
@@ -1069,6 +1070,9 @@ function carregarDadosTMR() {
         '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de cluster</td></tr>'
       );
       $("#tabelaRegional tbody").html(
+        '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
+      );
+      $("#tabelaRegionalTotal tbody").html(
         '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
       );
 
@@ -1217,9 +1221,10 @@ function carregarDadosRegional() {
 
       atualizarTabelaRegional(dados, meses);
 
-      // Após carregar os dados, ocultar animação de carregamento e mostrar tabela
+      // Após carregar os dados, ocultar animação de carregamento e mostrar tabelas
       $("#loadingRegional").hide();
       $("#tabelaRegionalContainer").show();
+      $("#tabelaRegionalTotalContainer").show();
 
       // Reabilitar botões de filtro após o carregamento
       desabilitarBotoesFiltro(false);
@@ -1229,6 +1234,9 @@ function carregarDadosRegional() {
       $("#tabelaRegionalContainer").show();
 
       $("#tabelaRegional tbody").html(
+        '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
+      );
+      $("#tabelaRegionalTotal tbody").html(
         '<tr><td colspan="100" class="text-center text-danger p-4">Erro ao carregar dados de regional</td></tr>'
       );
 
@@ -1930,12 +1938,16 @@ function gerarComparativoCapitalInterior(dados) {
     </div>
   `;
 
+  // Criar tabela TOTAL consolidando todos os dados
+  const tabelaTotalHtml = gerarTabelaTotalCapitalInterior(dados, mesesUnicos);
+
   // Exibir o comparativo abaixo da tabela
   const comparativoContainer = $(`
     <div id="comparativoCapitalInterior">
       ${comparativoGeralHtml}
       ${recomendacoesHtml}
       ${htmlComparativo}
+      ${tabelaTotalHtml}
       ${graficoHtml}
     </div>
   `);
@@ -1948,6 +1960,153 @@ function gerarComparativoCapitalInterior(dados) {
   setTimeout(() => {
     gerarGraficoComparativo(labels, dadosCapital, dadosInterior);
   }, 100);
+}
+
+// Função para gerar a tabela TOTAL de comparativo CAPITAL vs INTERIOR
+function gerarTabelaTotalCapitalInterior(dados, mesesUnicos) {
+  // Agrupar dados por tipo de cidade
+  const dadosAgrupados = agruparPorRegionalETipoCidade(dados);
+
+  // Calcular TMR médio para CAPITAL e INTERIOR mês a mês considerando todas as regionais
+  const dadosPorMes = {};
+
+  // Inicializar os meses
+  mesesUnicos.forEach((mes) => {
+    dadosPorMes[mes] = {
+      CAPITAL: { totalTmr: 0, totalReparos: 0 },
+      INTERIOR: { totalTmr: 0, totalReparos: 0 },
+    };
+  });
+
+  // Preencher os dados mês a mês considerando todas as regionais
+  for (const regional in dadosAgrupados) {
+    const dadosRegional = dadosAgrupados[regional];
+
+    // Calcular para CAPITAL mês a mês
+    for (const item of dadosRegional["CAPITAL"]) {
+      const mes = item.mes;
+      if (mes && item.tmr_total !== null && item.tmr_total !== undefined) {
+        if (dadosPorMes[mes]) {
+          dadosPorMes[mes].CAPITAL.totalTmr += parseFloat(item.tmr_total);
+          dadosPorMes[mes].CAPITAL.totalReparos++;
+        } else {
+          dadosPorMes[mes] = {
+            CAPITAL: { totalTmr: parseFloat(item.tmr_total), totalReparos: 1 },
+            INTERIOR: { totalTmr: 0, totalReparos: 0 }
+          };
+        }
+      }
+    }
+
+    // Calcular para INTERIOR mês a mês
+    for (const item of dadosRegional["INTERIOR"]) {
+      const mes = item.mes;
+      if (mes && item.tmr_total !== null && item.tmr_total !== undefined) {
+        if (dadosPorMes[mes]) {
+          dadosPorMes[mes].INTERIOR.totalTmr += parseFloat(item.tmr_total);
+          dadosPorMes[mes].INTERIOR.totalReparos++;
+        } else {
+          dadosPorMes[mes] = {
+            CAPITAL: { totalTmr: 0, totalReparos: 0 },
+            INTERIOR: { totalTmr: parseFloat(item.tmr_total), totalReparos: 1 }
+          };
+        }
+      }
+    }
+  }
+
+  // Calcular TMR médio mês a mês para o total geral
+  const tmrMensal = {};
+  for (const mes of mesesUnicos) {
+    tmrMensal[mes] = {
+      CAPITAL:
+        dadosPorMes[mes].CAPITAL.totalReparos > 0
+          ? dadosPorMes[mes].CAPITAL.totalTmr /
+            dadosPorMes[mes].CAPITAL.totalReparos
+          : 0,
+      INTERIOR:
+        dadosPorMes[mes].INTERIOR.totalReparos > 0
+          ? dadosPorMes[mes].INTERIOR.totalTmr /
+            dadosPorMes[mes].INTERIOR.totalReparos
+          : 0,
+    };
+  }
+
+  // Ordenar os meses em ordem cronológica (considerando o formato "Mês Ano")
+  const mesesOrdenados = mesesUnicos.sort((a, b) => {
+    // Converter os nomes dos meses para índices numéricos para ordenação
+    const mesesMap = {
+      'Janeiro': 1, 'Fevereiro': 2, 'Março': 3, 'Abril': 4, 'Maio': 5, 'Junho': 6,
+      'Julho': 7, 'Agosto': 8, 'Setembro': 9, 'Outubro': 10, 'Novembro': 11, 'Dezembro': 12
+    };
+
+    // Separar mês e ano
+    const [mesA, anoA] = a.split(' ');
+    const [mesB, anoB] = b.split(' ');
+
+    // Comparar primeiro por ano, depois por mês
+    if (parseInt(anoA) !== parseInt(anoB)) {
+      return parseInt(anoA) - parseInt(anoB);
+    }
+    return mesesMap[mesA] - mesesMap[mesB];
+  });
+
+  // Gerar HTML para a tabela TOTAL
+  let tabelaTotalHtml = `
+    <div class="card mt-4">
+      <div class="card-header bg-success text-white">
+        <h6 class="mb-0"><i class="fas fa-table"></i> TABELA TOTAL - Comparativo CAPITAL vs INTERIOR (Consolidado)</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm">
+            <thead class="table-dark">
+              <tr>
+                <th>Mês</th>
+                <th>CAPITAL (h)</th>
+                <th>INTERIOR (h)</th>
+                <th>Diferença (h)</th>
+                <th>Destaque</th>
+              </tr>
+            </thead>
+            <tbody>
+  `;
+
+  for (const mes of mesesOrdenados) {
+    const tmrCapital = tmrMensal[mes].CAPITAL;
+    const tmrInterior = tmrMensal[mes].INTERIOR;
+    const diferenca = Math.abs(tmrCapital - tmrInterior);
+    const maior =
+      tmrCapital > tmrInterior
+        ? "CAPITAL"
+        : tmrInterior > tmrCapital
+        ? "INTERIOR"
+        : "IGUAL";
+
+    tabelaTotalHtml += `
+              <tr>
+                <td>${mes}</td>
+                <td class="${
+                  maior === "CAPITAL" ? "fw-bold text-danger" : ""
+                }">${tmrCapital.toFixed(2)}</td>
+                <td class="${
+                  maior === "INTERIOR" ? "fw-bold text-primary" : ""
+                }">${tmrInterior.toFixed(2)}</td>
+                <td>${diferenca.toFixed(2)}</td>
+                <td>${maior}</td>
+              </tr>
+    `;
+  }
+
+  tabelaTotalHtml += `
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return tabelaTotalHtml;
 }
 
 // Função para gerar o gráfico comparativo
