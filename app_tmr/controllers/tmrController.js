@@ -9,6 +9,9 @@ const tmrAuth = require('../middleware/tmrAuth');
 // Serviço de sincronização
 const { syncDadosTmr } = require('../services/tmrSyncService');
 
+// Controller de configurações
+const configController = require('./configController');
+
 // Rota para acessar a página principal do TMR
 router.get('/', tmrAuth, (req, res) => {
     res.sendFile(path.join(__dirname, '../views/b2btmr.html'));
@@ -142,6 +145,9 @@ router.get('/perfil-usuario', tmrAuth, (req, res) => {
         cargo: req.session.usuario.cargo,
     });
 });
+
+// Rotas para configurações
+router.use('/config', configController);
 
 async function getDadosTMR(grupoFiltro = null, regionalFiltro = null, procedenciaFiltro = null, tipoCidadeFiltro = null) {
     // Esta função buscará os dados da tabela reparos_b2b_tmr

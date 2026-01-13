@@ -13,4 +13,7 @@ router.use('/dados', dadosTmrController.router);
 // Rotas para visão por grupos
 router.use('/grupos', gruposController);
 
+// Rota para configurações
+router.use('/config', tmrController);
+
 module.exports = router;

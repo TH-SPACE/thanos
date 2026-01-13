@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - TMR</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <link rel="stylesheet" href="/tmr/css/tmr-custom.css">
+    <!-- CSS customizado -->
+    <style>
+        .rule-item {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+        }
+
+        .rule-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn-move {
+            cursor: move;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/tmr">
+                <i class="fas fa-clock"></i> Sistema TMR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tmr"><i class="fas fa-home"></i> TMR</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/tmr/config"><i class="fas fa-cog"></i> Configurações</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-database"></i> Consultas</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> <span id="nomeUsuarioNav">Carregando...</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" id="perfilLink"><i class="fas fa-user-circle"></i>
+                                    Perfil</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2><i class="fas fa-cog"></i> Configurações</h2>
+                <p class="text-muted">Edite as regras de mapeamento de grupos</p>
+
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-edit"></i> Regras de Agrupamento de Grupos</h5>
+                        <div id="botoesAcaoConfig">
+                            <button class="btn btn-sm btn-success me-2" id="adicionarRegra">
+                                <i class="fas fa-plus"></i> Adicionar Regra
+                            </button>
+                            <button class="btn btn-sm btn-primary me-2" id="salvarConfiguracoes">
+                                <i class="fas fa-save"></i> Salvar Configurações
+                            </button>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-upload"></i> Upload
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form id="uploadForm" enctype="multipart/form-data">
+                                            <div class="px-3 py-2">
+                                                <label for="excelFile" class="form-label">Selecione o arquivo
+                                                    Excel:</label>
+                                                <input type="file" class="form-control form-control-sm" id="excelFile"
+                                                    name="excelFile" accept=".xlsx">
+                                                <button type="submit" class="btn btn-sm btn-success mt-2 w-100">
+                                                    <i class="fas fa-file-import"></i> Importar
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i> As regras são aplicadas na ordem listada. A primeira
+                            regra que corresponder será utilizada.
+                        </div>
+
+                        <div class="alert alert-secondary" role="alert">
+                            <i class="fas fa-file-excel"></i> <strong>Instruções para upload de Excel:</strong> O
+                            arquivo deve conter as colunas <code>contains</code> e <code>group</code>. O upload
+                            substituirá todas as regras existentes. <a href="#" id="downloadModeloLink"
+                                class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-download"></i> Baixar
+                                Modelo</a>
+                        </div>
+
+                        <div id="rulesContainer">
+                            <!-- As regras serão adicionadas aqui dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de salvamento -->
+    <div class="modal fade" id="confirmacaoModal" tabindex="-1" aria-labelledby="confirmacaoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmacaoModalLabel">Confirmação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>As configurações foram salvas com sucesso!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        let rules = [];
+        let rulesOriginais = [];
+        let perfilUsuario = null;
+
+        $(document).ready(function () {
+            // Carregar informações do usuário
+            $.get('/auth/usuario', function (usuario) {
+                if (usuario && usuario.nome) {
+                    $('#nomeUsuarioNav').text(usuario.nome);
+                    perfilUsuario = usuario.perfil;
+
+                    // Verificar se o usuário tem permissão para editar (ADM)
+                    if (!perfilUsuario || !perfilUsuario.includes("ADM")) {
+                        // Ocultar botões de ação se o usuário não for ADM
+                        $('#botoesAcaoConfig').hide();
+
+                        // Adicionar aviso
+                        $('.card-body').prepend(`
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Você não tem permissão para editar estas configurações. Apenas administradores podem fazê-lo.
+                            </div>
+                        `);
+
+                        // Ocultar o link de download do modelo
+                        $('a[href="/tmr/config/download-modelo"]').hide();
+                    }
+                } else {
+                    $('#nomeUsuarioNav').text('Não identificado');
+                }
+            }).fail(function () {
+                $('#nomeUsuarioNav').text('Não identificado');
+            });
+
+            // Evento de clique para o link de perfil
+            $('#perfilLink').on('click', function (e) {
+                e.preventDefault();
+
+                // Buscar dados do perfil do usuário
+                $.get('/tmr/perfil-usuario')
+                    .done(function (data) {
+                        // Exibir modal com informações do perfil
+                        alert(`Nome: ${data.nome || ''}\nEmail: ${data.email || ''}\nCargo: ${data.cargo || ''}\nPerfil: ${data.perfil || ''}`);
+                    })
+                    .fail(function () {
+                        alert('Erro ao carregar os dados do perfil.');
+                    });
+            });
+
+            // Carregar as regras de mapeamento
+            carregarRegras();
+
+            // Evento para adicionar nova regra
+            $('#adicionarRegra').click(function () {
+                adicionarNovaRegra();
+            });
+
+            // Evento para salvar as configurações
+            $('#salvarConfiguracoes').click(function () {
+                salvarConfiguracoes();
+            });
+
+            // Evento para upload de arquivo Excel
+            $('#uploadForm').submit(function (e) {
+                e.preventDefault();
+
+                // Verificar se o usuário tem permissão
+                if (!perfilUsuario || !perfilUsuario.includes("ADM")) {
+                    alert('Você não tem permissão para importar arquivos. Apenas administradores podem fazê-lo.');
+                    return;
+                }
+
+                const fileInput = document.getElementById('excelFile');
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('Por favor, selecione um arquivo Excel para importar.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('excelFile', fileInput.files[0]);
+
+                // Mostrar mensagem de carregamento
+                const submitButton = $('#uploadForm button[type="submit"]');
+                const originalText = submitButton.html();
+                submitButton.html('<i class="fas fa-spinner fa-spin"></i> Processando...').prop('disabled', true);
+
+                $.ajax({
+                    url: '/tmr/config/upload-xlsx',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+
+                            // Recarregar as regras após importação bem-sucedida
+                            carregarRegras();
+
+                            // Fechar o dropdown
+                            $('.dropdown-toggle').dropdown('hide');
+                        } else {
+                            alert('Erro ao importar arquivo: ' + response.error);
+                        }
+                    },
+                    error: function (xhr) {
+                        const response = xhr.responseJSON;
+                        alert('Erro ao importar arquivo: ' + (response && response.error ? response.error : 'Erro desconhecido'));
+                    },
+                    complete: function () {
+                        // Restaurar o botão
+                        submitButton.html(originalText).prop('disabled', false);
+                    }
+                });
+            });
+
+            // Evento para download do modelo Excel
+            $('#downloadModeloLink').click(function (e) {
+                e.preventDefault();
+
+                // Verificar se o usuário tem permissão
+                if (!perfilUsuario || !perfilUsuario.includes("ADM")) {
+                    alert('Você não tem permissão para baixar o modelo. Apenas administradores podem fazê-lo.');
+                    return;
+                }
+
+                // Abrir a URL de download em uma nova aba/janela
+                window.open('/tmr/config/download-modelo', '_blank');
+            });
+        });
+
+        function carregarRegras() {
+            $.get('/tmr/config/grupo-mapping', function (data) {
+                rules = data.grupo_agrupado_rules || [];
+                rulesOriginais = JSON.parse(JSON.stringify(rules)); // Cópia profunda
+                renderizarRegras();
+            }).fail(function () {
+                alert('Erro ao carregar as regras de mapeamento.');
+            });
+        }
+
+        function renderizarRegras() {
+            const container = $('#rulesContainer');
+            container.empty();
+
+            rules.forEach((rule, index) => {
+                const ruleElement = criarElementoRegra(rule, index);
+                container.append(ruleElement);
+            });
+        }
+
+        function criarElementoRegra(rule, index) {
+            const ruleDiv = $(`
+                <div class="rule-item" data-index="${index}">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
+                            <label class="form-label">Texto a conter</label>
+                            <input type="text" class="form-control form-control-sm rule-contains" value="${rule.contains || ''}" placeholder="Texto a ser procurado">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Grupo de destino</label>
+                            <input type="text" class="form-control form-control-sm rule-group" value="${rule.group || ''}" placeholder="Grupo para qual será mapeado">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-primary btn-move" title="Mover para cima">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary btn-move" title="Mover para baixo">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-remove" title="Remover regra">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            // Adicionar eventos para os botões
+            ruleDiv.find('.btn-move:first').click(function () {
+                moverRegra(index, -1);
+            });
+
+            ruleDiv.find('.btn-move:last').click(function () {
+                moverRegra(index, 1);
+            });
+
+            ruleDiv.find('.btn-remove').click(function () {
+                removerRegra(index);
+            });
+
+            // Adicionar evento para atualizar a regra quando os inputs mudarem
+            ruleDiv.find('.rule-contains, .rule-group').on('input', function () {
+                atualizarRegra(index);
+            });
+
+            return ruleDiv;
+        }
+
+        function adicionarNovaRegra() {
+            rules.push({ contains: '', group: '' });
+            renderizarRegras();
+        }
+
+        function removerRegra(index) {
+            if (rules.length <= 1) {
+                alert('Não é possível remover a última regra.');
+                return;
+            }
+
+            if (confirm('Tem certeza que deseja remover esta regra?')) {
+                rules.splice(index, 1);
+                renderizarRegras();
+            }
+        }
+
+        function moverRegra(index, direction) {
+            // direction: -1 para cima, 1 para baixo
+            const newIndex = index + direction;
+
+            if (newIndex < 0 || newIndex >= rules.length) {
+                return; // Não pode mover além dos limites
+            }
+
+            // Trocar as posições
+            [rules[index], rules[newIndex]] = [rules[newIndex], rules[index]];
+            renderizarRegras();
+        }
+
+        function atualizarRegra(index) {
+            const ruleDiv = $(`.rule-item[data-index="${index}"]`);
+            rules[index].contains = ruleDiv.find('.rule-contains').val();
+            rules[index].group = ruleDiv.find('.rule-group').val();
+        }
+
+        function salvarConfiguracoes() {
+            // Verificar se o usuário tem permissão
+            if (!perfilUsuario || !perfilUsuario.includes("ADM")) {
+                alert('Você não tem permissão para salvar alterações. Apenas administradores podem fazê-lo.');
+                return;
+            }
+
+            // Verificar se há alterações
+            if (JSON.stringify(rules) === JSON.stringify(rulesOriginais)) {
+                alert('Nenhuma alteração foi feita.');
+                return;
+            }
+
+            // Confirmar antes de salvar
+            if (!confirm('Tem certeza que deseja salvar as alterações?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/tmr/config/grupo-mapping',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ grupo_agrupado_rules: rules }),
+                success: function (response) {
+                    if (response.success) {
+                        // Atualizar as regras originais para refletir as alterações salvas
+                        rulesOriginais = JSON.parse(JSON.stringify(rules));
+
+                        // Mostrar modal de confirmação
+                        const modal = new bootstrap.Modal(document.getElementById('confirmacaoModal'));
+                        modal.show();
+                    } else {
+                        alert('Erro ao salvar as configurações: ' + response.message);
+                    }
+                },
+                error: function (xhr) {
+                    const response = xhr.responseJSON;
+                    alert('Erro ao salvar as configurações: ' + (response && response.error ? response.error : 'Erro desconhecido'));
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
