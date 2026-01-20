@@ -48,7 +48,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "segredo123",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 36000000 }, // 10 horas
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 * 365 }, // 1 ano (login permanente)
   })
 );
 

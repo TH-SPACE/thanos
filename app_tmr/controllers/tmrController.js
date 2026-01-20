@@ -17,6 +17,11 @@ router.get('/', tmrAuth, (req, res) => {
     res.sendFile(path.join(__dirname, '../views/b2btmr.html'));
 });
 
+// Rota para acessar a página de descrição e regras B2B
+router.get('/regrasB2B', tmrAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, '../views/regrasB2B.html'));
+});
+
 // Rota para obter dados de TMR
 router.get('/data', tmrAuth, async (req, res) => {
     try {

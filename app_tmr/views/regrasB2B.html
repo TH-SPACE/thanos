@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descrição e Regras B2B - TMR</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- CSS customizado -->
+    <link rel="stylesheet" href="/tmr/css/tmr-custom.css">
+    <style>
+        /* CSS exclusivo para o conteúdo abaixo da navbar */
+        .content-wrapper {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: calc(100vh - 56px);
+            padding: 2rem 0;
+        }
+
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            color: #0d6efd;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .content-card h2 {
+            color: #0d6efd;
+            font-weight: 700;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid #0d6efd;
+        }
+
+        .content-card h3 {
+            color: #495057;
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .content-card h4 {
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .content-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-card ul li {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            background: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .content-card ul li:hover {
+            background: #e7f1ff;
+            border-left-color: #0a58ca;
+            transform: translateX(5px);
+        }
+
+        .content-card ul li strong {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+        .formula-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .formula-card strong {
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .formula-expression {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            text-align: center;
+            margin-top: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .formula-expression .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .formula-expression .numerator {
+            display: block;
+            border-bottom: 2px solid white;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .formula-expression .denominator {
+            display: block;
+            padding-top: 0.5rem;
+        }
+
+        .info-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #e7f1ff;
+            color: #0d6efd;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 0.5rem 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .observation-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .observation-box strong {
+            color: #856404;
+            font-size: 1.1rem;
+        }
+
+        .observation-box p {
+            margin: 0.5rem 0 0 0;
+            color: #856404;
+        }
+
+        .table td {
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .table th {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .table td:nth-child(2) {
+            text-align: center;
+        }
+
+        .procedencia-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .procedencia-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .procedencia-item h5 {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        .procedencia-item p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 1rem 0;
+            }
+
+            .page-header,
+            .content-card {
+                padding: 1.5rem;
+            }
+
+            .formula-expression {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/tmr">
+                <i class="fas fa-clock"></i> Sistema TMR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tmr"><i class="fas fa-home"></i> TMR</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tmr/config"><i class="fas fa-cog"></i> Configurações</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-database"></i> Consultas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/tmr/regrasB2B"><i class="fas fa-book"></i> Descrição e Regras
+                            B2B</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> <span id="nomeUsuarioNav">Carregando...</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" id="perfilLink"><i class="fas fa-user-circle"></i>
+                                    Perfil</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+        <div class="container">
+            <div class="page-header">
+                <h1>
+                    <i class="fas fa-book"></i> Descrição e Regras B2B
+                </h1>
+                <p>Detalhes sobre os campos, regras e indicadores B2B Avançado</p>
+            </div>
+
+            <main>
+                <div class="content-card">
+                    <h2>DESCRIÇÃO DOS CAMPOS E REGRAS DOS INDICADORES B2B AVANÇADO</h2>
+
+                    <h3>Procedência dos Reparos</h3>
+                    <div class="procedencia-grid">
+                        <div class="procedencia-item">
+                            <h5><i class="fas fa-tools"></i> PREVENTIVO</h5>
+                            <p>VIVO ABRE O CHAMADO SEM O SERVIÇO DO CLIENTE ESTAR FORA - CHAMADO ABERTO PARA MELHORIA DO
+                                CLIENTE ENQUANTO ELE NÃO ESTA COM O SERVIÇO AFETADO</p>
+                        </div>
+                        <div class="procedencia-item">
+                            <h5><i class="fas fa-bolt"></i> PROATIVO</h5>
+                            <p>VIVO ABRE O CHAMADO PARA REPARAR UM SERVIÇO FORA - A FALHA É IDENTIFICADA ANTES DO
+                                CLIENTE</p>
+                        </div>
+                        <div class="procedencia-item">
+                            <h5><i class="fas fa-phone"></i> REATIVO</h5>
+                            <p>CLIENTE ABRE O CHAMADO COM O SERVIÇO FORA - O BD TRIAGEM SE NÃO FOR RESOLVIDO NA TRIAGEM
+                                VIRA AUTOMATICAMENTE REATIVO</p>
+                        </div>
+                        <div class="procedencia-item">
+                            <h5><i class="fas fa-filter"></i> TRIAGEM</h5>
+                            <p>CLIENTE ABRE O CHAMADO COM O SERVIÇO FORA, PORÉM A RETENÇÃO OCORRE NA CÉLULA DE TRIAGEM
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h2>KPIs</h2>
+                    <p>Os tipos de BDs são classificados de acordo com a visão e o conceito aplicado ao tratamento dos
+                        indicadores.</p>
+
+                    <div class="table-responsive mt-4">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>TIPO</th>
+                                    <th>VISÃO</th>
+                                    <th>CONCEITO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>KPI</strong></td>
+                                    <td><span class="badge bg-info">Sem Expurgo</span></td>
+                                    <td>Contempla os BDs considerados no indicador oficial, estando alinhados com o
+                                        Pós‑Vendas.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_SLM_CLIENTE</strong></td>
+                                    <td><span class="badge bg-info">Sem Expurgo</span></td>
+                                    <td>Expurgos associados à causa cliente, aplicáveis aos clientes que recebem
+                                        relatório de performance, conforme critério solicitado por Alex Salgado.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_ENERGIA_CLIENTE</strong></td>
+                                    <td><span class="badge bg-info">Sem Expurgo</span></td>
+                                    <td>Expurgos relacionados à falta de energia no cliente, quando não há retenção no
+                                        atendimento. Alinhamento pendente junto ao Pós‑Vendas.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_LM</strong></td>
+                                    <td><span class="badge bg-info">Sem Expurgo</span></td>
+                                    <td>Expurgos relacionados à última milha de terceiros, com alinhamento pendente
+                                        junto ao Pós‑Vendas.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_SEDUC</strong></td>
+                                    <td><span class="badge bg-info">Sem Expurgo</span></td>
+                                    <td>Expurgos relacionados à Secretaria Municipal de Educação, com causa atribuída ao
+                                        cliente e sem fluxo de retenção.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_SISTEMAS_CLIENTE</strong></td>
+                                    <td><span class="badge bg-info">Sem Expurgo</span></td>
+                                    <td>Expurgos por causa cliente para BDs que não passam pelo atendimento, não
+                                        possuindo fluxo de retenção.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_BLACKLIST</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>Expurgo de BDs referentes a circuitos condenados, sem ação de melhoria. Uso
+                                        restrito, validar com time de Qualidade.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_PREVENTIVA</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>BDs associados à manutenção preventiva, sem afetação de serviço e que não
+                                        impedem a abertura de outro BD.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_PROATIVO_CLIENTE</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>BDs abertos proativamente pela Vivo, porém causados pelo cliente.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_TRIAGEM</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>BDs encerrados ainda na etapa de triagem.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_TLF</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>Links de uso próprio.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_REDUNDANCIA</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>BDs abertos para atuação em alça de proteção.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_INDEVIDO_CRM_V2</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>BDs abertos indevidamente pelo atendimento e posteriormente cancelados pela
+                                        própria equipe.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_SERVICE_DESK</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>Serviços de configuração de produtos, não relacionados a reparo.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_PROJ_EFICIENCIA</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>Não utilizado atualmente. Indicado para limpeza de código.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_SIP_PABX</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>Expurgos relacionados a problemas no PABX Vivo, não aplicáveis para a Anatel.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_SOLUCOES_DIGITAL</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>Expurgos relacionados a problemas em produtos de soluções digitais (notebooks,
+                                        impressoras), não aplicáveis para a Anatel.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_INDEVIDO_CRM_V1</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>BDs abertos indevidamente pelo atendimento para clientes com bloqueio parcial.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_RESIDENCIAL</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>Casos de cliente pessoa física com abertura indevida de BD.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_PROATIVO_ABERTO</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>Expurgo de BDs proativos enquanto permanecem abertos, gerando impacto nas
+                                        projeções diárias, especialmente às segundas‑feiras.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXP_PROJ_GRECIA</strong></td>
+                                    <td><span class="badge bg-danger">Com Expurgo</span></td>
+                                    <td>BDs abertos pelo Projeto Grécia.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h2>Regras dos Indicadores</h2>
+
+                    <h3>1) IRR% – Reincidência em 30 dias</h3>
+                    <div class="formula-card">
+                        <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
+                        <div class="formula-expression">
+                            <div class="fraction">
+                                <span class="numerator">Contagem de BDs Repetidos</span>
+                                <span class="denominator">Contagem Total de BDs</span>
+                            </div>
+                            = IRR%
+                        </div>
+                    </div>
+                    <div class="info-badge"><i class="fas fa-calendar-alt"></i> Janela de análise: 30 dias</div>
+                    <div class="info-badge"><i class="fas fa-calendar-check"></i> Marco de data: Data de Abertura</div>
+                    <div class="observation-box">
+                        <strong><i class="fas fa-exclamation-circle"></i> Observação:</strong>
+                        <p>No IRR% são considerados apenas os BDs fechados e baixados.</p>
+                    </div>
+
+                    <h3>2) IRT% – Defeito por Planta</h3>
+                    <div class="formula-card">
+                        <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
+                        <div class="formula-expression">
+                            <div class="fraction">
+                                <span class="numerator">Contagem de BDs</span>
+                                <span class="denominator">Contagem Planta</span>
+                            </div>
+                            = IRT%
+                        </div>
+                    </div>
+                    <div class="info-badge"><i class="fas fa-calendar-check"></i> Marco de data: Data de Abertura</div>
+
+                    <h4>Cálculo do IRT% para o mês atual</h4>
+                    <p>Como não temos a planta fragmentada por dia, o IRT% do mês atual é calculado com projeção:</p>
+                    <p>Divide‑se o volume de BDs pela planta e o resultado é dividido pela projeção até o dia atual.</p>
+                    <div class="observation-box">
+                        <strong><i class="fas fa-info-circle"></i> Em outras palavras:</strong>
+                        <p>Para o mês corrente, a base "planta" é estimada (projetada) até a data de hoje para manter
+                            consistência do denominador.</p>
+                    </div>
+
+                    <h3>3) TMR – Tempo Médio de Reparo</h3>
+                    <div class="formula-card">
+                        <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
+                        <div class="formula-expression">
+                            <div class="fraction">
+                                <span class="numerator">Soma dos TMRs</span>
+                                <span class="denominator">Contagem de BDs</span>
+                            </div>
+                            = TMR
+                        </div>
+                    </div>
+                    <div class="info-badge"><i class="fas fa-calendar-check"></i> Marco de data: Data de Encerramento
+                    </div>
+
+                    <h4>Definições de Tempo</h4>
+                    <p><strong>TMR Expediente:</strong> considera o tempo entre Data/Hora de Abertura e Data/Hora de
+                        Baixa, apenas dentro do expediente do cliente (descontando períodos fora do horário de
+                        atendimento do cliente).</p>
+
+                    <h3>4) TRC% – Reparo no Prazo</h3>
+                    <div class="formula-card">
+                        <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
+                        <div class="formula-expression">
+                            <div class="fraction">
+                                <span class="numerator">Contagem de BDs dentro do Prazo</span>
+                                <span class="denominator">Contagem Total de BDs</span>
+                            </div>
+                            = TRC%
+                        </div>
+                    </div>
+                    <div class="info-badge"><i class="fas fa-calendar-check"></i> Marco de data: Data de Encerramento
+                    </div>
+
+                    <h4>Regras de Prazo</h4>
+                    <p><strong>Prazo (geral):</strong> Reparo dentro do prazo vinculado ao TMR_SEM PRAZO (Vivo 1: DSP
+                        4HSE e FSP 6HRS).</p>
+                    <p><strong>Prazo Expediente:</strong> Reparo dentro do prazo vinculado ao TMR_EXP (Vivo 1: DSP 4HSE
+                        e FSP 6HRS; Vivo 2: considera‑se 6 horas).</p>
+                    <div class="observation-box">
+                        <strong><i class="fas fa-info-circle"></i> Nota:</strong>
+                        <p>"DSP" e "FSP" seguem as janelas contratuais definidas por tipo de atendimento. "HSE"
+                            significa horas em expediente.</p>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h2>Observações Gerais</h2>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Quando a regra menciona <strong>Data de
+                                Abertura</strong>, significa que a classificação e contagem do indicador usam o
+                            timestamp de abertura do BD.</li>
+                        <li><i class="fas fa-check-circle"></i> Quando menciona <strong>Data de Encerramento</strong>,
+                            usa‑se o timestamp de baixa/fechamento do BD.</li>
+                        <li><i class="fas fa-check-circle"></i> Para mês corrente, indicadores que dependem da planta
+                            usam projeção até o dia atual para evitar subdimensionamento do denominador.</li>
+                        <li><i class="fas fa-check-circle"></i> O TMR Expediente e o Prazo Expediente consideram apenas
+                            o período dentro do horário de funcionamento do cliente.</li>
+                        <li><i class="fas fa-check-circle"></i> Horário de funcionamento em branco: considerar 08h às
+                            18h (padrão).</li>
+                    </ul>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // Carregar informações do usuário
+        $(document).ready(function () {
+            $.get('/auth/usuario', function (usuario) {
+                if (usuario && usuario.nome) {
+                    $('#nomeUsuarioNav').text(usuario.nome);
+                } else {
+                    $('#nomeUsuarioNav').text('Não identificado');
+                }
+            }).fail(function () {
+                $('#nomeUsuarioNav').text('Não identificado');
+            });
+
+            // Evento de clique para o link de perfil
+            $('#perfilLink').on('click', function (e) {
+                e.preventDefault();
+
+                // Buscar dados do perfil do usuário
+                $.get('/tmr/perfil-usuario')
+                    .done(function (data) {
+                        // Exibir modal com informações do perfil
+                        alert(`Nome: ${data.nome || ''}\nEmail: ${data.email || ''}\nCargo: ${data.cargo || ''}\nPerfil: ${data.perfil || ''}`);
+                    })
+                    .fail(function () {
+                        alert('Erro ao carregar os dados do perfil.');
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>
