@@ -106,26 +106,26 @@
         .formula-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 2rem;
-            border-radius: 15px;
-            margin: 1.5rem 0;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
         }
 
         .formula-card strong {
-            font-size: 1.2rem;
+            font-size: 1rem;
             display: block;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .formula-expression {
             background: rgba(255, 255, 255, 0.2);
-            padding: 1.5rem;
-            border-radius: 10px;
+            padding: 0.75rem;
+            border-radius: 8px;
             font-family: 'Courier New', monospace;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             text-align: center;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
@@ -138,41 +138,42 @@
         .formula-expression .numerator {
             display: block;
             border-bottom: 2px solid white;
-            padding-bottom: 0.5rem;
-            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            margin-bottom: 0.25rem;
         }
 
         .formula-expression .denominator {
             display: block;
-            padding-top: 0.5rem;
+            padding-top: 0.25rem;
         }
 
         .info-badge {
             display: inline-block;
-            padding: 0.5rem 1rem;
+            padding: 0.35rem 0.75rem;
             background: #e7f1ff;
             color: #0d6efd;
-            border-radius: 25px;
+            border-radius: 20px;
             font-weight: 600;
-            margin: 0.5rem 0.25rem;
-            font-size: 0.95rem;
+            margin: 0.25rem;
+            font-size: 0.85rem;
         }
 
         .observation-box {
             background: #fff3cd;
-            border-left: 5px solid #ffc107;
-            padding: 1.25rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
+            border-left: 4px solid #ffc107;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin: 0.75rem 0;
+            font-size: 0.9rem;
         }
 
         .observation-box strong {
             color: #856404;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
 
         .observation-box p {
-            margin: 0.5rem 0 0 0;
+            margin: 0.25rem 0 0 0;
             color: #856404;
         }
 
@@ -217,6 +218,53 @@
             line-height: 1.5;
         }
 
+        /* Estilos compactos para indicadores */
+        .indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .indicator-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.25rem;
+            border-left: 5px solid #0d6efd;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-item:hover {
+            background: #e7f1ff;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .indicator-item h4 {
+            color: #0d6efd;
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .indicator-item .formula-card {
+            margin: 0.5rem 0;
+        }
+
+        .indicator-item .info-badge {
+            margin: 0.25rem 0.25rem 0.25rem 0;
+        }
+
+        .indicator-item p {
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .indicator-item .observation-box {
+            margin: 0.5rem 0 0 0;
+        }
+
         @media (max-width: 768px) {
             .content-wrapper {
                 padding: 1rem 0;
@@ -228,7 +276,11 @@
             }
 
             .formula-expression {
-                font-size: 1.1rem;
+                font-size: 1rem;
+            }
+
+            .indicator-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -464,105 +516,99 @@
                 <div class="content-card">
                     <h2>Regras dos Indicadores</h2>
 
-                    <h3>1) IRR% – Reincidência em 30 dias</h3>
-                    <div class="formula-card">
-                        <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
-                        <div class="formula-expression">
-                            <div class="fraction">
-                                <span class="numerator">Contagem de BDs Repetidos</span>
-                                <span class="denominator">Contagem Total de BDs</span>
+                    <div class="indicator-grid">
+                        <!-- IRR% -->
+                        <div class="indicator-item">
+                            <h4><i class="fas fa-redo"></i> IRR% – Reincidência em 30 dias</h4>
+                            <div class="formula-card">
+                                <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
+                                <div class="formula-expression">
+                                    <div class="fraction">
+                                        <span class="numerator">BDs Repetidos</span>
+                                        <span class="denominator">Total de BDs</span>
+                                    </div>
+                                </div>
                             </div>
-                            = IRR%
-                        </div>
-                    </div>
-                    <div class="info-badge"><i class="fas fa-calendar-alt"></i> Janela de análise: 30 dias</div>
-                    <div class="info-badge"><i class="fas fa-calendar-check"></i> Marco de data: Data de Abertura</div>
-                    <div class="observation-box">
-                        <strong><i class="fas fa-exclamation-circle"></i> Observação:</strong>
-                        <p>No IRR% são considerados apenas os BDs fechados e baixados.</p>
-                    </div>
-
-                    <h3>2) IRT% – Defeito por Planta</h3>
-                    <div class="formula-card">
-                        <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
-                        <div class="formula-expression">
-                            <div class="fraction">
-                                <span class="numerator">Contagem de BDs</span>
-                                <span class="denominator">Contagem Planta</span>
+                            <div class="info-badge"><i class="fas fa-calendar-alt"></i> Janela: 30 dias</div>
+                            <div class="info-badge"><i class="fas fa-calendar-check"></i> Data: Abertura</div>
+                            <div class="observation-box">
+                                <strong><i class="fas fa-exclamation-circle"></i> Obs:</strong>
+                                <p>Apenas BDs fechados e baixados.</p>
                             </div>
-                            = IRT%
                         </div>
-                    </div>
-                    <div class="info-badge"><i class="fas fa-calendar-check"></i> Marco de data: Data de Abertura</div>
 
-                    <h4>Cálculo do IRT% para o mês atual</h4>
-                    <p>Como não temos a planta fragmentada por dia, o IRT% do mês atual é calculado com projeção:</p>
-                    <p>Divide‑se o volume de BDs pela planta e o resultado é dividido pela projeção até o dia atual.</p>
-                    <div class="observation-box">
-                        <strong><i class="fas fa-info-circle"></i> Em outras palavras:</strong>
-                        <p>Para o mês corrente, a base "planta" é estimada (projetada) até a data de hoje para manter
-                            consistência do denominador.</p>
-                    </div>
-
-                    <h3>3) TMR – Tempo Médio de Reparo</h3>
-                    <div class="formula-card">
-                        <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
-                        <div class="formula-expression">
-                            <div class="fraction">
-                                <span class="numerator">Soma dos TMRs</span>
-                                <span class="denominator">Contagem de BDs</span>
+                        <!-- IRT% -->
+                        <div class="indicator-item">
+                            <h4><i class="fas fa-network-wired"></i> IRT% – Defeito por Planta</h4>
+                            <div class="formula-card">
+                                <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
+                                <div class="formula-expression">
+                                    <div class="fraction">
+                                        <span class="numerator">Contagem de BDs</span>
+                                        <span class="denominator">Contagem Planta</span>
+                                    </div>
+                                </div>
                             </div>
-                            = TMR
-                        </div>
-                    </div>
-                    <div class="info-badge"><i class="fas fa-calendar-check"></i> Marco de data: Data de Encerramento
-                    </div>
-
-                    <h4>Definições de Tempo</h4>
-                    <p><strong>TMR Expediente:</strong> considera o tempo entre Data/Hora de Abertura e Data/Hora de
-                        Baixa, apenas dentro do expediente do cliente (descontando períodos fora do horário de
-                        atendimento do cliente).</p>
-
-                    <h3>4) TRC% – Reparo no Prazo</h3>
-                    <div class="formula-card">
-                        <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
-                        <div class="formula-expression">
-                            <div class="fraction">
-                                <span class="numerator">Contagem de BDs dentro do Prazo</span>
-                                <span class="denominator">Contagem Total de BDs</span>
+                            <div class="info-badge"><i class="fas fa-calendar-check"></i> Data: Abertura</div>
+                            <div class="observation-box">
+                                <strong><i class="fas fa-info-circle"></i> Mês atual:</strong>
+                                <p>Planta projetada até a data atual para consistência do denominador.</p>
                             </div>
-                            = TRC%
                         </div>
-                    </div>
-                    <div class="info-badge"><i class="fas fa-calendar-check"></i> Marco de data: Data de Encerramento
-                    </div>
 
-                    <h4>Regras de Prazo</h4>
-                    <p><strong>Prazo (geral):</strong> Reparo dentro do prazo vinculado ao TMR_SEM PRAZO (Vivo 1: DSP
-                        4HSE e FSP 6HRS).</p>
-                    <p><strong>Prazo Expediente:</strong> Reparo dentro do prazo vinculado ao TMR_EXP (Vivo 1: DSP 4HSE
-                        e FSP 6HRS; Vivo 2: considera‑se 6 horas).</p>
-                    <div class="observation-box">
-                        <strong><i class="fas fa-info-circle"></i> Nota:</strong>
-                        <p>"DSP" e "FSP" seguem as janelas contratuais definidas por tipo de atendimento. "HSE"
-                            significa horas em expediente.</p>
+                        <!-- TMR -->
+                        <div class="indicator-item">
+                            <h4><i class="fas fa-clock"></i> TMR – Tempo Médio de Reparo</h4>
+                            <div class="formula-card">
+                                <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
+                                <div class="formula-expression">
+                                    <div class="fraction">
+                                        <span class="numerator">Soma dos TMRs</span>
+                                        <span class="denominator">Contagem de BDs</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-badge"><i class="fas fa-calendar-check"></i> Data: Encerramento</div>
+                            <p><strong>TMR Expediente:</strong> Considera apenas período dentro do horário de
+                                funcionamento do cliente (desconta períodos fora do expediente).</p>
+                        </div>
+
+                        <!-- TRC% -->
+                        <div class="indicator-item">
+                            <h4><i class="fas fa-check-circle"></i> TRC% – Reparo no Prazo</h4>
+                            <div class="formula-card">
+                                <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
+                                <div class="formula-expression">
+                                    <div class="fraction">
+                                        <span class="numerator">BDs dentro do Prazo</span>
+                                        <span class="denominator">Total de BDs</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-badge"><i class="fas fa-calendar-check"></i> Data: Encerramento</div>
+                            <p><strong>Prazo Geral:</strong> Vivo 1 → DSP 4HSE e FSP 6HRS</p>
+                            <p><strong>Prazo Expediente:</strong> Vivo 1 → DSP 4HSE e FSP 6HRS | Vivo 2 → 6 horas</p>
+                            <div class="observation-box">
+                                <strong><i class="fas fa-info-circle"></i> Nota:</strong>
+                                <p>"HSE" = horas em expediente. "DSP" e "FSP" seguem janelas contratuais.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="content-card">
                     <h2>Observações Gerais</h2>
                     <ul>
-                        <li><i class="fas fa-check-circle"></i> Quando a regra menciona <strong>Data de
-                                Abertura</strong>, significa que a classificação e contagem do indicador usam o
-                            timestamp de abertura do BD.</li>
-                        <li><i class="fas fa-check-circle"></i> Quando menciona <strong>Data de Encerramento</strong>,
-                            usa‑se o timestamp de baixa/fechamento do BD.</li>
-                        <li><i class="fas fa-check-circle"></i> Para mês corrente, indicadores que dependem da planta
-                            usam projeção até o dia atual para evitar subdimensionamento do denominador.</li>
-                        <li><i class="fas fa-check-circle"></i> O TMR Expediente e o Prazo Expediente consideram apenas
-                            o período dentro do horário de funcionamento do cliente.</li>
-                        <li><i class="fas fa-check-circle"></i> Horário de funcionamento em branco: considerar 08h às
-                            18h (padrão).</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Data de Abertura:</strong> Classificação e
+                            contagem usam timestamp de abertura do BD.</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Data de Encerramento:</strong> Usa timestamp de
+                            baixa/fechamento do BD.</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Mês corrente:</strong> Indicadores com planta
+                            usam projeção até o dia atual.</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>TMR/Prazo Expediente:</strong> Considera apenas
+                            horário de funcionamento do cliente.</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Horário padrão:</strong> Se em branco, considera
+                            08h às 18h.</li>
                     </ul>
                 </div>
             </main>
