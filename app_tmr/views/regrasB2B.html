@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+   <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <!-- CSS customizado -->
     <link rel="stylesheet" href="/tmr/css/tmr-custom.css">
     <style>
@@ -569,30 +569,13 @@
                                 </div>
                             </div>
                             <div class="info-badge"><i class="fas fa-calendar-check"></i> Data: Encerramento</div>
-                            <p><strong>TMR Expediente:</strong> Considera apenas período dentro do horário de
-                                funcionamento do cliente (desconta períodos fora do expediente).</p>
+                            <div class="observation-box">
+                                <strong><i class="fas fa-info-circle"></i> Obs:</strong>
+                            <p><strong>TMR Total:</strong> Considera abertura e encerramento do BD.</p>
+                            </div>
                         </div>
 
-                        <!-- TRC% -->
-                        <div class="indicator-item">
-                            <h4><i class="fas fa-check-circle"></i> TRC% – Reparo no Prazo</h4>
-                            <div class="formula-card">
-                                <strong><i class="fas fa-calculator"></i> Fórmula:</strong>
-                                <div class="formula-expression">
-                                    <div class="fraction">
-                                        <span class="numerator">BDs dentro do Prazo</span>
-                                        <span class="denominator">Total de BDs</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="info-badge"><i class="fas fa-calendar-check"></i> Data: Encerramento</div>
-                            <p><strong>Prazo Geral:</strong> Vivo 1 → DSP 4HSE e FSP 6HRS</p>
-                            <p><strong>Prazo Expediente:</strong> Vivo 1 → DSP 4HSE e FSP 6HRS | Vivo 2 → 6 horas</p>
-                            <div class="observation-box">
-                                <strong><i class="fas fa-info-circle"></i> Nota:</strong>
-                                <p>"HSE" = horas em expediente. "DSP" e "FSP" seguem janelas contratuais.</p>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
 
