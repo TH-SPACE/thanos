@@ -178,7 +178,7 @@
     },
     {
       "contains": "Parada Relógio Avançados B2B",
-      "group": "OUTROS"
+      "group": "Parada Relógio Avançados B2B"
     },
     {
       "contains": "Parceiros Centro Oeste",
@@ -351,6 +351,10 @@
     {
       "contains": "VALIDA COE B2B",
       "group": "Centralizado"
+    },
+    {
+      "contains": "VALIDA MASSIVA",
+      "group": "Cidade"
     },
     {
       "contains": "VALIDA MASSIVA",

@@ -30,7 +30,7 @@ async function syncDadosTmr() {
             // Preparar dados para inserção com grupo_agrupado determinado pelas regras
             const valores = dadosOracle.map(item => {
                 // Determinar o grupo_agrupado com base nas regras
-                let grupoAgrupado = 'outros'; // Valor padrão
+                let grupoAgrupado = 'NÃO MAPEADO'; // Valor padrão
 
                 if (item.GRP_NOME) {
                     const grpNomeLower = item.GRP_NOME.toLowerCase();
