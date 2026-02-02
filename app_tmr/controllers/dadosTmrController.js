@@ -33,7 +33,7 @@ async function obterDadosOracle() {
 
     const sqlQuery = `
             SELECT
-                UPPER(TRIM(TO_CHAR(tqi_data_reclamacao, 'Month'))) AS mes_inicio,
+                UPPER(TRIM(TO_CHAR(tqi_data_criacao, 'Month'))) AS mes_inicio,
                 vt.vdi_codigo,
                 ti.tqi_codigo,
                 ti.tqi_raiz,
@@ -139,7 +139,7 @@ async function obterDadosOracle() {
                 ) AS grupo_baixa,
                 ti.tqi_diagnostico,
                 d.dgn_descricao,
-                TO_CHAR(ti.tqi_data_reclamacao,  'DD/MM/YYYY HH24:MI:SS') AS tqi_abertura,
+                TO_CHAR(ti.tqi_data_criacao,  'DD/MM/YYYY HH24:MI:SS') AS tqi_abertura,
                 TO_CHAR(ti.tqi_data_encerramento,'DD/MM/YYYY HH24:MI:SS') AS tqi_encerramento,
                 TO_CHAR(vt.vdi_data_inicio,'DD/MM/YYYY HH24:MI:SS') AS vdi_data_inicio,
                 TO_CHAR(vt.vdi_data_fim,   'DD/MM/YYYY HH24:MI:SS') AS vdi_data_fim,
@@ -152,8 +152,8 @@ async function obterDadosOracle() {
 
             WHERE
                 ti.tqi_estado_codigo IN ('MS','GO','MA','AM','MT','PA','AP','DF','TO','RO','AC','RR')
-                AND tqi_data_reclamacao >= TO_DATE('${dataInicioStr}', 'YYYY-MM-DD')
-                AND tqi_data_reclamacao <= TO_DATE('${dataFinalStr}', 'YYYY-MM-DD')
+                AND tqi_data_criacao >= TO_DATE('${dataInicioStr}', 'YYYY-MM-DD')
+                AND tqi_data_criacao <= TO_DATE('${dataFinalStr}', 'YYYY-MM-DD')
         `;
 
     const result = await connection.execute(sqlQuery);
