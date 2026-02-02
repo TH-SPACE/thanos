@@ -541,9 +541,9 @@
         }
 
         function atualizarRegra(index) {
-            const ruleDiv = $(`.rule-item[data-index="${index}"]`);
-            rules[index].contains = ruleDiv.find('.rule-contains').val();
-            rules[index].group = ruleDiv.find('.rule-group').val();
+            const ruleRow = $(`tr[data-index="${index}"]`);
+            rules[index].contains = ruleRow.find('.rule-contains').val();
+            rules[index].group = ruleRow.find('.rule-group').val();
         }
 
         function salvarConfiguracoes() {
