@@ -113,6 +113,8 @@ router.get('/oracle-data', async (req, res) => {
                         WHEN ti.tqi_estado_codigo = 'RO' AND UPPER(ti.tqi_municipio_nome) = 'PORTO VELHO' THEN 'CAPITAL'
                         WHEN ti.tqi_estado_codigo = 'AC' AND UPPER(ti.tqi_municipio_nome) = 'RIO BRANCO' THEN 'CAPITAL'
                         WHEN ti.tqi_estado_codigo = 'RR' AND UPPER(ti.tqi_municipio_nome) = 'BOA VISTA' THEN 'CAPITAL'
+                        WHEN ti.tqi_estado_codigo = 'GO' AND UPPER(ti.tqi_municipio_nome) = 'ANAPOLIS' THEN 'CAPITAL'
+                        WHEN ti.tqi_estado_codigo = 'GO' AND UPPER(ti.tqi_municipio_nome) = 'ANÁPOLIS' THEN 'CAPITAL'
                         ELSE 'INTERIOR'
                     END AS tipo_cidade,
 
@@ -124,8 +126,10 @@ router.get('/oracle-data', async (req, res) => {
 
                     CASE
                         WHEN ti.tqi_municipio_nome IN
-                            ('FORMOSA','CIDADE OCIDENTAL','VALPARAISO','PLANALTINA','LUZIANIA','LUZIÂNIA')
+                            ('FORMOSA','CIDADE OCIDENTAL','AGUAS LINDAS DE GOIAS','VALPARAISO','PLANALTINA','LUZIANIA','LUZIÂNIA')
                             THEN 'BRASILIA'
+                        WHEN ti.tqi_municipio_nome IN ('MANAUS')
+                            THEN 'MANAUS'
                         WHEN ti.tqi_municipio_nome IN ('ANAPOLIS','Anápolis','JARAGUA','Jaraguá')
                             THEN 'ANAPOLIS'
                         WHEN ti.tqi_estado_codigo = 'PA' THEN 'BELEM'
