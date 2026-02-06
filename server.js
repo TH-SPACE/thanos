@@ -36,6 +36,8 @@ app.use(
 );
 // Serve a pasta app_tmr para arquivos estáticos do TMR
 app.use("/tmr", express.static(path.join(__dirname, "app_tmr", "public")));
+// Serve a pasta app_mapa para arquivos estáticos do Mapa
+app.use("/mapab2b", express.static(path.join(__dirname, "app_mapa", "public")));
 // Serve a pasta consulta_ad como estática para o script.js
 app.use("/consulta_ad", express.static(path.join(__dirname, "consulta_ad")));
 
@@ -67,6 +69,7 @@ app.use("/consulta-ad", require("./consulta_ad/consulta_route"));
 // 🎯 Rotas específicas
 app.use("/planejamento-he", require("./app_he/routes/planejamentoHERoutes"));
 app.use("/tmr", require("./app_tmr/routes/tmrRoutes"));
+app.use("/mapab2b", require("./app_mapa/routes/mapaRoutes"));
 
 // 📋 Rota da todo list
 app.use("/todo_th", require("./todo_th/todo_th"));

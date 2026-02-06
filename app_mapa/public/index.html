@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Cidades</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Usando Leaflet para o mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Visualização de Cidades</h1>
+            <div class="upload-section">
+                <input type="file" id="excelFile" accept=".xlsx, .xls" />
+                <button id="uploadBtn">Carregar Arquivo XLSX</button>
+            </div>
+        </header>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="ufFilter">Filtrar por UF:</label>
+                <select id="ufFilter">
+                    <option value="">Todas as UFs</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="tipoFilter">Filtrar por Tipo:</label>
+                <select id="tipoFilter">
+                    <option value="">Todos os Tipos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="viewType">Tipo de Visualização:</label>
+                <select id="viewType">
+                    <option value="markers">Marcadores</option>
+                    <option value="heatmap">Mancha de Calor</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            <div class="summary-table-container">
+                <h3>Tabela Resumo</h3>
+                <table id="summaryTable">
+                    <thead>
+                        <tr>
+                            <th>UF</th>
+                            <th>Total Cidades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dados serão inseridos aqui dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carregar o script do Leaflet e do Heatmap -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
