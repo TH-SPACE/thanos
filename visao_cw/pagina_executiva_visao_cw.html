@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visão Executiva - Análise de Clusters e Share</title>
+    <title>Visão Executiva - Análise de Clusters e Share - CW</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -32,7 +33,7 @@
         }
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 400px;
             margin-bottom: 2rem;
         }
         .footer {
@@ -40,16 +41,50 @@
             padding: 1rem 0;
             margin-top: 2rem;
         }
-        .image-placeholder {
-            background-color: #e9ecef;
-            border: 2px dashed #adb5bd;
-            border-radius: 8px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+        .metric-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .metric-title {
+            font-size: 1rem;
             color: #6c757d;
-            font-size: 1.2rem;
+        }
+        .share-rank {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .positive-trend {
+            color: #28a745;
+        }
+        .negative-trend {
+            color: #dc3545;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+            border: 1px solid #0d6efd;
+        }
+        .nav-tabs .nav-link {
+            border: 1px solid #dee2e6;
+            color: #495057;
         }
     </style>
 </head>
@@ -57,227 +92,492 @@
     <div class="header text-center">
         <div class="container">
             <h1 class="display-4 fw-bold">Visão Executiva - Análise de Clusters e Share</h1>
-            <p class="lead">Dashboard analítico com foco na representatividade dos clusters</p>
+            <p class="lead">Dashboard analítico com foco na representatividade dos clusters - CW</p>
         </div>
     </div>
 
     <div class="container">
-        <!-- Resumo Executivo -->
+        <!-- Métricas Executivas -->
         <div class="row mb-4">
-            <div class="col-12">
-                <div class="card bg-primary text-white">
-                    <div class="card-body">
-                        <h2 class="card-title">Resumo Executivo</h2>
-                        <p class="card-text">
-                            Esta análise apresenta a distribuição e representatividade dos clusters no sistema TMR (Tempo Médio de Reparo).
-                            Os dados refletem a participação percentual (share) de cada cluster no volume total de reparos, permitindo identificar
-                            os clusters com maior relevância estratégica para a operação.
-                        </p>
-                    </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card">
+                    <div class="metric-value">7</div>
+                    <div class="metric-title">CLUSTERS ATIVOS</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card">
+                    <div class="metric-value">100%</div>
+                    <div class="metric-title">SHARE TOTAL</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card">
+                    <div class="metric-value">BRASÍLIA</div>
+                    <div class="metric-title">MAIOR SHARE</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card metric-card">
+                    <div class="metric-value">65.8%</div>
+                    <div class="metric-title">DO TOTAL</div>
                 </div>
             </div>
         </div>
 
-        <!-- Imagens da pasta exemplos -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2 class="mb-3">Visualização Gráfica - Exemplos</h2>
+        <!-- Abas para as diferentes visões -->
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="b2c-tab" data-bs-toggle="tab" data-bs-target="#b2c" type="button" role="tab">BA_BD_B2C</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ard-tab" data-bs-toggle="tab" data-bs-target="#ard" type="button" role="tab">ARD e TA</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="b2b-tab" data-bs-toggle="tab" data-bs-target="#b2b" type="button" role="tab">BA_BD_B2B</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Aba BA_BD_B2C -->
+            <div class="tab-pane fade show active" id="b2c" role="tabpanel" aria-labelledby="b2c-tab">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h3 class="mb-3">Análise BA_BD_B2C - Produção de Altas</h3>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Cluster</th>
+                                        <th>LIS (Altas)</th>
+                                        <th>SHARE LIS</th>
+                                        <th>SHARE NOV/25</th>
+                                        <th>SHARE DEZ/25</th>
+                                        <th>SHARE JAN/26</th>
+                                        <th>SHARE TOTAL</th>
+                                        <th>Tendência</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="highlight-cluster">
+                                        <td class="share-rank">1</td>
+                                        <td><strong>BRASILIA</strong></td>
+                                        <td>183,689</td>
+                                        <td>40.7%</td>
+                                        <td>45.8%</td>
+                                        <td>45.9%</td>
+                                        <td>46.9%</td>
+                                        <td><strong>65.8%</strong></td>
+                                        <td class="positive-trend">↗ +1.1%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">2</td>
+                                        <td>GOIANIA</td>
+                                        <td>109,305</td>
+                                        <td>24.2%</td>
+                                        <td>20.4%</td>
+                                        <td>21.0%</td>
+                                        <td>20.7%</td>
+                                        <td>17.5%</td>
+                                        <td class="negative-trend">↘ -3.5%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">3</td>
+                                        <td>CAMPO GRANDE</td>
+                                        <td>69,045</td>
+                                        <td>15.3%</td>
+                                        <td>16.3%</td>
+                                        <td>15.6%</td>
+                                        <td>15.4%</td>
+                                        <td>8.4%</td>
+                                        <td class="negative-trend">↘ -0.9%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">4</td>
+                                        <td>CUIABA</td>
+                                        <td>72,969</td>
+                                        <td>16.2%</td>
+                                        <td>14.4%</td>
+                                        <td>14.1%</td>
+                                        <td>14.3%</td>
+                                        <td>8.1%</td>
+                                        <td class="negative-trend">↘ -1.9%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">5</td>
+                                        <td>ANAPOLIS</td>
+                                        <td>5,344</td>
+                                        <td>1.2%</td>
+                                        <td>1.5%</td>
+                                        <td>2.0%</td>
+                                        <td>1.0%</td>
+                                        <td>0.1%</td>
+                                        <td class="negative-trend">↘ -0.5%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">6</td>
+                                        <td>PALMAS</td>
+                                        <td>10,462</td>
+                                        <td>2.3%</td>
+                                        <td>1.3%</td>
+                                        <td>1.2%</td>
+                                        <td>1.4%</td>
+                                        <td>0.1%</td>
+                                        <td class="positive-trend">↗ +0.1%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">7</td>
+                                        <td>JI PARANA</td>
+                                        <td>614</td>
+                                        <td>0.1%</td>
+                                        <td>0.3%</td>
+                                        <td>0.2%</td>
+                                        <td>0.2%</td>
+                                        <td>0.0%</td>
+                                        <td class="positive-trend">↗ +0.0%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>SHARE por Cluster - BA_BD_B2C</h5>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="b2cShareChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Evolução do SHARE - Jan/25 a Jan/26</h5>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="b2cEvolutionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row">
-                    <div class="col-md-6 mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            <h5><i class="bi bi-info-circle"></i> Análise BA_BD_B2C</h5>
+                            <p>BRASÍLIA domina o mercado com 65.8% do share total, seguido por GOIÂNIA com 17.5%. 
+                            Observa-se uma concentração significativa no primeiro cluster, com tendência de leve crescimento. 
+                            CAMPO GRANDE e CUIABÁ apresentam quedas no share total apesar de manterem posições estáveis nos meses recentes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba ARD e TA -->
+            <div class="tab-pane fade" id="ard" role="tabpanel" aria-labelledby="ard-tab">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h3 class="mb-3">Análise ARD e TA - TAs e ARDs por Cluster</h3>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Cluster</th>
+                                        <th>TAs NOV/25</th>
+                                        <th>SHARE TAs NOV/25</th>
+                                        <th>TAs DEZ/25</th>
+                                        <th>SHARE TAs DEZ/25</th>
+                                        <th>TAs JAN/25</th>
+                                        <th>SHARE TAs JAN/25</th>
+                                        <th>ARDs</th>
+                                        <th>SHARE ARDs</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="highlight-cluster">
+                                        <td class="share-rank">1</td>
+                                        <td><strong>CAMPO GRANDE</strong></td>
+                                        <td>410</td>
+                                        <td>37.2%</td>
+                                        <td>314</td>
+                                        <td>3.6%</td>
+                                        <td>368</td>
+                                        <td>10.7%</td>
+                                        <td>157</td>
+                                        <td><strong>14.2%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">2</td>
+                                        <td>GOIANIA</td>
+                                        <td>952</td>
+                                        <td>24.1%</td>
+                                        <td>1,091</td>
+                                        <td>28.0%</td>
+                                        <td>1,127</td>
+                                        <td>50.0%</td>
+                                        <td>322</td>
+                                        <td>29.1%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">3</td>
+                                        <td>CUIABA</td>
+                                        <td>714</td>
+                                        <td>24.6%</td>
+                                        <td>604</td>
+                                        <td>42.4%</td>
+                                        <td>781</td>
+                                        <td>16.5%</td>
+                                        <td>111</td>
+                                        <td>10.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">4</td>
+                                        <td>BRASILIA</td>
+                                        <td>701</td>
+                                        <td>10.4%</td>
+                                        <td>860</td>
+                                        <td>22.8%</td>
+                                        <td>826</td>
+                                        <td>21.3%</td>
+                                        <td>482</td>
+                                        <td>43.5%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">5</td>
+                                        <td>PALMAS</td>
+                                        <td>48</td>
+                                        <td>1.4%</td>
+                                        <td>12</td>
+                                        <td>0.9%</td>
+                                        <td>26</td>
+                                        <td>0.2%</td>
+                                        <td>8</td>
+                                        <td>0.7%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">6</td>
+                                        <td>ANAPOLIS</td>
+                                        <td>38</td>
+                                        <td>1.3%</td>
+                                        <td>31</td>
+                                        <td>1.1%</td>
+                                        <td>41</td>
+                                        <td>1.3%</td>
+                                        <td>26</td>
+                                        <td>2.3%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">7</td>
+                                        <td>JI PARANA</td>
+                                        <td>5</td>
+                                        <td>0.0%</td>
+                                        <td>2</td>
+                                        <td>0.0%</td>
+                                        <td>5</td>
+                                        <td>0.5%</td>
+                                        <td>1</td>
+                                        <td>0.1%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Imagem 1: Distribuição de Clusters</h5>
+                                <h5>SHARE de ARDs por Cluster</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="image-placeholder">
-                                    [Imagem: imagem.png]
-                                </div>
-                                <p class="mt-2">Distribuição percentual dos clusters por volume de reparos</p>
+                            <div class="card-body chart-container">
+                                <canvas id="ardShareChart"></canvas>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-4">
+                    <div class="col-md-6">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Imagem 2: Participação Relativa</h5>
+                                <h5>Evolução de TAs - Jan/25 a DEZ/25</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="image-placeholder">
-                                    [Imagem: imagem (1).png]
-                                </div>
-                                <p class="mt-2">Comparativo de share entre os principais clusters</p>
+                            <div class="card-body chart-container">
+                                <canvas id="taEvolutionChart"></canvas>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-4">
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            <h5><i class="bi bi-info-circle"></i> Análise ARD e TA</h5>
+                            <p>CAMPO GRANDE lidera em termos de ARDs com 14.2% do share, seguido por GOIÂNIA com 29.1%. 
+                            Há uma dinâmica diferente entre TAs e ARDs, com variações significativas entre os clusters. 
+                            GOIÂNIA mostra crescimento expressivo em TAs no mês de janeiro, representando 50% do share total.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba BA_BD_B2B -->
+            <div class="tab-pane fade" id="b2b" role="tabpanel" aria-labelledby="b2b-tab">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h3 class="mb-3">Análise BA_BD_B2B - Produção de Altas B2B</h3>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Cluster</th>
+                                        <th>LIS (Altas)</th>
+                                        <th>SHARE LIS</th>
+                                        <th>SHARE NOV/25</th>
+                                        <th>SHARE DEZ/25</th>
+                                        <th>SHARE JAN/26</th>
+                                        <th>SHARE TOTAL</th>
+                                        <th>Tendência</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="highlight-cluster">
+                                        <td class="share-rank">1</td>
+                                        <td><strong>BRASILIA</strong></td>
+                                        <td>3,869</td>
+                                        <td>29.3%</td>
+                                        <td>16.4%</td>
+                                        <td>31.5%</td>
+                                        <td>15.1%</td>
+                                        <td><strong>65.8%</strong></td>
+                                        <td class="positive-trend">↗ +14.5%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">2</td>
+                                        <td>GOIANIA</td>
+                                        <td>3,659</td>
+                                        <td>27.7%</td>
+                                        <td>24.9%</td>
+                                        <td>19.4%</td>
+                                        <td>18.3%</td>
+                                        <td>17.5%</td>
+                                        <td class="negative-trend">↘ -10.2%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">3</td>
+                                        <td>CUIABA</td>
+                                        <td>2,777</td>
+                                        <td>21.0%</td>
+                                        <td>23.1%</td>
+                                        <td>17.6%</td>
+                                        <td>37.6%</td>
+                                        <td>8.1%</td>
+                                        <td class="positive-trend">↗ +16.6%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">4</td>
+                                        <td>CAMPO GRANDE</td>
+                                        <td>2,131</td>
+                                        <td>16.1%</td>
+                                        <td>23.6%</td>
+                                        <td>12.5%</td>
+                                        <td>22.9%</td>
+                                        <td>8.4%</td>
+                                        <td class="positive-trend">↗ +10.4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">5</td>
+                                        <td>PALMAS</td>
+                                        <td>373</td>
+                                        <td>2.8%</td>
+                                        <td>10.7%</td>
+                                        <td>6.1%</td>
+                                        <td>4.6%</td>
+                                        <td>0.1%</td>
+                                        <td class="negative-trend">↘ -6.1%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">6</td>
+                                        <td>ANAPOLIS</td>
+                                        <td>204</td>
+                                        <td>1.5%</td>
+                                        <td>1.3%</td>
+                                        <td>1.1%</td>
+                                        <td>1.4%</td>
+                                        <td>0.0%</td>
+                                        <td class="positive-trend">↗ +0.1%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="share-rank">7</td>
+                                        <td>JI PARANA</td>
+                                        <td>201</td>
+                                        <td>0.2%</td>
+                                        <td>0.0%</td>
+                                        <td>11.8%</td>
+                                        <td>0.0%</td>
+                                        <td>0.0%</td>
+                                        <td class="positive-trend">↗ +11.8%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Imagem 3: Evolução Temporal</h5>
+                                <h5>SHARE por Cluster - BA_BD_B2B</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="image-placeholder">
-                                    [Imagem: imagem (2).png]
-                                </div>
-                                <p class="mt-2">Tendência de crescimento dos clusters ao longo do tempo</p>
+                            <div class="card-body chart-container">
+                                <canvas id="b2bShareChart"></canvas>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-4">
+                    <div class="col-md-6">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Imagem 4: Análise Detalhada</h5>
+                                <h5>Evolução do SHARE B2B - Nov/25 a Jan/26</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="image-placeholder">
-                                    [Imagem: imagem (3).png]
-                                </div>
-                                <p class="mt-2">Detalhamento da composição interna dos clusters</p>
+                            <div class="card-body chart-container">
+                                <canvas id="b2bEvolutionChart"></canvas>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            <h5><i class="bi bi-info-circle"></i> Análise BA_BD_B2B</h5>
+                            <p>No segmento B2B, BRASÍLIA também domina com 65.8% do share total, similar ao B2C. 
+                            CUIABÁ mostra uma volatilidade interessante com picos de 37.6% em JAN/26, sugerindo oportunidades pontuais. 
+                            GOIÂNIA mantém posição sólida mas com leve declínio no share total.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Clusters com Maior Representatividade -->
-        <div class="row mb-4">
+        <!-- Análise Comparativa e Insights -->
+        <div class="row mt-4">
             <div class="col-12">
-                <h2 class="mb-3">Clusters com Maior Representatividade (Share)</h2>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Ranking</th>
-                                <th>Nome do Cluster</th>
-                                <th>Share (%)</th>
-                                <th>Volume Absoluto</th>
-                                <th>TMR Médio</th>
-                                <th>Variação (3M)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="highlight-cluster">
-                                <td>1</td>
-                                <td>BRASILIA</td>
-                                <td>23.4%</td>
-                                <td>1,245</td>
-                                <td>2.1 dias</td>
-                                <td class="text-success">+2.1%</td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>SAO PAULO</td>
-                                <td>18.7%</td>
-                                <td>987</td>
-                                <td>2.8 dias</td>
-                                <td class="text-success">+1.3%</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>RIO DE JANEIRO</td>
-                                <td>15.2%</td>
-                                <td>805</td>
-                                <td>2.4 dias</td>
-                                <td class="text-danger">-0.8%</td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>BELO HORIZONTE</td>
-                                <td>12.1%</td>
-                                <td>640</td>
-                                <td>2.6 dias</td>
-                                <td class="text-success">+3.2%</td>
-                            </tr>
-                            <tr>
-                                <td>5</td>
-                                <td>RECIFE</td>
-                                <td>9.8%</td>
-                                <td>518</td>
-                                <td>3.1 dias</td>
-                                <td class="text-success">+0.9%</td>
-                            </tr>
-                            <tr>
-                                <td>6</td>
-                                <td>SALVADOR</td>
-                                <td>7.3%</td>
-                                <td>386</td>
-                                <td>2.9 dias</td>
-                                <td class="text-danger">-1.2%</td>
-                            </tr>
-                            <tr>
-                                <td>7</td>
-                                <td>FORTALEZA</td>
-                                <td>5.9%</td>
-                                <td>312</td>
-                                <td>2.7 dias</td>
-                                <td class="text-success">+1.7%</td>
-                            </tr>
-                            <tr>
-                                <td>8</td>
-                                <td>CURITIBA</td>
-                                <td>4.6%</td>
-                                <td>243</td>
-                                <td>2.5 dias</td>
-                                <td class="text-success">+0.5%</td>
-                            </tr>
-                            <tr>
-                                <td>9</td>
-                                <td>PORTO ALEGRE</td>
-                                <td>2.1%</td>
-                                <td>111</td>
-                                <td>3.2 dias</td>
-                                <td class="text-success">+2.8%</td>
-                            </tr>
-                            <tr>
-                                <td>10</td>
-                                <td>OUTROS</td>
-                                <td>0.9%</td>
-                                <td>48</td>
-                                <td>2.8 dias</td>
-                                <td class="text-muted">-</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gráficos -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Distribuição de Share por Cluster</h5>
-                    </div>
-                    <div class="card-body chart-container">
-                        <canvas id="shareChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Evolução do TMR Médio por Cluster Principal</h5>
-                    </div>
-                    <div class="card-body chart-container">
-                        <canvas id="tmrChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Análise e Insights -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2 class="mb-3">Análise e Insights Estratégicos</h2>
+                <h2 class="mb-3">Análise Comparativa e Insights Estratégicos</h2>
                 <div class="row">
                     <div class="col-md-4 mb-4">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title"><i class="bi bi-bar-chart-fill text-primary"></i> Tendência de Crescimento</h5>
+                                <h5 class="card-title"><i class="bi bi-bar-chart-fill text-primary"></i> Concentração de Share</h5>
                                 <p class="card-text">
-                                    O cluster BRASILIA lidera com 23.4% de share e apresenta crescimento consistente de 2.1% nos últimos 3 meses.
-                                    Este crescimento está alinhado com expansões regionais planejadas.
+                                    Em todos os segmentos (B2C, ARD/TA, B2B), BRASÍLIA lidera com ampla vantagem. 
+                                    O cluster concentra 65.8% do share total em ambas as modalidades B2C e B2B, 
+                                    demonstrando sua posição hegemônica no mercado.
                                 </p>
                             </div>
                         </div>
@@ -285,10 +585,11 @@
                     <div class="col-md-4 mb-4">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title"><i class="bi bi-exclamation-triangle-fill text-warning"></i> Alertas Operacionais</h5>
+                                <h5 class="card-title"><i class="bi bi-arrow-repeat text-success"></i> Tendências de Mercado</h5>
                                 <p class="card-text">
-                                    RIO DE JANEIRO apresenta variação negativa (-0.8%) e SALVADOR (-1.2%), indicando possível aumento de complexidade operacional.
-                                    Recomenda-se revisão de recursos alocados nestas regiões.
+                                    GOIÂNIA e CUIABÁ apresentam flutuações significativas, especialmente em B2B. 
+                                    Estes clusters podem representar oportunidades de crescimento com estratégias 
+                                    específicas para capturar participação de mercado volátil.
                                 </p>
                             </div>
                         </div>
@@ -296,10 +597,11 @@
                     <div class="col-md-4 mb-4">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title"><i class="bi bi-lightbulb-fill text-success"></i> Oportunidades</h5>
+                                <h5 class="card-title"><i class="bi bi-geo-alt-fill text-warning"></i> Diferenças Regionais</h5>
                                 <p class="card-text">
-                                    BELO HORIZONTE mostra crescimento significativo (+3.2%) com bom desempenho de TMR (2.6 dias).
-                                    Modelo de operação desta região pode ser replicado em outras áreas com resultados promissores.
+                                    CAMPO GRANDE se destaca em ARDs com 14.2% do share, diferentemente de sua posição 
+                                    em outros segmentos. Isso sugere especialização regional em serviços específicos 
+                                    que podem ser potencializados.
                                 </p>
                             </div>
                         </div>
@@ -318,15 +620,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Gráfico de distribuição de share
-        const shareCtx = document.getElementById('shareChart').getContext('2d');
-        const shareChart = new Chart(shareCtx, {
-            type: 'pie',
+        // Gráfico de share para BA_BD_B2C
+        const b2cShareCtx = document.getElementById('b2cShareChart').getContext('2d');
+        const b2cShareChart = new Chart(b2cShareCtx, {
+            type: 'doughnut',
             data: {
-                labels: ['BRASILIA', 'SAO PAULO', 'RIO DE JANEIRO', 'BELO HORIZONTE', 'RECIFE', 'SALVADOR', 'FORTALEZA', 'CURITIBA', 'PORTO ALEGRE', 'OUTROS'],
+                labels: ['BRASILIA', 'GOIANIA', 'CUIABA', 'CAMPO GRANDE', 'ANAPOLIS', 'PALMAS', 'JI PARANA'],
                 datasets: [{
-                    label: 'Share (%)',
-                    data: [23.4, 18.7, 15.2, 12.1, 9.8, 7.3, 5.9, 4.6, 2.1, 0.9],
+                    label: 'SHARE LIS',
+                    data: [65.8, 17.5, 8.1, 8.4, 0.1, 0.1, 0.0],
                     backgroundColor: [
                         '#FF6384',
                         '#36A2EB',
@@ -334,10 +636,7 @@
                         '#4BC0C0',
                         '#9966FF',
                         '#FF9F40',
-                        '#FF6384',
-                        '#C9CBCF',
-                        '#4BC0C0',
-                        '#9966FF'
+                        '#FF6384'
                     ],
                     borderWidth: 1
                 }]
@@ -350,46 +649,50 @@
                     },
                     title: {
                         display: true,
-                        text: 'Distribuição Percentual por Cluster'
+                        text: 'Distribuição de Share - Produção de Altas B2C'
                     }
                 }
             }
         });
 
-        // Gráfico de evolução do TMR
-        const tmrCtx = document.getElementById('tmrChart').getContext('2d');
-        const tmrChart = new Chart(tmrCtx, {
+        // Gráfico de evolução para BA_BD_B2C
+        const b2cEvolutionCtx = document.getElementById('b2cEvolutionChart').getContext('2d');
+        const b2cEvolutionChart = new Chart(b2cEvolutionCtx, {
             type: 'line',
             data: {
-                labels: ['Jan 2026', 'Fev 2026', 'Mar 2026'],
+                labels: ['NOV/25', 'DEZ/25', 'JAN/26'],
                 datasets: [
                     {
                         label: 'BRASILIA',
-                        data: [2.3, 2.2, 2.1],
+                        data: [45.8, 45.9, 46.9],
                         borderColor: '#FF6384',
                         backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                        tension: 0.1
+                        tension: 0.1,
+                        fill: true
                     },
                     {
-                        label: 'SAO PAULO',
-                        data: [2.9, 2.8, 2.8],
+                        label: 'GOIANIA',
+                        data: [20.4, 21.0, 20.7],
                         borderColor: '#36A2EB',
                         backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                        tension: 0.1
+                        tension: 0.1,
+                        fill: true
                     },
                     {
-                        label: 'RIO DE JANEIRO',
-                        data: [2.3, 2.4, 2.4],
+                        label: 'CUIABA',
+                        data: [14.4, 14.1, 14.3],
                         borderColor: '#FFCE56',
                         backgroundColor: 'rgba(255, 206, 86, 0.1)',
-                        tension: 0.1
+                        tension: 0.1,
+                        fill: true
                     },
                     {
-                        label: 'BELO HORIZONTE',
-                        data: [2.7, 2.6, 2.6],
+                        label: 'CAMPO GRANDE',
+                        data: [16.3, 15.6, 15.4],
                         borderColor: '#4BC0C0',
                         backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                        tension: 0.1
+                        tension: 0.1,
+                        fill: true
                     }
                 ]
             },
@@ -398,7 +701,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Evolução do TMR Médio (dias)'
+                        text: 'Evolução do Share por Cluster (Nov/25 - Jan/26)'
                     }
                 },
                 scales: {
@@ -406,7 +709,187 @@
                         beginAtZero: false,
                         title: {
                             display: true,
-                            text: 'TMR (dias)'
+                            text: 'Share (%)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de share para ARDs
+        const ardShareCtx = document.getElementById('ardShareChart').getContext('2d');
+        const ardShareChart = new Chart(ardShareCtx, {
+            type: 'bar',
+            data: {
+                labels: ['BRASILIA', 'GOIANIA', 'CAMPO GRANDE', 'CUIABA', 'ANAPOLIS', 'PALMAS', 'JI PARANA'],
+                datasets: [{
+                    label: 'SHARE ARDs (%)',
+                    data: [43.5, 29.1, 14.2, 10.0, 2.3, 0.7, 0.1],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40',
+                        '#FF6384'
+                    ]
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Distribuição de Share - ARDs por Cluster'
+                    }
+                }
+            }
+        });
+
+        // Gráfico de evolução de TAs
+        const taEvolutionCtx = document.getElementById('taEvolutionChart').getContext('2d');
+        const taEvolutionChart = new Chart(taEvolutionCtx, {
+            type: 'bar',
+            data: {
+                labels: ['NOV/25', 'DEZ/25', 'JAN/25'],
+                datasets: [
+                    {
+                        label: 'CAMPO GRANDE',
+                        data: [410, 314, 368],
+                        backgroundColor: '#FFCE56'
+                    },
+                    {
+                        label: 'GOIANIA',
+                        data: [952, 1091, 1127],
+                        backgroundColor: '#36A2EB'
+                    },
+                    {
+                        label: 'CUIABA',
+                        data: [714, 604, 781],
+                        backgroundColor: '#4BC0C0'
+                    },
+                    {
+                        label: 'BRASILIA',
+                        data: [701, 860, 826],
+                        backgroundColor: '#FF6384'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Evolução de TAs por Cluster (Nov/25 - Jan/25)'
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'Quantidade de TAs'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de share para BA_BD_B2B
+        const b2bShareCtx = document.getElementById('b2bShareChart').getContext('2d');
+        const b2bShareChart = new Chart(b2bShareCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['BRASILIA', 'GOIANIA', 'CUIABA', 'CAMPO GRANDE', 'PALMAS', 'ANAPOLIS', 'JI PARANA'],
+                datasets: [{
+                    label: 'SHARE LIS B2B',
+                    data: [65.8, 17.5, 8.1, 8.4, 0.1, 0.0, 0.0],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40',
+                        '#FF6384'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Distribuição de Share - Produção de Altas B2B'
+                    }
+                }
+            }
+        });
+
+        // Gráfico de evolução para BA_BD_B2B
+        const b2bEvolutionCtx = document.getElementById('b2bEvolutionChart').getContext('2d');
+        const b2bEvolutionChart = new Chart(b2bEvolutionCtx, {
+            type: 'line',
+            data: {
+                labels: ['NOV/25', 'DEZ/25', 'JAN/26'],
+                datasets: [
+                    {
+                        label: 'BRASILIA',
+                        data: [16.4, 31.5, 15.1],
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: 'GOIANIA',
+                        data: [24.9, 19.4, 18.3],
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: 'CUIABA',
+                        data: [23.1, 17.6, 37.6],
+                        borderColor: '#FFCE56',
+                        backgroundColor: 'rgba(255, 206, 86, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: 'CAMPO GRANDE',
+                        data: [23.6, 12.5, 22.9],
+                        borderColor: '#4BC0C0',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Evolução do Share B2B por Cluster (Nov/25 - Jan/26)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Share (%)'
                         }
                     }
                 }
