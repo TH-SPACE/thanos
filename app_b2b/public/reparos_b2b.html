@@ -81,55 +81,18 @@
             <!-- Abas de Visualização -->
             <ul class="nav nav-tabs" id="visualizacaoTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload"
-                        type="button" role="tab">Upload de Dados</button>
+                    <button class="nav-link active" id="analise-tab" data-bs-toggle="tab" data-bs-target="#analise"
+                        type="button" role="tab">Desempenho BDs</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="analise-tab" data-bs-toggle="tab" data-bs-target="#analise"
-                        type="button" role="tab">Desempenho BDs</button>
+                    <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload"
+                        type="button" role="tab">Upload de Dados</button>
                 </li>
             </ul>
 
             <div class="tab-content" id="visualizacaoTabContent">
-                <!-- Aba de Upload -->
-                <div class="tab-pane fade show active" id="upload" role="tabpanel">
-                    <div class="card mt-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5><i class="fas fa-file-excel"></i> Upload de Dados</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8 mx-auto">
-                                    <div class="upload-area" id="dropZone">
-                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                                        <h5>Arraste e solte seu arquivo Excel aqui</h5>
-                                        <p class="text-muted">ou</p>
-                                        <button class="btn btn-primary" id="browseFiles">
-                                            <i class="fas fa-folder-open"></i> Escolher Arquivo
-                                        </button>
-                                        <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
-                                    </div>
-                                    <div class="progress mt-3" id="uploadProgress">
-                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-                                    </div>
-                                    <div class="status-message" id="statusMessage"></div>
-                                    <div class="mt-3">
-                                        <h6>Instruções:</h6>
-                                        <ul>
-                                            <li>O arquivo deve estar no formato Excel (.xlsx ou .xls)</li>
-                                            <li>O arquivo deve seguir a ordem exata das colunas conforme definido no sistema</li>
-                                            <li>A primeira coluna deve ser 'BD' contendo o identificador único para evitar duplicação</li>
-                                            <li>As demais colunas devem seguir a sequência: id_circuito, bd_ant, lp_15, designador_lp_13, id_comercial, data_abertura, data_reparo, data_encerramento, data_baixa, last_update, kpi, kpi_acesso, tipo_acesso, origem, sistema_origem, cod_grupo, grupo_economico, bd_raiz, status_codigo, status_nome, procedencia, reclamacao, segmento_sistema, segmento_v3, segmento_novo, segmento_vivo_corp, projeto, cliente_nome, cnpj, cnpj_raiz, endereco, localidade_codigo, area_codigo, escritorio_codigo, cidade, uf, cluster, regional, regional_vivo, lp_operadora, servico_cpcc_nome, velocidade, velocidade_kbps, produto_nome, familia_produto, baixa_n1_codigo, baixa_n2_codigo, baixa_n3_codigo, baixa_n4_codigo, baixa_n5_codigo, baixa_n1_nome, baixa_n2_nome, baixa_n3_nome, baixa_n4_nome, baixa_n5_nome, resumo_intragov, intragov_sigla, intragov_codigo, sla_horas, grupo, grupo_novo, foco_acoes, foco_novo, grupo_baixa_codigo, grupo_abertura, usuario_abertura, grupo_baixa, usuario_baixa, grupo_responsavel, operadora, tipo_operadora, tmr, tmr_sem_parada, tempo_parada, decorrido_sem_parada, prazo, reincidencia_30d, reincidencia_tipo, originou_reinc, prox_reinc, horario_func_inicio, horario_func_fim, R30_Tratativas</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Aba de Análise -->
-                <div class="tab-pane fade" id="analise" role="tabpanel">
+                <div class="tab-pane fade show active" id="analise" role="tabpanel">
                     <div class="card mt-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-chart-bar"></i> Desempenho BDs</h5>
@@ -182,7 +145,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Gráfico de Entrantes vs Encerramentos -->
                             <div class="row mt-4">
                                 <div class="col-12">
@@ -195,6 +158,43 @@
                                                 <canvas id="graficoAnaliseCluster"></canvas>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba de Upload -->
+                <div class="tab-pane fade" id="upload" role="tabpanel">
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-file-excel"></i> Upload de Dados</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8 mx-auto">
+                                    <div class="upload-area" id="dropZone">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                        <h5>Arraste e solte seu arquivo Excel aqui</h5>
+                                        <p class="text-muted">ou</p>
+                                        <button class="btn btn-primary" id="browseFiles">
+                                            <i class="fas fa-folder-open"></i> Escolher Arquivo
+                                        </button>
+                                        <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
+                                    </div>
+                                    <div class="progress mt-3" id="uploadProgress">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="status-message" id="statusMessage"></div>
+                                    <div class="mt-3">
+                                        <h6>Instruções:</h6>
+                                        <ul>
+                                            <li>O arquivo deve estar no formato Excel (.xlsx ou .xls)</li>
+                                            <li>O arquivo deve seguir a ordem exata das colunas conforme definido no sistema</li>
+                                            <li>A primeira coluna deve ser 'BD' contendo o identificador único para evitar duplicação</li>
+                                            <li>As demais colunas devem seguir a sequência: id_circuito, bd_ant, lp_15, designador_lp_13, id_comercial, data_abertura, data_reparo, data_encerramento, data_baixa, last_update, kpi, kpi_acesso, tipo_acesso, origem, sistema_origem, cod_grupo, grupo_economico, bd_raiz, status_codigo, status_nome, procedencia, reclamacao, segmento_sistema, segmento_v3, segmento_novo, segmento_vivo_corp, projeto, cliente_nome, cnpj, cnpj_raiz, endereco, localidade_codigo, area_codigo, escritorio_codigo, cidade, uf, cluster, regional, regional_vivo, lp_operadora, servico_cpcc_nome, velocidade, velocidade_kbps, produto_nome, familia_produto, baixa_n1_codigo, baixa_n2_codigo, baixa_n3_codigo, baixa_n4_codigo, baixa_n5_codigo, baixa_n1_nome, baixa_n2_nome, baixa_n3_nome, baixa_n4_nome, baixa_n5_nome, resumo_intragov, intragov_sigla, intragov_codigo, sla_horas, grupo, grupo_novo, foco_acoes, foco_novo, grupo_baixa_codigo, grupo_abertura, usuario_abertura, grupo_baixa, usuario_baixa, grupo_responsavel, operadora, tipo_operadora, tmr, tmr_sem_parada, tempo_parada, decorrido_sem_parada, prazo, reincidencia_30d, reincidencia_tipo, originou_reinc, prox_reinc, horario_func_inicio, horario_func_fim, R30_Tratativas</li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>

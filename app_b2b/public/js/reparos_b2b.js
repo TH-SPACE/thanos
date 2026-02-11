@@ -270,10 +270,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#analise-tab').addEventListener('shown.bs.tab', function() {
         loadAnalysisData();
     });
-    
+
     // Adiciona funcionalidade de clique para o botão de atualizar dados na aba de upload
     document.querySelector('#upload-tab').addEventListener('shown.bs.tab', function() {
         // Limpa mensagens de status ao voltar para a aba de upload
         statusMessage.style.display = 'block';
     });
+    
+    // Carrega os dados automaticamente quando a página é carregada
+    // Somente se a aba de análise estiver visível (ativa)
+    if (document.querySelector('#analise').classList.contains('active')) {
+        loadAnalysisData();
+    }
 });
