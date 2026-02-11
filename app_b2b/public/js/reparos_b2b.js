@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = uploadProgress.querySelector('.progress-bar');
     const statusMessage = document.getElementById('statusMessage');
 
+    // Referências aos elementos de filtro
+    const filtroRegional = document.getElementById('filtroRegional');
+    const filtroKPI = document.getElementById('filtroKPI');
+    const filtroData = document.getElementById('filtroData');
+
     // Evento para abrir o diálogo de seleção de arquivo
     browseFiles.addEventListener('click', function() {
         fileInput.click();
@@ -86,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
             contentType: false,
             xhr: function() {
                 const xhr = new window.XMLHttpRequest();
-                
+
                 // Upload progress
                 xhr.upload.addEventListener("progress", function(evt) {
                     if (evt.lengthComputable) {
@@ -120,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showMessage(message, type) {
         statusMessage.textContent = message;
         statusMessage.className = `status-message ${type}`;
-        
+
         // Auto-hide success messages after 5 seconds
         if (type === 'success') {
             setTimeout(() => {
@@ -136,20 +141,28 @@ document.addEventListener('DOMContentLoaded', function() {
         loadAnalysisData();
     });
 
-    // Função para carregar dados de análise
+    // Função para carregar dados de análise com filtros
     function loadAnalysisData() {
         document.getElementById('loadingAnalise').style.display = 'block';
 
-        // Faz a requisição para obter dados de análise
-        $.get('/b2b/analise-data')
+        // Obter valores dos filtros
+        const regional = filtroRegional.value;
+        const kpi = filtroKPI.value;
+        const data = filtroData.value;
+
+        // Parâmetros para a requisição
+        const params = new URLSearchParams();
+        if (regional) params.append('regional', regional);
+        if (kpi) params.append('kpi', kpi);
+        if (data) params.append('data', data);
+
+        // Faz a requisição para obter dados de análise com filtros
+        $.get(`/b2b/analise-data?${params.toString()}`)
             .done(function(data) {
                 document.getElementById('loadingAnalise').style.display = 'none';
 
                 // Atualiza a tabela com dados reais
                 updateAnalysisTable(data);
-
-                // Atualiza o gráfico
-                updateAnalysisChart(data);
             })
             .fail(function(error) {
                 document.getElementById('loadingAnalise').style.display = 'none';
@@ -168,7 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = document.querySelector('#tabelaAnaliseCluster tbody');
         tbody.innerHTML = '';
 
-        if (data.length === 0) {
+        // Verificar se data é um array e se está vazio
+        if (!Array.isArray(data) || data.length === 0) {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td colspan="4" class="text-center">Nenhum dado encontrado</td>`;
             tbody.appendChild(tr);
@@ -189,81 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Função para atualizar o gráfico de análise
     function updateAnalysisChart(data) {
-        const ctx = document.getElementById('graficoAnaliseCluster').getContext('2d');
-
-        // Destruir instância anterior do gráfico se existir
-        if (window.analysisChart) {
-            window.analysisChart.destroy();
-        }
-
-        if (data.length === 0) {
-            // Mostrar mensagem de "sem dados" no lugar do gráfico
-            ctx.canvas.parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100"><p class="text-muted">Nenhum dado disponível para exibir no gráfico</p></div>';
-            return;
-        }
-
-        const clusters = data.map(item => item.cluster || 'Não especificado');
-        const entrantes = data.map(item => item.entrantes || 0);
-        const encerramentos = data.map(item => item.encerramentos || 0);
-
-        window.analysisChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: clusters,
-                datasets: [
-                    {
-                        label: 'Entrantes (Data Abertura)',
-                        data: entrantes,
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Encerramentos (Data Encerramento)',
-                        data: encerramentos,
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // Permite dimensionamento flexível
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0 // Exibe números inteiros
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            maxRotation: 45, // Rotaciona os rótulos se necessário
-                            minRotation: 0
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Comparativo de Entrantes vs Encerramentos por Cluster'
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                }
-            }
-        });
+        // Esta função está vazia pois o gráfico foi removido
+        // Mantendo a função para evitar erros no código existente
     }
 
     // Carrega dados iniciais ao mostrar a aba de análise
@@ -281,5 +222,73 @@ document.addEventListener('DOMContentLoaded', function() {
     // Somente se a aba de análise estiver visível (ativa)
     if (document.querySelector('#analise').classList.contains('active')) {
         loadAnalysisData();
+    }
+    
+    // Eventos para os filtros
+    filtroRegional.addEventListener('change', loadAnalysisData);
+    filtroKPI.addEventListener('change', loadAnalysisData);
+    filtroData.addEventListener('change', loadAnalysisData);
+    
+    // Função para carregar opções de filtros
+    function loadFilterOptions() {
+        // Carregar opções de regional
+        $.get('/b2b/filtros-opcoes?campo=regional_vivo')
+            .done(function(data) {
+                // Limpar opções atuais
+                filtroRegional.innerHTML = '<option value="">Todas as Regionais</option>';
+                
+                // Adicionar novas opções
+                data.forEach(function(valor) {
+                    const option = document.createElement('option');
+                    option.value = valor;
+                    option.textContent = valor;
+                    filtroRegional.appendChild(option);
+                });
+            })
+            .fail(function(error) {
+                console.error('Erro ao carregar opções de regional:', error);
+            });
+            
+        // Carregar opções de KPI
+        $.get('/b2b/filtros-opcoes?campo=kpi')
+            .done(function(data) {
+                // Limpar opções atuais
+                filtroKPI.innerHTML = '<option value="">Todos os KPIs</option>';
+                
+                // Adicionar novas opções
+                data.forEach(function(valor) {
+                    const option = document.createElement('option');
+                    option.value = valor;
+                    option.textContent = valor;
+                    filtroKPI.appendChild(option);
+                });
+            })
+            .fail(function(error) {
+                console.error('Erro ao carregar opções de KPI:', error);
+            });
+    }
+    
+    // Carregar opções de filtros quando a aba de análise for mostrada
+    document.querySelector('#analise-tab').addEventListener('shown.bs.tab', function() {
+        loadFilterOptions();
+    });
+    
+    // Definir o mês atual no campo de data quando a aba de análise for mostrada
+    document.querySelector('#analise-tab').addEventListener('shown.bs.tab', function() {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
+        filtroData.value = `${ano}-${mes}`;
+    });
+    
+    // Definir o mês atual no campo de data quando a página é carregada
+    if (document.querySelector('#analise').classList.contains('active')) {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
+        filtroData.value = `${ano}-${mes}`;
+        
+        // Carregar opções de filtros
+        loadFilterOptions();
     }
 });

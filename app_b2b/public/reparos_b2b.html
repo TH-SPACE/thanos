@@ -103,6 +103,22 @@
                             </div>
                         </div>
                         <div class="card-body">
+                            <!-- Filtros -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="filtroRegional" class="form-label">Regional</label>
+                                    <select class="form-select" id="filtroRegional">
+                                        <option value="">Todas as Regionais</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="filtroKPI" class="form-label">KPI</label>
+                                    <select class="form-select" id="filtroKPI">
+                                        <option value="">Todos os KPIs</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div>
                                     <!-- Espaço reservado para mensagens de status -->
@@ -146,21 +162,6 @@
                                 </div>
                             </div>
 
-                            <!-- Gráfico de Entrantes vs Encerramentos -->
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Gráfico de Entrantes vs Encerramentos por Cluster</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="chart-container">
-                                                <canvas id="graficoAnaliseCluster"></canvas>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -209,8 +210,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Modal de Perfil do Usuário -->
     <div class="modal fade" id="perfilModal" tabindex="-1" aria-labelledby="perfilModalLabel" aria-hidden="true">
         <div class="modal-dialog">

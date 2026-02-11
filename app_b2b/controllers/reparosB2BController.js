@@ -260,8 +260,30 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
     try {
         const connection = await db.mysqlPool.getConnection();
         try {
+            // Obter parâmetros de filtro
+            const { regional, kpi } = req.query; // Removido o parâmetro data
+            
+            console.log('Parâmetros recebidos:', { regional, kpi });
+            
+            // Construir cláusulas WHERE dinamicamente
+            let whereClause = "WHERE cluster IS NOT NULL AND cluster != ''";
+            const params = [];
+            
+            if (regional) {
+                whereClause += " AND regional_vivo = ?";
+                params.push(regional);
+            }
+            
+            if (kpi) {
+                whereClause += " AND kpi = ?";
+                params.push(kpi);
+            }
+            
+            console.log('Query final:', `SELECT cluster, COUNT(CASE WHEN data_abertura IS NOT NULL THEN 1 END) AS entrantes, COUNT(CASE WHEN data_encerramento IS NOT NULL THEN 1 END) AS encerramentos, (COUNT(CASE WHEN data_abertura IS NOT NULL THEN 1 END) - COUNT(CASE WHEN data_encerramento IS NOT NULL THEN 1 END)) AS diferenca FROM reparosb2b ${whereClause} GROUP BY cluster ORDER BY cluster`);
+            console.log('Parâmetros:', params);
+            
             // Query para obter dados de entrantes vs encerramentos por cluster
-            const [rows] = await connection.execute(`
+            const query = `
                 SELECT
                     cluster,
                     COUNT(CASE WHEN data_abertura IS NOT NULL THEN 1 END) AS entrantes,
@@ -269,10 +291,14 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
                     (COUNT(CASE WHEN data_abertura IS NOT NULL THEN 1 END) -
                      COUNT(CASE WHEN data_encerramento IS NOT NULL THEN 1 END)) AS diferenca
                 FROM reparosb2b
-                WHERE cluster IS NOT NULL AND cluster != ''
+                ${whereClause}
                 GROUP BY cluster
                 ORDER BY cluster
-            `);
+            `;
+            
+            const [rows] = await connection.execute(query, params);
+            
+            console.log('Número de linhas retornadas:', rows.length);
 
             res.json(rows);
         } finally {
@@ -281,6 +307,46 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
     } catch (error) {
         console.error('Erro ao obter dados de análise:', error);
         res.status(500).json({ error: 'Erro ao obter dados de análise' });
+    }
+});
+
+// Rota para obter opções de filtros
+router.get('/filtros-opcoes', b2bAuth, async (req, res) => {
+    try {
+        const { campo } = req.query;
+        
+        if (!campo) {
+            return res.status(400).json({ error: 'Campo não especificado' });
+        }
+        
+        // Validar campo para evitar SQL injection
+        const camposValidos = ['regional_vivo', 'kpi'];
+        if (!camposValidos.includes(campo)) {
+            return res.status(400).json({ error: 'Campo inválido' });
+        }
+        
+        const connection = await db.mysqlPool.getConnection();
+        try {
+            // Query para obter valores únicos do campo especificado
+            const query = `
+                SELECT DISTINCT ${campo} 
+                FROM reparosb2b 
+                WHERE ${campo} IS NOT NULL AND ${campo} != ''
+                ORDER BY ${campo}
+            `;
+            
+            const [rows] = await connection.execute(query);
+
+            // Extrair os valores do campo
+            const valores = rows.map(row => row[campo]);
+
+            res.json(valores);
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao obter opções de filtros:', error);
+        res.status(500).json({ error: 'Erro ao obter opções de filtros' });
     }
 });
 
