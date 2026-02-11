@@ -23,9 +23,6 @@ router.get("/rampa-irr", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "rampa_irr.html"));
 });
 
-router.get("/cw", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "visao_cw", "pagina_executiva_visao_cw.html"));
-});
 
 // --- Rotas Rampa IRR ---
 const rampaIrrController = require("../controllers/rampa_irr_controller");

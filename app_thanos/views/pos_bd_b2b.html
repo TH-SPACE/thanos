@@ -65,7 +65,7 @@
                         <a class="nav-link" href="/thanos/sigitm">VIDA B2B</a>
                     </li>
 
-                    <li class="nav-item active" id="posBd">
+                    <li class="nav-item active" id="posBd" style="display: none;">
                         <a class="nav-link" href="/thanos/pos_bd_b2b">PÓS BD B2B</a>
                     </li>
                     <li class="nav-item dropdown active">
@@ -301,7 +301,7 @@
                 if (perfilUsuario.includes('ADM') || perfilUsuario.includes('USER_UPLOAD')) {
                     document.getElementById('painelUpload').style.display = 'inline-block'
                 }
-                document.getElementById('posBd').style.display = 'inline-block';
+                // document.getElementById('posBd').style.display = 'inline-block';  // Ocultado conforme solicitação
                 document.getElementById('relatorios').style.display = 'inline-block';
                 console.log('Acessos do usuário:', acessos);
 
