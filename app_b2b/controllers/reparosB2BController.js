@@ -180,8 +180,11 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
                         if (columnName) {
                             columnNames.push(columnName);
 
-                            // Converter todos os valores para texto
-                            value = formatValue(value);
+                            // Verificar se é uma coluna de data e aplicar formatação adequada
+                            const isDateColumn = ['data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update'].includes(columnName);
+                            
+                            // Converter valor com formatação adequada
+                            value = formatValue(value, isDateColumn);
                             values.push(value);
                         }
                     }
@@ -209,10 +212,13 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
 
                             // Não atualizar a coluna 'bd' pois é a chave primária
                             if (columnName && columnName !== 'bd') {
+                                // Verificar se é uma coluna de data e aplicar formatação adequada
+                                const isDateColumn = ['data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update'].includes(columnName);
+                                
                                 updateAssignments.push(`${columnName} = ?`);
 
-                                // Converter todos os valores para texto
-                                value = formatValue(value);
+                                // Converter valor com formatação adequada
+                                value = formatValue(value, isDateColumn);
                                 updateValues.push(value);
                             }
                         }
@@ -263,8 +269,6 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
             // Obter parâmetros de filtro
             const { regional, kpi } = req.query; // Removido o parâmetro data
             
-            console.log('Parâmetros recebidos:', { regional, kpi });
-            
             // Construir cláusulas WHERE dinamicamente
             let whereClause = "WHERE cluster IS NOT NULL AND cluster != ''";
             const params = [];
@@ -314,27 +318,27 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
 router.get('/filtros-opcoes', b2bAuth, async (req, res) => {
     try {
         const { campo } = req.query;
-        
+
         if (!campo) {
             return res.status(400).json({ error: 'Campo não especificado' });
         }
-        
+
         // Validar campo para evitar SQL injection
         const camposValidos = ['regional_vivo', 'kpi'];
         if (!camposValidos.includes(campo)) {
             return res.status(400).json({ error: 'Campo inválido' });
         }
-        
+
         const connection = await db.mysqlPool.getConnection();
         try {
             // Query para obter valores únicos do campo especificado
             const query = `
-                SELECT DISTINCT ${campo} 
-                FROM reparosb2b 
+                SELECT DISTINCT ${campo}
+                FROM reparosb2b
                 WHERE ${campo} IS NOT NULL AND ${campo} != ''
                 ORDER BY ${campo}
             `;
-            
+
             const [rows] = await connection.execute(query);
 
             // Extrair os valores do campo
@@ -375,10 +379,68 @@ router.get('/perfil-usuario', b2bAuth, async (req, res) => {
     }
 });
 
-// Função auxiliar para padronizar valores (agora todos serão texto)
-function formatValue(value) {
+// Função auxiliar para converter datas do formato DD-MM-YYYY HH:MM:SS para o formato YYYY-MM-DD HH:MM:SS que o MySQL aceita
+function convertDateTime(value) {
     if (value === null || value === undefined || value === '') return null;
-    
+
+    // Verificar se o valor é um número (pode ser um timestamp do Excel)
+    if (typeof value === 'number') {
+        // Converter número (timestamp Excel) para data
+        const date = new Date((value - 25569) * 86400 * 1000);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        // Converter para o formato YYYY-MM-DD HH:MM:SS que o MySQL aceita
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Converter para string e verificar formato
+    const dateString = String(value).trim();
+
+    // Verificar se está no formato DD-MM-YYYY HH:MM:SS ou DD/MM/YYYY HH:MM:SS (formato do Excel)
+    const dateRegex = /^(\d{2})[-\/](\d{2})[-\/](\d{4})\s+(\d{2}:\d{2}:\d{2})$/;
+    const match = dateString.match(dateRegex);
+
+    if (match) {
+        // Converter para formato YYYY-MM-DD HH:MM:SS que o MySQL aceita
+        const [, day, month, year, time] = match;
+        return `${year}-${month}-${day} ${time}`;
+    }
+
+    // Verificar se está no formato DD-MM-YYYY ou DD/MM/YYYY (sem hora)
+    const dateOnlyRegex = /^(\d{2})[-\/](\d{2})[-\/](\d{4})$/;
+    const dateOnlyMatch = dateString.match(dateOnlyRegex);
+
+    if (dateOnlyMatch) {
+        // Converter para formato YYYY-MM-DD HH:MM:SS que o MySQL aceita
+        const [, day, month, year] = dateOnlyMatch;
+        return `${year}-${month}-${day} 00:00:00`;
+    }
+
+    // Verificar se já está no formato YYYY-MM-DD HH:MM:SS (formato ISO que o MySQL aceita)
+    const isoDateRegex = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}:\d{2}:\d{2})$/;
+    const isoMatch = dateString.match(isoDateRegex);
+
+    if (isoMatch) {
+        // Já está no formato que o MySQL aceita
+        return dateString;
+    }
+
+    // Se não for um formato reconhecido, retornar como string
+    return dateString;
+}
+
+// Função auxiliar para padronizar valores
+function formatValue(value, isDateColumn = false) {
+    if (value === null || value === undefined || value === '') return null;
+
+    if (isDateColumn) {
+        return convertDateTime(value);
+    }
+
     // Converter qualquer valor para string, removendo espaços extras
     return String(value).trim();
 }

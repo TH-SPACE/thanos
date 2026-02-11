@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Referências aos elementos de filtro
     const filtroRegional = document.getElementById('filtroRegional');
     const filtroKPI = document.getElementById('filtroKPI');
-    const filtroData = document.getElementById('filtroData');
+    const botaoFiltrar = document.getElementById('aplicarFiltro');
 
     // Evento para abrir o diálogo de seleção de arquivo
     browseFiles.addEventListener('click', function() {
@@ -148,13 +148,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Obter valores dos filtros
         const regional = filtroRegional.value;
         const kpi = filtroKPI.value;
-        const data = filtroData.value;
 
         // Parâmetros para a requisição
         const params = new URLSearchParams();
         if (regional) params.append('regional', regional);
         if (kpi) params.append('kpi', kpi);
-        if (data) params.append('data', data);
 
         // Faz a requisição para obter dados de análise com filtros
         $.get(`/b2b/analise-data?${params.toString()}`)
@@ -224,10 +222,12 @@ document.addEventListener('DOMContentLoaded', function() {
         loadAnalysisData();
     }
     
-    // Eventos para os filtros
-    filtroRegional.addEventListener('change', loadAnalysisData);
-    filtroKPI.addEventListener('change', loadAnalysisData);
-    filtroData.addEventListener('change', loadAnalysisData);
+    // Eventos para os filtros - removendo o carregamento automático ao mudar os filtros
+    // filtroRegional.addEventListener('change', loadAnalysisData);
+    // filtroKPI.addEventListener('change', loadAnalysisData);
+    
+    // Adicionando evento para o botão Filtrar
+    botaoFiltrar.addEventListener('click', loadAnalysisData);
     
     // Função para carregar opções de filtros
     function loadFilterOptions() {
@@ -237,13 +237,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Limpar opções atuais
                 filtroRegional.innerHTML = '<option value="">Todas as Regionais</option>';
                 
-                // Adicionar novas opções
-                data.forEach(function(valor) {
-                    const option = document.createElement('option');
-                    option.value = valor;
-                    option.textContent = valor;
-                    filtroRegional.appendChild(option);
-                });
+                // Verificar se há dados antes de adicionar opções
+                if (Array.isArray(data) && data.length > 0) {
+                    // Adicionar novas opções
+                    data.forEach(function(valor) {
+                        if (valor) { // Verificar se o valor não é nulo ou vazio
+                            const option = document.createElement('option');
+                            option.value = valor;
+                            option.textContent = valor;
+                            filtroRegional.appendChild(option);
+                        }
+                    });
+                }
             })
             .fail(function(error) {
                 console.error('Erro ao carregar opções de regional:', error);
@@ -255,13 +260,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Limpar opções atuais
                 filtroKPI.innerHTML = '<option value="">Todos os KPIs</option>';
                 
-                // Adicionar novas opções
-                data.forEach(function(valor) {
-                    const option = document.createElement('option');
-                    option.value = valor;
-                    option.textContent = valor;
-                    filtroKPI.appendChild(option);
-                });
+                // Verificar se há dados antes de adicionar opções
+                if (Array.isArray(data) && data.length > 0) {
+                    // Adicionar novas opções
+                    data.forEach(function(valor) {
+                        if (valor) { // Verificar se o valor não é nulo ou vazio
+                            const option = document.createElement('option');
+                            option.value = valor;
+                            option.textContent = valor;
+                            filtroKPI.appendChild(option);
+                        }
+                    });
+                }
             })
             .fail(function(error) {
                 console.error('Erro ao carregar opções de KPI:', error);
@@ -273,22 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loadFilterOptions();
     });
     
-    // Definir o mês atual no campo de data quando a aba de análise for mostrada
-    document.querySelector('#analise-tab').addEventListener('shown.bs.tab', function() {
-        const hoje = new Date();
-        const ano = hoje.getFullYear();
-        const mes = String(hoje.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
-        filtroData.value = `${ano}-${mes}`;
-    });
-    
-    // Definir o mês atual no campo de data quando a página é carregada
-    if (document.querySelector('#analise').classList.contains('active')) {
-        const hoje = new Date();
-        const ano = hoje.getFullYear();
-        const mes = String(hoje.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
-        filtroData.value = `${ano}-${mes}`;
-        
-        // Carregar opções de filtros
-        loadFilterOptions();
-    }
+    // Carregar opções de filtros quando a página é carregada
+    loadFilterOptions();
 });
