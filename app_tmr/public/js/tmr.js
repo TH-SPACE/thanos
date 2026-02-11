@@ -599,7 +599,9 @@ function carregarDadosGrupos() {
       // Reabilitar botões de filtro mesmo em caso de erro
       desabilitarBotoesFiltro(false);
 
-      alert("Erro ao carregar dados de grupos: " + textStatus);
+      // Exibir mensagem de erro no elemento de status
+      const mensagemErro = "Erro ao carregar dados de grupos: " + textStatus;
+      $("#statusMensagemGrupos").text(mensagemErro).addClass("text-danger");
     });
 }
 
@@ -995,12 +997,13 @@ function sincronizarDadosManually() {
   })
     .fail(function (xhr, status, error) {
       console.error("Erro na sincronização:", error);
-      alert(
-        "Erro ao sincronizar dados: " +
-          (xhr.responseJSON && xhr.responseJSON.error
-            ? xhr.responseJSON.error
-            : error)
-      );
+      // Exibir mensagem de erro no elemento de status
+      const mensagemErro = "Erro ao sincronizar dados: " +
+        (xhr.responseJSON && xhr.responseJSON.error
+          ? xhr.responseJSON.error
+          : error);
+      $("#statusMensagemCluster").text(mensagemErro).addClass("text-danger");
+      $("#statusMensagemRegional").text(mensagemErro).addClass("text-danger");
     })
     .always(function () {
       // Restaurar o botão
@@ -1100,7 +1103,10 @@ function carregarDadosTMR() {
       // Reabilitar botões de filtro mesmo em caso de erro
       desabilitarBotoesFiltro(false);
 
-      alert("Erro ao carregar dados de cluster e regional: " + textStatus);
+      // Exibir mensagem de erro nos elementos de status
+      const mensagemErro = "Erro ao carregar dados de cluster e regional: " + textStatus;
+      $("#statusMensagemCluster").text(mensagemErro).addClass("text-danger");
+      $("#statusMensagemRegional").text(mensagemErro).addClass("text-danger");
     });
 }
 
@@ -1181,7 +1187,9 @@ function carregarDadosCluster() {
       // Reabilitar botões de filtro mesmo em caso de erro
       desabilitarBotoesFiltro(false);
 
-      alert("Erro ao carregar dados de cluster: " + textStatus);
+      // Exibir mensagem de erro no elemento de status
+      const mensagemErro = "Erro ao carregar dados de cluster: " + textStatus;
+      $("#statusMensagemCluster").text(mensagemErro).addClass("text-danger");
     });
 }
 
@@ -1264,7 +1272,9 @@ function carregarDadosRegional() {
       // Reabilitar botões de filtro mesmo em caso de erro
       desabilitarBotoesFiltro(false);
 
-      alert("Erro ao carregar dados de regional: " + textStatus);
+      // Exibir mensagem de erro no elemento de status
+      const mensagemErro = "Erro ao carregar dados de regional: " + textStatus;
+      $("#statusMensagemRegional").text(mensagemErro).addClass("text-danger");
     });
 }
 

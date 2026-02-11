@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qualidade B2B - Desempenho BDs</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <!-- CSS customizado -->
+    <link rel="stylesheet" href="/b2b/css/reparos_b2b.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/b2b">
+                <i class="fas fa-chart-line"></i> Qualidade B2B - CO
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/b2b"><i class="fas fa-chart-line"></i> Desempenho BDs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tmr"><i class="fas fa-clock"></i> TMR</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Relatórios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tmr/config"><i class="fas fa-cog"></i> Configurações</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-database"></i> Consultas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tmr/regrasB2B"><i class="fas fa-book"></i> Descrição e Regras B2B</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> <span id="nomeUsuarioNav">Carregando...</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" id="perfilLink"><i class="fas fa-user-circle"></i> Perfil</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <header class="border-bottom mb-2">
+            <div class="row align-items-center py-2">
+                <div class="col-md-8">
+                    <h1>
+                        <i class="fas fa-chart-line"></i> Desempenho BDs
+                    </h1>
+                    <p class="text-muted">Sistema para análise de desempenho dos BDs B2B</p>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Abas de Visualização -->
+            <ul class="nav nav-tabs" id="visualizacaoTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload"
+                        type="button" role="tab">Upload de Dados</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="analise-tab" data-bs-toggle="tab" data-bs-target="#analise"
+                        type="button" role="tab">Desempenho BDs</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="visualizacaoTabContent">
+                <!-- Aba de Upload -->
+                <div class="tab-pane fade show active" id="upload" role="tabpanel">
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-file-excel"></i> Upload de Dados</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8 mx-auto">
+                                    <div class="upload-area" id="dropZone">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                        <h5>Arraste e solte seu arquivo Excel aqui</h5>
+                                        <p class="text-muted">ou</p>
+                                        <button class="btn btn-primary" id="browseFiles">
+                                            <i class="fas fa-folder-open"></i> Escolher Arquivo
+                                        </button>
+                                        <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
+                                    </div>
+                                    <div class="progress mt-3" id="uploadProgress">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="status-message" id="statusMessage"></div>
+                                    <div class="mt-3">
+                                        <h6>Instruções:</h6>
+                                        <ul>
+                                            <li>O arquivo deve estar no formato Excel (.xlsx ou .xls)</li>
+                                            <li>O arquivo deve seguir a ordem exata das colunas conforme definido no sistema</li>
+                                            <li>A primeira coluna deve ser 'BD' contendo o identificador único para evitar duplicação</li>
+                                            <li>As demais colunas devem seguir a sequência: id_circuito, bd_ant, lp_15, designador_lp_13, id_comercial, data_abertura, data_reparo, data_encerramento, data_baixa, last_update, kpi, kpi_acesso, tipo_acesso, origem, sistema_origem, cod_grupo, grupo_economico, bd_raiz, status_codigo, status_nome, procedencia, reclamacao, segmento_sistema, segmento_v3, segmento_novo, segmento_vivo_corp, projeto, cliente_nome, cnpj, cnpj_raiz, endereco, localidade_codigo, area_codigo, escritorio_codigo, cidade, uf, cluster, regional, regional_vivo, lp_operadora, servico_cpcc_nome, velocidade, velocidade_kbps, produto_nome, familia_produto, baixa_n1_codigo, baixa_n2_codigo, baixa_n3_codigo, baixa_n4_codigo, baixa_n5_codigo, baixa_n1_nome, baixa_n2_nome, baixa_n3_nome, baixa_n4_nome, baixa_n5_nome, resumo_intragov, intragov_sigla, intragov_codigo, sla_horas, grupo, grupo_novo, foco_acoes, foco_novo, grupo_baixa_codigo, grupo_abertura, usuario_abertura, grupo_baixa, usuario_baixa, grupo_responsavel, operadora, tipo_operadora, tmr, tmr_sem_parada, tempo_parada, decorrido_sem_parada, prazo, reincidencia_30d, reincidencia_tipo, originou_reinc, prox_reinc, horario_func_inicio, horario_func_fim, R30_Tratativas</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba de Análise -->
+                <div class="tab-pane fade" id="analise" role="tabpanel">
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-chart-bar"></i> Desempenho BDs</h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary me-2" id="atualizarDados">
+                                    <i class="fas fa-sync-alt"></i> Atualizar Dados
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <!-- Espaço reservado para mensagens de status -->
+                                    <small class="text-muted" id="statusMensagemAnalise"></small>
+                                </div>
+                            </div>
+
+                            <!-- Elemento de carregamento -->
+                            <div id="loadingAnalise" class="text-center my-4" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <p class="mt-2">Carregando dados de análise...</p>
+                            </div>
+
+                            <!-- Visualização de entrante vs encerramento por cluster -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0"><i class="fas fa-chart-line"></i> Entrantes vs Encerramentos por Cluster</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered" id="tabelaAnaliseCluster">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>Cluster</th>
+                                                            <th>Entrantes (Data Abertura)</th>
+                                                            <th>Encerramentos (Data Encerramento)</th>
+                                                            <th>Diferença</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <!-- Dados serão carregados via JavaScript -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Gráfico de Entrantes vs Encerramentos -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Gráfico de Entrantes vs Encerramentos por Cluster</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="graficoAnaliseCluster"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Modal de Perfil do Usuário -->
+    <div class="modal fade" id="perfilModal" tabindex="-1" aria-labelledby="perfilModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="perfilModalLabel"><i class="fas fa-user"></i> Perfil do Usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="perfilNome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="perfilNome" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="perfilEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="perfilEmail" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="perfilCargo" class="form-label">Cargo</label>
+                        <input type="text" class="form-control" id="perfilCargo" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="perfilPerfil" class="form-label">Perfil</label>
+                        <input type="text" class="form-control" id="perfilPerfil" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript customizado -->
+    <script src="/b2b/js/reparos_b2b.js"></script>
+
+    <script>
+        // Carregar informações do usuário
+        $(document).ready(function () {
+            $.get('/auth/usuario', function (usuario) {
+                if (usuario && usuario.nome) {
+                    $('#nomeUsuarioNav').text(usuario.nome);
+                } else {
+                    $('#nomeUsuarioNav').text('Não identificado');
+                }
+            }).fail(function () {
+                $('#nomeUsuarioNav').text('Não identificado');
+            });
+
+            // Evento de clique para o link de perfil
+            $('#perfilLink').on('click', function(e) {
+                e.preventDefault();
+
+                // Buscar dados do perfil do usuário
+                $.get('/b2b/perfil-usuario')
+                    .done(function(data) {
+                        // Preencher os campos do modal com os dados do usuário
+                        $('#perfilNome').val(data.nome || '');
+                        $('#perfilEmail').val(data.email || '');
+                        $('#perfilCargo').val(data.cargo || '');
+                        $('#perfilPerfil').val(data.perfil || '');
+
+                        // Exibir o modal
+                        $('#perfilModal').modal('show');
+                    })
+                    .fail(function() {
+                        alert('Erro ao carregar os dados do perfil.');
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -290,7 +290,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/tmr">
+            <a class="navbar-brand" href="/b2b">
                 <i class="fas fa-chart-line"></i> Qualidade B2B - CO
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -299,6 +299,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/b2b"><i class="fas fa-chart-line"></i> Desempenho BDs</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/tmr"><i class="fas fa-clock"></i> TMR</a>
                     </li>
@@ -627,7 +630,11 @@
                         alert(`Nome: ${data.nome || ''}\nEmail: ${data.email || ''}\nCargo: ${data.cargo || ''}\nPerfil: ${data.perfil || ''}`);
                     })
                     .fail(function () {
-                        alert('Erro ao carregar os dados do perfil.');
+                        // Exibir mensagem de erro no elemento de status
+                        const mensagemErro = 'Erro ao carregar os dados do perfil.';
+                        $('#statusMensagemCluster').text(mensagemErro).addClass('text-danger');
+                        $('#statusMensagemRegional').text(mensagemErro).addClass('text-danger');
+                        $('#statusMensagemGrupos').text(mensagemErro).addClass('text-danger');
                     });
             });
         });

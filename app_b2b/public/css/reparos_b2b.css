@@ -1,0 +1,142 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    font-size: 14px;
+    /* Diminuindo o tamanho da fonte global */
+}
+
+.navbar-brand {
+    font-size: 1.2rem;
+}
+
+
+.navbar-brand i {
+    margin-right: 8px;
+}
+
+.nav-item i {
+    margin-right: 6px;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.navbar-nav .nav-link:hover {
+    color: white;
+}
+
+/* Estilos para a área de upload */
+.upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #fafafa;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+/* Estilo para a barra de progresso */
+.progress {
+    display: none;
+}
+
+/* Estilo para mensagens de status */
+.status-message {
+    margin-top: 10px;
+    font-weight: bold;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.status-message.success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+.status-message.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.status-message.info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+}
+
+/* Estilo para cards */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Estilo para abas */
+.nav-tabs .nav-link.active {
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+/* Estilo para botões */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+/* Estilo para tabelas */
+.table th {
+    background-color: #6494c5;
+}
+
+/* Estilo para gráficos */
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+}
+
+/* Estilo responsivo */
+@media (max-width: 768px) {
+    .upload-area {
+        padding: 20px;
+    }
+
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .chart-container {
+        height: 300px;
+    }
+}
+
+/* Estilo para spinner de carregamento */
+.spinner-border-small {
+    width: 1rem;
+    height: 1rem;
+}

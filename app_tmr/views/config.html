@@ -39,7 +39,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/tmr">
+            <a class="navbar-brand" href="/b2b">
                 <i class="fas fa-chart-line"></i> Qualidade B2B - CO
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -49,13 +49,16 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
+                        <a class="nav-link" href="/b2b"><i class="fas fa-chart-line"></i> Desempenho BDs</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="/tmr"><i class="fas fa-clock"></i> TMR</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="fas fa-chart-bar"></i> Relatórios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/tmr/config"><i class="fas fa-cog"></i> Configurações</a>
+                        <a class="nav-link active" href="/tmr/config"><i class="fas fa-cog"></i> Configurações</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="fas fa-database"></i> Consultas</a>
@@ -250,7 +253,11 @@
                         alert(`Nome: ${data.nome || ''}\nEmail: ${data.email || ''}\nCargo: ${data.cargo || ''}\nPerfil: ${data.perfil || ''}`);
                     })
                     .fail(function () {
-                        alert('Erro ao carregar os dados do perfil.');
+                        // Exibir mensagem de erro no elemento de status
+                        const mensagemErro = 'Erro ao carregar os dados do perfil.';
+                        $('#statusMensagemCluster').text(mensagemErro).addClass('text-danger');
+                        $('#statusMensagemRegional').text(mensagemErro).addClass('text-danger');
+                        $('#statusMensagemGrupos').text(mensagemErro).addClass('text-danger');
                     });
             });
 
@@ -302,12 +309,20 @@
                             // Fechar o dropdown
                             $('.dropdown-toggle').dropdown('hide');
                         } else {
-                            alert('Erro ao importar arquivo: ' + response.error);
+                            // Exibir mensagem de erro no elemento de status
+                            const mensagemErro = 'Erro ao importar arquivo: ' + response.error;
+                            $('#statusMensagemCluster').text(mensagemErro).addClass('text-danger');
+                            $('#statusMensagemRegional').text(mensagemErro).addClass('text-danger');
+                            $('#statusMensagemGrupos').text(mensagemErro).addClass('text-danger');
                         }
                     },
                     error: function (xhr) {
                         const response = xhr.responseJSON;
-                        alert('Erro ao importar arquivo: ' + (response && response.error ? response.error : 'Erro desconhecido'));
+                        // Exibir mensagem de erro no elemento de status
+                        const mensagemErro = 'Erro ao importar arquivo: ' + (response && response.error ? response.error : 'Erro desconhecido');
+                        $('#statusMensagemCluster').text(mensagemErro).addClass('text-danger');
+                        $('#statusMensagemRegional').text(mensagemErro).addClass('text-danger');
+                        $('#statusMensagemGrupos').text(mensagemErro).addClass('text-danger');
                     },
                     complete: function () {
                         // Restaurar o botão
@@ -371,7 +386,11 @@
                 rulesOriginais = JSON.parse(JSON.stringify(rules)); // Cópia profunda
                 renderizarRegras();
             }).fail(function () {
-                alert('Erro ao carregar as regras de mapeamento.');
+                // Exibir mensagem de erro no elemento de status
+                const mensagemErro = 'Erro ao carregar as regras de mapeamento.';
+                $('#statusMensagemCluster').text(mensagemErro).addClass('text-danger');
+                $('#statusMensagemRegional').text(mensagemErro).addClass('text-danger');
+                $('#statusMensagemGrupos').text(mensagemErro).addClass('text-danger');
             });
         }
 
@@ -578,12 +597,20 @@
                         const modal = new bootstrap.Modal(document.getElementById('confirmacaoModal'));
                         modal.show();
                     } else {
-                        alert('Erro ao salvar as configurações: ' + response.message);
+                        // Exibir mensagem de erro no elemento de status
+                        const mensagemErro = 'Erro ao salvar as configurações: ' + response.message;
+                        $('#statusMensagemCluster').text(mensagemErro).addClass('text-danger');
+                        $('#statusMensagemRegional').text(mensagemErro).addClass('text-danger');
+                        $('#statusMensagemGrupos').text(mensagemErro).addClass('text-danger');
                     }
                 },
                 error: function (xhr) {
                     const response = xhr.responseJSON;
-                    alert('Erro ao salvar as configurações: ' + (response && response.error ? response.error : 'Erro desconhecido'));
+                    // Exibir mensagem de erro no elemento de status
+                    const mensagemErro = 'Erro ao salvar as configurações: ' + (response && response.error ? response.error : 'Erro desconhecido');
+                    $('#statusMensagemCluster').text(mensagemErro).addClass('text-danger');
+                    $('#statusMensagemRegional').text(mensagemErro).addClass('text-danger');
+                    $('#statusMensagemGrupos').text(mensagemErro).addClass('text-danger');
                 }
             });
         }

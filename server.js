@@ -40,6 +40,8 @@ app.use("/tmr", express.static(path.join(__dirname, "app_tmr", "public")));
 app.use("/mapab2b", express.static(path.join(__dirname, "app_mapa", "public")));
 // Serve a pasta consulta_ad como estática para o script.js
 app.use("/consulta_ad", express.static(path.join(__dirname, "consulta_ad")));
+// Serve a pasta app_b2b para arquivos estáticos do B2B
+app.use("/b2b", express.static(path.join(__dirname, "app_b2b", "public")));
 
 // 📦 Middlewares globais
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -70,6 +72,7 @@ app.use("/consulta-ad", require("./consulta_ad/consulta_route"));
 app.use("/planejamento-he", require("./app_he/routes/planejamentoHERoutes"));
 app.use("/tmr", require("./app_tmr/routes/tmrRoutes"));
 app.use("/mapab2b", require("./app_mapa/routes/mapaRoutes"));
+app.use("/b2b", require("./app_b2b/routes/b2bRoutes"));
 
 // 📋 Rota da todo list
 app.use("/todo_th", require("./todo_th/todo_th"));
