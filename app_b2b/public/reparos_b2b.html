@@ -17,6 +17,24 @@
         #tabelasAnaliseContainer table td:nth-child(n+2) {
             text-align: center;
         }
+        
+        /* Ajustar tabelas para caber na tela */
+        #tabelasAnaliseContainer table {
+            table-layout: auto;
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        /* Ajustar tamanho da fonte para tabelas com muitas colunas */
+        #tabelasAnaliseContainer table {
+            font-size: 0.9rem;
+        }
+        
+        #tabelasAnaliseContainer table th,
+        #tabelasAnaliseContainer table td {
+            padding: 0.5rem;
+            white-space: nowrap;
+        }
     </style>
 </head>
 

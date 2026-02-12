@@ -241,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let day = 1; day <= daysInMonth; day++) {
                     headerContent += `<th>${day}</th>`;
                 }
+                headerContent += '<th>Total</th>'; // Adicionando coluna de total
                 headerContent += '</tr>';
                 headerRow.innerHTML = headerContent;
                 
@@ -270,9 +271,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 // Adicionar os valores de entrantes por dia
+                let totalEntrantes = 0;
                 for (let day = 1; day <= daysInMonth; day++) {
+                    totalEntrantes += (entrantesPorDia[day] || 0);
                     entrantesRow.innerHTML += `<td>${entrantesPorDia[day]}</td>`;
                 }
+                entrantesRow.innerHTML += `<td><strong>${totalEntrantes}</strong></td>`; // Coluna total
                 
                 // Linha 2: Encerrados por dia (contagem por data_encerramento)
                 const encerradosRow = document.createElement('tr');
@@ -298,9 +302,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 // Adicionar os valores de encerrados por dia
+                let totalEncerrados = 0;
                 for (let day = 1; day <= daysInMonth; day++) {
+                    totalEncerrados += (encerradosPorDia[day] || 0);
                     encerradosRow.innerHTML += `<td>${encerradosPorDia[day]}</td>`;
                 }
+                encerradosRow.innerHTML += `<td><strong>${totalEncerrados}</strong></td>`; // Coluna total
                 
                 // Linha 3: Eficiência por dia (encerrados / entrantes * 100)
                 const eficienciaRow = document.createElement('tr');
@@ -318,6 +325,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
                 }
+                
+                // Calcular eficiência total
+                let eficienciaTotal = 0;
+                if (totalEntrantes > 0) {
+                    eficienciaTotal = ((totalEncerrados / totalEntrantes) * 100).toFixed(1);
+                }
+                
+                eficienciaRow.innerHTML += `<td><strong>${eficienciaTotal}%</strong></td>`; // Coluna total
                 
                 tbody.appendChild(entrantesRow);
                 tbody.appendChild(encerradosRow);
@@ -363,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let day = 1; day <= daysInMonth; day++) {
                     headerContent += `<th>${day}</th>`;
                 }
+                headerContent += '<th>Total</th>'; // Adicionando coluna de total
                 headerContent += '</tr>';
                 headerRow.innerHTML = headerContent;
                 
@@ -392,9 +408,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 // Adicionar os valores de entrantes por dia
+                let totalEntrantes = 0;
                 for (let day = 1; day <= daysInMonth; day++) {
+                    totalEntrantes += (entrantesPorDia[day] || 0);
                     entrantesRow.innerHTML += `<td>${entrantesPorDia[day]}</td>`;
                 }
+                entrantesRow.innerHTML += `<td><strong>${totalEntrantes}</strong></td>`; // Coluna total
                 
                 // Linha 2: Encerrados por dia (contagem por data_encerramento)
                 const encerradosRow = document.createElement('tr');
@@ -420,9 +439,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 // Adicionar os valores de encerrados por dia
+                let totalEncerrados = 0;
                 for (let day = 1; day <= daysInMonth; day++) {
+                    totalEncerrados += (encerradosPorDia[day] || 0);
                     encerradosRow.innerHTML += `<td>${encerradosPorDia[day]}</td>`;
                 }
+                encerradosRow.innerHTML += `<td><strong>${totalEncerrados}</strong></td>`; // Coluna total
                 
                 // Linha 3: Eficiência por dia (encerrados / entrantes * 100)
                 const eficienciaRow = document.createElement('tr');
@@ -440,6 +462,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
                 }
+                
+                // Calcular eficiência total
+                let eficienciaTotal = 0;
+                if (totalEntrantes > 0) {
+                    eficienciaTotal = ((totalEncerrados / totalEntrantes) * 100).toFixed(1);
+                }
+                
+                eficienciaRow.innerHTML += `<td><strong>${eficienciaTotal}%</strong></td>`; // Coluna total
                 
                 tbody.appendChild(entrantesRow);
                 tbody.appendChild(encerradosRow);
