@@ -177,26 +177,108 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para atualizar a tabela de análise
     function updateAnalysisTable(data) {
         const tbody = document.querySelector('#tabelaAnaliseCluster tbody');
+        const thead = document.querySelector('#tabelaAnaliseCluster thead');
         tbody.innerHTML = '';
+        
+        // Determinar o número de dias no mês atual
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        
+        // Gerar cabeçalhos dos dias
+        let headerRow = '<tr><th>Tipo</th>';
+        for (let day = 1; day <= daysInMonth; day++) {
+            headerRow += `<th>${day}</th>`;
+        }
+        headerRow += '</tr>';
+        thead.innerHTML = headerRow;
 
         // Verificar se data é um array e se está vazio
         if (!Array.isArray(data) || data.length === 0) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="4" class="text-center">Nenhum dado encontrado</td>`;
+            tr.innerHTML = `<td colspan="${daysInMonth + 1}" class="text-center">Nenhum dado encontrado</td>`;
             tbody.appendChild(tr);
             return;
         }
 
+        // Criar as duas linhas solicitadas (Entrantes e Encerrados)
+        
+        // Linha 1: Entrantes por dia (contagem por data_abertura)
+        const entrantesRow = document.createElement('tr');
+        entrantesRow.innerHTML = '<td><strong>Entrantes</strong></td>';
+        
+        // Contar entrantes por dia
+        const entrantesPorDia = {};
+        for (let day = 1; day <= daysInMonth; day++) {
+            entrantesPorDia[day] = 0;
+        }
+        
+        // Processar os dados para contar entrantes por dia
         data.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${row.cluster || 'Não especificado'}</td>
-                <td>${row.entrantes || 0}</td>
-                <td>${row.encerramentos || 0}</td>
-                <td>${row.diferenca || 0}</td>
-            `;
-            tbody.appendChild(tr);
+            if (row.data_abertura) {
+                const dataAbertura = new Date(row.data_abertura);
+                if (dataAbertura.getFullYear() === currentYear && dataAbertura.getMonth() === currentMonth) {
+                    const dia = dataAbertura.getDate();
+                    if (entrantesPorDia.hasOwnProperty(dia)) {
+                        entrantesPorDia[dia]++;
+                    }
+                }
+            }
         });
+        
+        // Adicionar os valores de entrantes por dia
+        for (let day = 1; day <= daysInMonth; day++) {
+            entrantesRow.innerHTML += `<td>${entrantesPorDia[day]}</td>`;
+        }
+        tbody.appendChild(entrantesRow);
+        
+        // Linha 2: Encerrados por dia (contagem por data_encerramento)
+        const encerradosRow = document.createElement('tr');
+        encerradosRow.innerHTML = '<td><strong>Encerrados</strong></td>';
+        
+        // Contar encerrados por dia
+        const encerradosPorDia = {};
+        for (let day = 1; day <= daysInMonth; day++) {
+            encerradosPorDia[day] = 0;
+        }
+        
+        // Processar os dados para contar encerrados por dia
+        data.forEach(row => {
+            if (row.data_encerramento) {
+                const dataEncerramento = new Date(row.data_encerramento);
+                if (dataEncerramento.getFullYear() === currentYear && dataEncerramento.getMonth() === currentMonth) {
+                    const dia = dataEncerramento.getDate();
+                    if (encerradosPorDia.hasOwnProperty(dia)) {
+                        encerradosPorDia[dia]++;
+                    }
+                }
+            }
+        });
+        
+        // Adicionar os valores de encerrados por dia
+        for (let day = 1; day <= daysInMonth; day++) {
+            encerradosRow.innerHTML += `<td>${encerradosPorDia[day]}</td>`;
+        }
+        tbody.appendChild(encerradosRow);
+        
+        // Linha 3: Eficiência por dia (encerrados / entrantes * 100)
+        const eficienciaRow = document.createElement('tr');
+        eficienciaRow.innerHTML = '<td><strong>Eficiência (%)</strong></td>';
+        
+        // Calcular eficiência por dia
+        for (let day = 1; day <= daysInMonth; day++) {
+            const entrantes = entrantesPorDia[day] || 0;
+            const encerrados = encerradosPorDia[day] || 0;
+            let eficiencia = 0;
+            
+            if (entrantes > 0) {
+                eficiencia = ((encerrados / entrantes) * 100).toFixed(1);
+            }
+            
+            eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
+        }
+        tbody.appendChild(eficienciaRow);
     }
 
     // Função para atualizar o gráfico de análise

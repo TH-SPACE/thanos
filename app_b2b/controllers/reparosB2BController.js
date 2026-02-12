@@ -270,7 +270,7 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
             const { regional, kpi } = req.query; // Removido o parâmetro data
             
             // Construir cláusulas WHERE dinamicamente
-            let whereClause = "WHERE cluster IS NOT NULL AND cluster != ''";
+            let whereClause = "WHERE 1=1"; // Mudança para permitir mais flexibilidade
             const params = [];
             
             if (regional) {
@@ -283,26 +283,19 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
                 params.push(kpi);
             }
             
-            console.log('Query final:', `SELECT cluster, COUNT(CASE WHEN data_abertura IS NOT NULL THEN 1 END) AS entrantes, COUNT(CASE WHEN data_encerramento IS NOT NULL THEN 1 END) AS encerramentos, (COUNT(CASE WHEN data_abertura IS NOT NULL THEN 1 END) - COUNT(CASE WHEN data_encerramento IS NOT NULL THEN 1 END)) AS diferenca FROM reparosb2b ${whereClause} GROUP BY cluster ORDER BY cluster`);
-            console.log('Parâmetros:', params);
-            
-            // Query para obter dados de entrantes vs encerramentos por cluster
+            // Query para obter dados detalhados de entrantes vs encerramentos
             const query = `
                 SELECT
-                    cluster,
-                    COUNT(CASE WHEN data_abertura IS NOT NULL THEN 1 END) AS entrantes,
-                    COUNT(CASE WHEN data_encerramento IS NOT NULL THEN 1 END) AS encerramentos,
-                    (COUNT(CASE WHEN data_abertura IS NOT NULL THEN 1 END) -
-                     COUNT(CASE WHEN data_encerramento IS NOT NULL THEN 1 END)) AS diferenca
+                    bd,
+                    data_abertura,
+                    data_encerramento,
+                    cluster
                 FROM reparosb2b
                 ${whereClause}
-                GROUP BY cluster
-                ORDER BY cluster
+                ORDER BY bd
             `;
             
             const [rows] = await connection.execute(query, params);
-            
-            console.log('Número de linhas retornadas:', rows.length);
 
             res.json(rows);
         } finally {
