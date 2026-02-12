@@ -148,13 +148,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Obter valores dos filtros
         const regional = filtroRegional.value;
-        const kpi = filtroKPI.value;
         const mesAno = filtroMes.value; // Valor no formato YYYY-MM
+        
+        // Obter os KPIs selecionados
+        const selectedKPIs = Array.from(document.querySelectorAll('.kpi-checkbox:checked')).map(cb => cb.value);
+        const kpiParam = selectedKPIs.length > 0 ? selectedKPIs.join(',') : '';
 
         // Parâmetros para a requisição
         const params = new URLSearchParams();
         if (regional) params.append('regional', regional);
-        if (kpi) params.append('kpi', kpi);
+        if (kpiParam) params.append('kpi', kpiParam);
         if (mesAno) params.append('mes_ano', mesAno);
 
         // Faz a requisição para obter dados de análise com filtros
@@ -181,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateAnalysisTable(data) {
         const container = document.getElementById('tabelasAnaliseContainer');
         container.innerHTML = '';
-        
+
         // Determinar o mês e ano selecionados no filtro ou usar o mês atual
         let selectedDate = new Date();
         if (filtroMes.value) {
@@ -193,11 +196,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
             filtroMes.value = `${currentYear}-${currentMonth}`;
         }
-        
+
         const selectedYear = selectedDate.getFullYear();
         const selectedMonth = selectedDate.getMonth();
         const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-        
+
         // Verificar se data é um array e se está vazio
         if (!Array.isArray(data) || data.length === 0) {
             const div = document.createElement('div');
@@ -209,31 +212,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Verificar se o filtro de regional está selecionado
         const regionalFiltrada = filtroRegional.value;
-        
+
         if (regionalFiltrada) {
             // Caso 1: Regional está filtrada - mostrar uma tabela para cada cluster dentro da regional
             const clustersUnicos = [...new Set(data.filter(item => item.cluster).map(item => item.cluster))];
-            
+
             clustersUnicos.forEach(cluster => {
                 const dadosCluster = data.filter(item => item.cluster === cluster);
-                
+
                 const card = document.createElement('div');
                 card.className = 'card mb-4';
-                
+
                 const header = document.createElement('div');
                 header.className = 'card-header bg-light';
                 header.innerHTML = `<h6 class="mb-0"><i class="fas fa-chart-line"></i> Cluster: ${cluster}</h6>`;
-                
+
                 const body = document.createElement('div');
                 body.className = 'card-body';
-                
+
                 const tableDiv = document.createElement('div');
                 tableDiv.className = 'table-responsive';
-                
+
                 const table = document.createElement('table');
                 table.className = 'table table-bordered';
                 table.id = `tabelaAnaliseCluster-${cluster.replace(/\s+/g, '_')}`; // ID único para cada tabela
-                
+
                 // Gerar cabeçalhos dos dias
                 let headerRow = document.createElement('thead');
                 headerRow.className = 'table-dark';
@@ -244,19 +247,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 headerContent += '<th>Total</th>'; // Adicionando coluna de total
                 headerContent += '</tr>';
                 headerRow.innerHTML = headerContent;
-                
+
                 let tbody = document.createElement('tbody');
-                
+
                 // Linha 1: Entrantes por dia (contagem por data_abertura)
                 const entrantesRow = document.createElement('tr');
                 entrantesRow.innerHTML = '<td><strong>Entrantes</strong></td>';
-                
+
                 // Contar entrantes por dia
                 const entrantesPorDia = {};
                 for (let day = 1; day <= daysInMonth; day++) {
                     entrantesPorDia[day] = 0;
                 }
-                
+
                 // Processar os dados para contar entrantes por dia
                 dadosCluster.forEach(row => {
                     if (row.data_abertura) {
@@ -269,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
-                
+
                 // Adicionar os valores de entrantes por dia
                 let totalEntrantes = 0;
                 for (let day = 1; day <= daysInMonth; day++) {
@@ -277,17 +280,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     entrantesRow.innerHTML += `<td>${entrantesPorDia[day]}</td>`;
                 }
                 entrantesRow.innerHTML += `<td><strong>${totalEntrantes}</strong></td>`; // Coluna total
-                
+
                 // Linha 2: Encerrados por dia (contagem por data_encerramento)
                 const encerradosRow = document.createElement('tr');
                 encerradosRow.innerHTML = '<td><strong>Encerrados</strong></td>';
-                
+
                 // Contar encerrados por dia
                 const encerradosPorDia = {};
                 for (let day = 1; day <= daysInMonth; day++) {
                     encerradosPorDia[day] = 0;
                 }
-                
+
                 // Processar os dados para contar encerrados por dia
                 dadosCluster.forEach(row => {
                     if (row.data_encerramento) {
@@ -300,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
-                
+
                 // Adicionar os valores de encerrados por dia
                 let totalEncerrados = 0;
                 for (let day = 1; day <= daysInMonth; day++) {
@@ -308,69 +311,69 @@ document.addEventListener('DOMContentLoaded', function() {
                     encerradosRow.innerHTML += `<td>${encerradosPorDia[day]}</td>`;
                 }
                 encerradosRow.innerHTML += `<td><strong>${totalEncerrados}</strong></td>`; // Coluna total
-                
+
                 // Linha 3: Eficiência por dia (encerrados / entrantes * 100)
                 const eficienciaRow = document.createElement('tr');
                 eficienciaRow.innerHTML = '<td><strong>Eficiência (%)</strong></td>';
-                
+
                 // Calcular eficiência por dia
                 for (let day = 1; day <= daysInMonth; day++) {
                     const entrantes = entrantesPorDia[day] || 0;
                     const encerrados = encerradosPorDia[day] || 0;
                     let eficiencia = 0;
-                    
+
                     if (entrantes > 0) {
                         eficiencia = ((encerrados / entrantes) * 100).toFixed(1);
                     }
-                    
+
                     eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
                 }
-                
+
                 // Calcular eficiência total
                 let eficienciaTotal = 0;
                 if (totalEntrantes > 0) {
                     eficienciaTotal = ((totalEncerrados / totalEntrantes) * 100).toFixed(1);
                 }
-                
+
                 eficienciaRow.innerHTML += `<td><strong>${eficienciaTotal}%</strong></td>`; // Coluna total
-                
+
                 tbody.appendChild(entrantesRow);
                 tbody.appendChild(encerradosRow);
                 tbody.appendChild(eficienciaRow);
-                
+
                 table.appendChild(headerRow);
                 table.appendChild(tbody);
                 tableDiv.appendChild(table);
                 body.appendChild(tableDiv);
                 card.appendChild(header);
                 card.appendChild(body);
-                
+
                 container.appendChild(card);
             });
         } else {
             // Caso 2: Regional não está filtrada - mostrar uma tabela para cada regional
             const regionaisUnicas = [...new Set(data.filter(item => item.regional_vivo).map(item => item.regional_vivo))];
-            
+
             regionaisUnicas.forEach(regional => {
                 const dadosRegional = data.filter(item => item.regional_vivo === regional);
-                
+
                 const card = document.createElement('div');
                 card.className = 'card mb-4';
-                
+
                 const header = document.createElement('div');
                 header.className = 'card-header bg-light';
                 header.innerHTML = `<h6 class="mb-0"><i class="fas fa-chart-line"></i> ${regional}</h6>`;
-                
+
                 const body = document.createElement('div');
                 body.className = 'card-body';
-                
+
                 const tableDiv = document.createElement('div');
                 tableDiv.className = 'table-responsive';
-                
+
                 const table = document.createElement('table');
                 table.className = 'table table-bordered';
                 table.id = `tabelaAnaliseRegional-${regional.replace(/\s+/g, '_')}`; // ID único para cada tabela
-                
+
                 // Gerar cabeçalhos dos dias
                 let headerRow = document.createElement('thead');
                 headerRow.className = 'table-dark';
@@ -381,19 +384,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 headerContent += '<th>Total</th>'; // Adicionando coluna de total
                 headerContent += '</tr>';
                 headerRow.innerHTML = headerContent;
-                
+
                 let tbody = document.createElement('tbody');
-                
+
                 // Linha 1: Entrantes por dia (contagem por data_abertura)
                 const entrantesRow = document.createElement('tr');
                 entrantesRow.innerHTML = '<td><strong>Entrantes</strong></td>';
-                
+
                 // Contar entrantes por dia
                 const entrantesPorDia = {};
                 for (let day = 1; day <= daysInMonth; day++) {
                     entrantesPorDia[day] = 0;
                 }
-                
+
                 // Processar os dados para contar entrantes por dia
                 dadosRegional.forEach(row => {
                     if (row.data_abertura) {
@@ -406,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
-                
+
                 // Adicionar os valores de entrantes por dia
                 let totalEntrantes = 0;
                 for (let day = 1; day <= daysInMonth; day++) {
@@ -414,17 +417,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     entrantesRow.innerHTML += `<td>${entrantesPorDia[day]}</td>`;
                 }
                 entrantesRow.innerHTML += `<td><strong>${totalEntrantes}</strong></td>`; // Coluna total
-                
+
                 // Linha 2: Encerrados por dia (contagem por data_encerramento)
                 const encerradosRow = document.createElement('tr');
                 encerradosRow.innerHTML = '<td><strong>Encerrados</strong></td>';
-                
+
                 // Contar encerrados por dia
                 const encerradosPorDia = {};
                 for (let day = 1; day <= daysInMonth; day++) {
                     encerradosPorDia[day] = 0;
                 }
-                
+
                 // Processar os dados para contar encerrados por dia
                 dadosRegional.forEach(row => {
                     if (row.data_encerramento) {
@@ -437,7 +440,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
-                
+
                 // Adicionar os valores de encerrados por dia
                 let totalEncerrados = 0;
                 for (let day = 1; day <= daysInMonth; day++) {
@@ -445,43 +448,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     encerradosRow.innerHTML += `<td>${encerradosPorDia[day]}</td>`;
                 }
                 encerradosRow.innerHTML += `<td><strong>${totalEncerrados}</strong></td>`; // Coluna total
-                
+
                 // Linha 3: Eficiência por dia (encerrados / entrantes * 100)
                 const eficienciaRow = document.createElement('tr');
                 eficienciaRow.innerHTML = '<td><strong>Eficiência (%)</strong></td>';
-                
+
                 // Calcular eficiência por dia
                 for (let day = 1; day <= daysInMonth; day++) {
                     const entrantes = entrantesPorDia[day] || 0;
                     const encerrados = encerradosPorDia[day] || 0;
                     let eficiencia = 0;
-                    
+
                     if (entrantes > 0) {
                         eficiencia = ((encerrados / entrantes) * 100).toFixed(1);
                     }
-                    
+
                     eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
                 }
-                
+
                 // Calcular eficiência total
                 let eficienciaTotal = 0;
                 if (totalEntrantes > 0) {
                     eficienciaTotal = ((totalEncerrados / totalEntrantes) * 100).toFixed(1);
                 }
-                
+
                 eficienciaRow.innerHTML += `<td><strong>${eficienciaTotal}%</strong></td>`; // Coluna total
-                
+
                 tbody.appendChild(entrantesRow);
                 tbody.appendChild(encerradosRow);
                 tbody.appendChild(eficienciaRow);
-                
+
                 table.appendChild(headerRow);
                 table.appendChild(tbody);
                 tableDiv.appendChild(table);
                 body.appendChild(tableDiv);
                 card.appendChild(header);
                 card.appendChild(body);
-                
+
                 container.appendChild(card);
             });
         }
@@ -503,36 +506,46 @@ document.addEventListener('DOMContentLoaded', function() {
         // Limpa mensagens de status ao voltar para a aba de upload
         statusMessage.style.display = 'block';
     });
-    
+
     // Carrega os dados automaticamente quando a página é carregada
     // Somente se a aba de análise estiver visível (ativa)
     if (document.querySelector('#analise').classList.contains('active')) {
         loadAnalysisData();
     }
-    
+
     // Eventos para os filtros - removendo o carregamento automático ao mudar os filtros
     // filtroRegional.addEventListener('change', loadAnalysisData);
     // filtroKPI.addEventListener('change', loadAnalysisData);
-    
+
     // Adicionando evento para o botão Filtrar
     botaoFiltrar.addEventListener('click', loadAnalysisData);
-    
+
     // Adicionando evento para o botão Limpar Filtros
     document.getElementById('limparFiltros').addEventListener('click', function() {
         // Limpar todos os filtros
         filtroRegional.value = '';
-        filtroKPI.value = '';
         
+        // Limpar todos os checkboxes de KPI
+        document.querySelectorAll('.kpi-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Atualizar o estado do checkbox "Selecionar Todos"
+        document.getElementById('selectAllKPI').checked = false;
+        
+        // Atualizar o texto do dropdown
+        document.getElementById('filtroKPISelecionados').textContent = 'Nenhum KPI selecionado';
+
         // Definir o mês atual como padrão
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
         const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
         filtroMes.value = `${currentYear}-${currentMonth}`;
-        
+
         // Carregar os dados com os filtros limpos
         loadAnalysisData();
     });
-    
+
     // Função para carregar opções de filtros
     function loadFilterOptions() {
         // Carregar opções de regional
@@ -540,7 +553,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .done(function(data) {
                 // Limpar opções atuais
                 filtroRegional.innerHTML = '<option value="">Todas as Regionais</option>';
-                
+
                 // Verificar se há dados antes de adicionar opções
                 if (Array.isArray(data) && data.length > 0) {
                     // Adicionar novas opções
@@ -557,39 +570,156 @@ document.addEventListener('DOMContentLoaded', function() {
             .fail(function(error) {
                 console.error('Erro ao carregar opções de regional:', error);
             });
-            
+
         // Carregar opções de KPI
         $.get('/b2b/filtros-opcoes?campo=kpi')
             .done(function(data) {
-                // Limpar opções atuais
-                filtroKPI.innerHTML = '<option value="">Todos os KPIs</option>';
+                const container = document.getElementById('kpiCheckboxes');
+                container.innerHTML = '';
                 
-                // Verificar se há dados antes de adicionar opções
-                if (Array.isArray(data) && data.length > 0) {
-                    // Adicionar novas opções
-                    data.forEach(function(valor) {
-                        if (valor) { // Verificar se o valor não é nulo ou vazio
-                            const option = document.createElement('option');
-                            option.value = valor;
-                            option.textContent = valor;
-                            filtroKPI.appendChild(option);
+                data.forEach(item => {
+                    if (item) { // Verificar se o valor não é nulo ou vazio
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <div class="dropdown-item">
+                                <div class="form-check">
+                                    <input class="form-check-input kpi-checkbox" type="checkbox" id="kpi_${item}" value="${item}">
+                                    <label class="form-check-label" for="kpi_${item}">
+                                        ${item}
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(li);
+                    }
+                });
+                
+                // Adicionar evento para o checkbox "Selecionar Todos"
+                document.getElementById('selectAllKPI').addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.kpi-checkbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                    
+                    updateKPISelectionDisplay();
+                });
+                
+                // Adicionar evento para clicar em toda a área do item "Selecionar Todos"
+                const selectAllItem = document.querySelector('#filtroKPIOptions .dropdown-item');
+                if (selectAllItem) {
+                    selectAllItem.addEventListener('click', function(e) {
+                        // Verificar se o clique foi diretamente no item e não em um input ou label
+                        if (e.target === this || e.target.classList.contains('form-check')) {
+                            // Alternar o checkbox "Selecionar Todos"
+                            const selectAllCheckbox = this.querySelector('.form-check-input');
+                            if (selectAllCheckbox) {
+                                selectAllCheckbox.checked = !selectAllCheckbox.checked;
+                                
+                                // Atualizar todos os outros checkboxes com o mesmo estado
+                                const checkboxes = document.querySelectorAll('.kpi-checkbox');
+                                checkboxes.forEach(checkbox => {
+                                    checkbox.checked = selectAllCheckbox.checked;
+                                    
+                                    // Disparar o evento change para cada checkbox para atualizar a interface
+                                    checkbox.dispatchEvent(new Event('change'));
+                                });
+                                
+                                // Disparar o evento change para o checkbox "Selecionar Todos" também
+                                selectAllCheckbox.dispatchEvent(new Event('change'));
+                            }
                         }
+                        e.stopPropagation(); // Impede que o evento propague e feche o dropdown
                     });
                 }
+                
+                // Adicionar eventos para os checkboxes individuais
+                document.querySelectorAll('.kpi-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function(e) {
+                        e.stopPropagation(); // Impede que o evento propague e feche o dropdown
+                        updateKPISelectionDisplay();
+                        
+                        // Atualizar o estado do checkbox "Selecionar Todos"
+                        const allCheckboxes = document.querySelectorAll('.kpi-checkbox');
+                        const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+                        const selectAllCheckbox = document.getElementById('selectAllKPI');
+                        selectAllCheckbox.checked = allChecked;
+                    });
+                });
+                
+                // Impedir que o dropdown feche ao clicar nos labels
+                document.querySelectorAll('#kpiCheckboxes label').forEach(label => {
+                    label.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Impede que o evento propague e feche o dropdown
+                    });
+                });
+                
+                // Adicionar evento para clicar em toda a área do item do dropdown
+                document.querySelectorAll('#kpiCheckboxes .dropdown-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        // Verificar se o clique foi diretamente no item e não em um input ou label
+                        if (e.target === this || e.target.classList.contains('form-check')) {
+                            // Alternar o checkbox correspondente
+                            const checkbox = this.querySelector('.form-check-input');
+                            if (checkbox) {
+                                checkbox.checked = !checkbox.checked;
+                                // Disparar o evento change para atualizar a interface
+                                checkbox.dispatchEvent(new Event('change'));
+                            }
+                        }
+                        e.stopPropagation(); // Impede que o evento propague e feche o dropdown
+                    });
+                });
+                
+                // Inicializar o texto do dropdown
+                updateKPISelectionDisplay();
             })
             .fail(function(error) {
                 console.error('Erro ao carregar opções de KPI:', error);
             });
     }
     
+    // Função para atualizar o texto do dropdown de KPI
+    function updateKPISelectionDisplay() {
+        const selectedCheckboxes = document.querySelectorAll('.kpi-checkbox:checked');
+        const totalCheckboxes = document.querySelectorAll('.kpi-checkbox');
+        
+        const selectedValues = Array.from(selectedCheckboxes).map(cb => cb.value);
+        
+        if (selectedValues.length === 0) {
+            document.getElementById('filtroKPISelecionados').textContent = 'Nenhum KPI selecionado';
+        } else if (selectedValues.length === totalCheckboxes.length) {
+            document.getElementById('filtroKPISelecionados').textContent = 'Todos os KPIs';
+        } else {
+            document.getElementById('filtroKPISelecionados').textContent = `${selectedValues.length} KPI(s) selecionado(s)`;
+        }
+    }
+
     // Carregar opções de filtros quando a aba de análise for mostrada
     document.querySelector('#analise-tab').addEventListener('shown.bs.tab', function() {
         loadFilterOptions();
     });
-    
+
     // Carregar opções de filtros quando a página é carregada
     loadFilterOptions();
     
+    // Configurar o dropdown de KPI para não fechar automaticamente
+    document.addEventListener('DOMContentLoaded', function() {
+        // Encontrar o dropdown de KPI e configurar para não fechar automaticamente
+        const kpiDropdownElement = document.getElementById('filtroKPIdropdown');
+        if (kpiDropdownElement) {
+            // Destruir instância existente se houver
+            const existingInstance = bootstrap.Dropdown.getInstance(kpiDropdownElement);
+            if (existingInstance) {
+                existingInstance.dispose();
+            }
+            
+            // Criar nova instância com autoClose: false
+            new bootstrap.Dropdown(kpiDropdownElement, {
+                autoClose: false
+            });
+        }
+    });
+
     // Função para obter a data da última atualização da base
     function obterUltimaAtualizacao() {
         // Fazer uma requisição para obter a data da última atualização
@@ -637,7 +767,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Erro ao obter a última atualização:', error);
             });
     }
-    
+
     // Carregar a data da última atualização quando a página é carregada
     obterUltimaAtualizacao();
     

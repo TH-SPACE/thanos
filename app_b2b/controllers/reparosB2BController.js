@@ -279,8 +279,18 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
             }
             
             if (kpi) {
-                whereClause += " AND kpi = ?";
-                params.push(kpi);
+                // Verificar se kpi é uma lista separada por vírgula
+                const kpiArray = kpi.split(',');
+                if (kpiArray.length > 1) {
+                    // Múltiplos KPIs
+                    const placeholders = kpiArray.map(() => '?').join(',');
+                    whereClause += ` AND kpi IN (${placeholders})`;
+                    params.push(...kpiArray.map(item => item.trim()));
+                } else {
+                    // Apenas um KPI
+                    whereClause += " AND kpi = ?";
+                    params.push(kpi);
+                }
             }
             
             // Adicionar filtro por mês/ano se fornecido
