@@ -403,7 +403,7 @@ router.get('/ultima-atualizacao', b2bAuth, async (req, res) => {
     } catch (error) {
         console.error('Erro ao obter a última atualização:', error);
         res.status(500).json({ error: 'Erro ao obter a última atualização' });
-    }a
+    }
 });
 
 // Rota para obter perfil do usuário
@@ -412,7 +412,7 @@ router.get('/perfil-usuario', b2bAuth, async (req, res) => {
         // Retorna as informações do usuário da sessão
         if (req.session.usuario) {
             const usuario = req.session.usuario;
-            
+
             // Monta o objeto com as informações necessárias
             const perfilUsuario = {
                 nome: usuario.nome || '',
@@ -420,7 +420,7 @@ router.get('/perfil-usuario', b2bAuth, async (req, res) => {
                 cargo: usuario.cargo || '',
                 perfil: usuario.perfil || ''
             };
-            
+
             res.json(perfilUsuario);
         } else {
             res.status(401).json({ error: 'Usuário não autenticado' });
@@ -428,6 +428,70 @@ router.get('/perfil-usuario', b2bAuth, async (req, res) => {
     } catch (error) {
         console.error('Erro ao obter perfil do usuário:', error);
         res.status(500).json({ error: 'Erro ao obter perfil do usuário' });
+    }
+});
+
+// Rota para download do modelo de upload
+router.get('/modelo-upload', b2bAuth, (req, res) => {
+    try {
+        // Criar um modelo de planilha com os cabeçalhos corretos
+        const fs = require('fs');
+        const path = require('path');
+        const XLSX = require('xlsx');
+        
+        // Dados de exemplo com todos os cabeçalhos
+        const headers = [
+            'bd', 'id_circuito', 'bd_ant', 'lp_15', 'designador_lp_13', 'id_comercial', 
+            'data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update', 
+            'kpi', 'kpi_acesso', 'tipo_acesso', 'origem', 'sistema_origem', 'cod_grupo', 
+            'grupo_economico', 'bd_raiz', 'status_codigo', 'status_nome', 'procedencia', 
+            'reclamacao', 'segmento_sistema', 'segmento_v3', 'segmento_novo', 'segmento_vivo_corp', 
+            'projeto', 'cliente_nome', 'cnpj', 'cnpj_raiz', 'endereco', 'localidade_codigo', 
+            'area_codigo', 'escritorio_codigo', 'cidade', 'uf', 'cluster', 'regional', 
+            'regional_vivo', 'lp_operadora', 'servico_cpcc_nome', 'velocidade', 'velocidade_kbps', 
+            'produto_nome', 'familia_produto', 'baixa_n1_codigo', 'baixa_n2_codigo', 'baixa_n3_codigo', 
+            'baixa_n4_codigo', 'baixa_n5_codigo', 'baixa_n1_nome', 'baixa_n2_nome', 'baixa_n3_nome', 
+            'baixa_n4_nome', 'baixa_n5_nome', 'resumo_intragov', 'intragov_sigla', 'intragov_codigo', 
+            'sla_horas', 'grupo', 'grupo_novo', 'foco_acoes', 'foco_novo', 'grupo_baixa_codigo', 
+            'grupo_abertura', 'usuario_abertura', 'grupo_baixa', 'usuario_baixa', 'grupo_responsavel', 
+            'operadora', 'tipo_operadora', 'tmr', 'tmr_sem_parada', 'tempo_parada', 'decorrido_sem_parada', 
+            'prazo', 'reincidencia_30d', 'reincidencia_tipo', 'originou_reinc', 'prox_reinc', 
+            'horario_func_inicio', 'horario_func_fim', 'R30_Tratativas'
+        ];
+        
+        // Criar uma planilha com apenas o cabeçalho
+        const worksheetData = [headers];
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Modelo');
+        
+        // Caminho temporário para o arquivo
+        const filePath = path.join(__dirname, '../uploads/modelo_upload.xlsx');
+        
+        // Garantir que o diretório existe
+        const dir = path.dirname(filePath);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        
+        // Escrever o arquivo
+        XLSX.writeFile(workbook, filePath);
+        
+        // Enviar o arquivo para download
+        res.download(filePath, 'modelo_upload.xlsx', (err) => {
+            if (err) {
+                console.error('Erro ao enviar arquivo de modelo:', err);
+            }
+            // Remover o arquivo após o download
+            setTimeout(() => {
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            }, 1000);
+        });
+    } catch (error) {
+        console.error('Erro ao gerar modelo de upload:', error);
+        res.status(500).json({ error: 'Erro ao gerar modelo de upload' });
     }
 });
 

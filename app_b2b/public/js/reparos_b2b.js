@@ -1,87 +1,232 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const browseFiles = document.getElementById('browseFiles');
-    const uploadProgress = document.getElementById('uploadProgress');
-    const progressBar = uploadProgress.querySelector('.progress-bar');
-    const statusMessage = document.getElementById('statusMessage');
-
+    // Elementos do modal de upload (verificar se existem antes de acessar)
+    const dropZoneModal = document.getElementById('dropZoneModal');
+    const fileInputModal = document.getElementById('fileInputModal');
+    const browseFilesModal = document.getElementById('browseFilesModal');
+    const uploadProgressModal = document.getElementById('uploadProgressModal');
+    const progressBarModal = uploadProgressModal ? uploadProgressModal.querySelector('.progress-bar') : null;
+    const statusMessageModal = document.getElementById('statusMessageModal');
+    const uploadWarning = document.getElementById('uploadWarning');
+    const selectedFileInfo = document.getElementById('selectedFileInfo');
+    const fileNameSpan = document.getElementById('fileName');
+    const enviarBtn = document.getElementById('enviarBtn');
+    
+    // Variável para armazenar o arquivo selecionado
+    let arquivoSelecionado = null;
+    
     // Referências aos elementos de filtro
     const filtroRegional = document.getElementById('filtroRegional');
     const filtroKPI = document.getElementById('filtroKPI');
     const filtroMes = document.getElementById('filtroMes');
     const botaoFiltrar = document.getElementById('aplicarFiltro');
 
-    // Evento para abrir o diálogo de seleção de arquivo
-    browseFiles.addEventListener('click', function() {
-        fileInput.click();
-    });
+    // Elementos da antiga aba de upload não existem mais, então não precisamos deles
+    // Apenas os elementos do modal de upload são relevantes agora
+    
+    // Eventos para o modal de upload (somente se os elementos existirem)
+    if (browseFilesModal && fileInputModal) {
+        // Evento para abrir o diálogo de seleção de arquivo (modal)
+        browseFilesModal.addEventListener('click', function() {
+            fileInputModal.click();
+        });
 
-    // Evento quando um arquivo é selecionado
-    fileInput.addEventListener('change', function() {
-        if (this.files.length) {
-            handleFile(this.files[0]);
+        // Evento quando um arquivo é selecionado (modal)
+        fileInputModal.addEventListener('change', function() {
+            if (this.files.length) {
+                arquivoSelecionado = this.files[0];
+                
+                // Mostrar informações do arquivo selecionado
+                if (selectedFileInfo && fileNameSpan) {
+                    fileNameSpan.textContent = arquivoSelecionado.name;
+                    selectedFileInfo.style.display = 'block';
+                }
+                
+                // Habilitar o botão de enviar
+                if (enviarBtn) {
+                    enviarBtn.disabled = false;
+                }
+            } else {
+                // Desabilitar o botão de enviar se não houver arquivo
+                if (enviarBtn) {
+                    enviarBtn.disabled = true;
+                }
+                
+                // Ocultar informações do arquivo selecionado
+                if (selectedFileInfo) {
+                    selectedFileInfo.style.display = 'none';
+                }
+            }
+        });
+        
+        // Adicionando um listener para monitorar mudanças no valor do input
+        fileInputModal.addEventListener('input', function() {
+            if (!this.value) {
+                // Desabilitar o botão de enviar se o input estiver vazio
+                if (enviarBtn) {
+                    enviarBtn.disabled = true;
+                }
+                
+                // Ocultar informações do arquivo selecionado
+                if (selectedFileInfo) {
+                    selectedFileInfo.style.display = 'none';
+                }
+                
+                arquivoSelecionado = null;
+            }
+        });
+        
+        // Evento para o botão de envio
+        if (enviarBtn) {
+            enviarBtn.addEventListener('click', function() {
+                if (arquivoSelecionado) {
+                    handleFileModal(arquivoSelecionado);
+                } else {
+                    showMessageModal('Por favor, selecione um arquivo primeiro.', 'error');
+                }
+            });
         }
-    });
-
-    // Eventos para arrastar e soltar arquivos
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
+        
+        // Listener para quando o modal é aberto para garantir que o estado inicial esteja correto
+        const uploadModalElement = document.getElementById('uploadModal');
+        if (uploadModalElement) {
+            uploadModalElement.addEventListener('shown.bs.modal', function () {
+                // Certificar-se de que o botão de enviar está desabilitado inicialmente
+                if (enviarBtn) {
+                    enviarBtn.disabled = true;
+                }
+                
+                // Certificar-se de que o input de arquivo está limpo
+                if (fileInputModal) {
+                    fileInputModal.value = '';
+                    // Disparar o evento change para garantir que o estado seja atualizado
+                    fileInputModal.dispatchEvent(new Event('change'));
+                }
+            });
+            
+            // Listener para quando o modal é fechado para limpar o estado
+            uploadModalElement.addEventListener('hidden.bs.modal', function () {
+                // Limpar o input de arquivo e ocultar informações do arquivo selecionado
+                if (fileInputModal) {
+                    fileInputModal.value = '';
+                    // Disparar o evento change para garantir que o estado seja atualizado
+                    fileInputModal.dispatchEvent(new Event('change'));
+                }
+                if (selectedFileInfo) {
+                    selectedFileInfo.style.display = 'none';
+                }
+                arquivoSelecionado = null;
+                
+                // Resetar o botão de enviar
+                if (enviarBtn) {
+                    enviarBtn.disabled = false;
+                }
+            });
+        }
     }
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, highlight, false);
-    });
+    
+    // Eventos para arrastar e soltar arquivos (modal) - somente se o elemento existir
+    if (dropZoneModal) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZoneModal.addEventListener(eventName, preventDefaultsModal, false);
+        });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, unhighlight, false);
-    });
+        function preventDefaultsModal(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
 
-    function highlight() {
-        dropZone.classList.add('dragover');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZoneModal.addEventListener(eventName, highlightModal, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZoneModal.addEventListener(eventName, unhighlightModal, false);
+        });
+
+        function highlightModal() {
+            dropZoneModal.classList.add('dragover');
+        }
+
+        function unhighlightModal() {
+            dropZoneModal.classList.remove('dragover');
+        }
+
+        // Evento para quando o arquivo é solto (modal)
+        dropZoneModal.addEventListener('drop', handleDropModal, false);
+
+        function handleDropModal(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            arquivoSelecionado = file;
+            
+            // Mostrar informações do arquivo selecionado
+            if (selectedFileInfo && fileNameSpan) {
+                fileNameSpan.textContent = arquivoSelecionado.name;
+                selectedFileInfo.style.display = 'block';
+            }
+            
+            // Habilitar o botão de enviar
+            if (enviarBtn) {
+                enviarBtn.disabled = false;
+            }
+        }
     }
 
-    function unhighlight() {
-        dropZone.classList.remove('dragover');
-    }
-
-    // Evento para quando o arquivo é solto
-    dropZone.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const file = dt.files[0];
-        handleFile(file);
-    }
-
-    function handleFile(file) {
+    
+    // Funções para o modal de upload
+    function handleFileModal(file) {
         // Verifica se o arquivo é um Excel
         if (!file.name.match(/\.(xlsx|xls)$/i)) {
-            showMessage('Por favor, selecione um arquivo Excel (.xlsx ou .xls)', 'error');
+            showMessageModal('Por favor, selecione um arquivo Excel (.xlsx ou .xls)', 'error');
+            
+            // Limpar o input de arquivo e ocultar informações do arquivo selecionado
+            if (fileInputModal) {
+                fileInputModal.value = '';
+            }
+            if (selectedFileInfo) {
+                selectedFileInfo.style.display = 'none';
+            }
+            arquivoSelecionado = null;
+            
+            // Desabilitar o botão de enviar
+            if (enviarBtn) {
+                enviarBtn.disabled = true;
+            }
             return;
         }
 
+        // Desabilitar o botão de enviar durante o upload
+        if (enviarBtn) {
+            enviarBtn.disabled = true;
+        }
+
         // Realiza o upload do arquivo
-        realUpload(file);
+        realUploadModal(file);
     }
 
-    function realUpload(file) {
+    function realUploadModal(file) {
         // Prepara o formulário para envio
         const formData = new FormData();
         formData.append('file', file);
 
         // Atualiza mensagem de status
-        statusMessage.textContent = `Enviando: ${file.name}`;
-        statusMessage.className = 'status-message info';
+        if (statusMessageModal) {
+            statusMessageModal.textContent = `Enviando: ${file.name}`;
+            statusMessageModal.className = 'status-message info';
+        }
 
         // Mostra a barra de progresso
-        uploadProgress.style.display = 'block';
-        progressBar.style.width = '0%';
+        if (uploadProgressModal && progressBarModal) {
+            uploadProgressModal.style.display = 'block';
+            progressBarModal.style.width = '0%';
+            progressBarModal.textContent = '0%';
+        }
+        
+        // Mostra o aviso para não fechar a janela
+        if (uploadWarning) {
+            uploadWarning.style.display = 'block';
+        }
 
         // Faz o upload via AJAX
         $.ajax({
@@ -95,45 +240,87 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Upload progress
                 xhr.upload.addEventListener("progress", function(evt) {
-                    if (evt.lengthComputable) {
+                    if (evt.lengthComputable && progressBarModal) {
                         const percentComplete = evt.loaded / evt.total * 100;
-                        progressBar.style.width = percentComplete + '%';
+                        progressBarModal.style.width = percentComplete + '%';
+                        progressBarModal.textContent = Math.round(percentComplete) + '%';
                     }
                 }, false);
                 return xhr;
             },
             success: function(response) {
-                uploadProgress.style.display = 'none';
+                if (uploadProgressModal) {
+                    uploadProgressModal.style.display = 'none';
+                }
+                if (uploadWarning) {
+                    uploadWarning.style.display = 'none';
+                }
                 if (response.success) {
-                    showMessage(response.message || 'Dados enviados e processados com sucesso!', 'success');
+                    showMessageModal(response.message || 'Dados enviados e processados com sucesso!', 'success');
+                    // Limpar o input de arquivo e ocultar informações do arquivo selecionado
+                    if (fileInputModal) {
+                        fileInputModal.value = '';
+                        // Disparar o evento change para garantir que o estado seja atualizado
+                        fileInputModal.dispatchEvent(new Event('change'));
+                    }
+                    if (selectedFileInfo) {
+                        selectedFileInfo.style.display = 'none';
+                    }
+                    arquivoSelecionado = null;
+                    
+                    // Fechar o modal após 2 segundos se for bem sucedido
+                    setTimeout(() => {
+                        const uploadModal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+                        if (uploadModal) {
+                            uploadModal.hide();
+                        }
+                    }, 2000);
                 } else {
-                    showMessage(response.message || 'Erro ao processar o arquivo.', 'error');
+                    showMessageModal(response.message || 'Erro ao processar o arquivo.', 'error');
                 }
             },
             error: function(xhr, status, error) {
-                uploadProgress.style.display = 'none';
+                if (uploadProgressModal) {
+                    uploadProgressModal.style.display = 'none';
+                }
+                if (uploadWarning) {
+                    uploadWarning.style.display = 'none';
+                }
                 let errorMessage = 'Erro ao enviar o arquivo.';
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     errorMessage = xhr.responseJSON.error;
                 } else if (error) {
                     errorMessage = error;
                 }
-                showMessage(errorMessage, 'error');
+                showMessageModal(errorMessage, 'error');
+                
+                // Limpar o input de arquivo e ocultar informações do arquivo selecionado
+                if (fileInputModal) {
+                    fileInputModal.value = '';
+                    // Disparar o evento change para garantir que o estado seja atualizado
+                    fileInputModal.dispatchEvent(new Event('change'));
+                }
+                if (selectedFileInfo) {
+                    selectedFileInfo.style.display = 'none';
+                }
+                arquivoSelecionado = null;
             }
         });
     }
 
-    function showMessage(message, type) {
-        statusMessage.textContent = message;
-        statusMessage.className = `status-message ${type}`;
+    function showMessageModal(message, type) {
+        if (statusMessageModal) {
+            statusMessageModal.textContent = message;
+            statusMessageModal.className = `status-message ${type}`;
 
-        // Auto-hide success messages after 5 seconds
-        if (type === 'success') {
-            setTimeout(() => {
-                if (statusMessage.textContent === message) {
-                    statusMessage.style.display = 'none';
-                }
-            }, 5000);
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    if (statusMessageModal && statusMessageModal.textContent === message) {
+                        statusMessageModal.style.display = 'none';
+                    }
+                }, 5000);
+            }
         }
     }
 
@@ -176,9 +363,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (error.statusText) {
                     errorMessage = error.statusText;
                 }
-                showMessage(errorMessage, 'error');
+                // Mostrar mensagem de erro usando um elemento que ainda existe
+                const statusMensagemAnalise = document.getElementById('statusMensagemAnalise');
+                if (statusMensagemAnalise) {
+                    statusMensagemAnalise.textContent = errorMessage;
+                    statusMensagemAnalise.className = 'text-danger';
+                } else {
+                    console.error(errorMessage);
+                }
             });
     }
+
 
     // Função para atualizar a tabela de análise
     function updateAnalysisTable(data) {
@@ -501,15 +696,13 @@ document.addEventListener('DOMContentLoaded', function() {
         loadAnalysisData();
     });
 
-    // Adiciona funcionalidade de clique para o botão de atualizar dados na aba de upload
-    document.querySelector('#upload-tab').addEventListener('shown.bs.tab', function() {
-        // Limpa mensagens de status ao voltar para a aba de upload
-        statusMessage.style.display = 'block';
-    });
-
     // Carrega os dados automaticamente quando a página é carregada
     // Somente se a aba de análise estiver visível (ativa)
-    if (document.querySelector('#analise').classList.contains('active')) {
+    if (document.querySelector('#analise') && document.querySelector('#analise').classList.contains('active')) {
+        loadAnalysisData();
+    } else {
+        // Se a aba de análise não estiver ativa, carrega os dados assim mesmo
+        // pois agora só temos a aba de análise
         loadAnalysisData();
     }
 
@@ -739,30 +932,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Carregar opções de filtros quando a aba de análise for mostrada
-    document.querySelector('#analise-tab').addEventListener('shown.bs.tab', function() {
-        loadFilterOptions();
-    });
+    const analiseTab = document.querySelector('#analise-tab');
+    if (analiseTab) {
+        analiseTab.addEventListener('shown.bs.tab', function() {
+            loadFilterOptions();
+        });
+    }
 
     // Carregar opções de filtros quando a página é carregada
     loadFilterOptions();
     
     // Configurar o dropdown de KPI para não fechar automaticamente
-    document.addEventListener('DOMContentLoaded', function() {
-        // Encontrar o dropdown de KPI e configurar para não fechar automaticamente
-        const kpiDropdownElement = document.getElementById('filtroKPIdropdown');
-        if (kpiDropdownElement) {
-            // Destruir instância existente se houver
-            const existingInstance = bootstrap.Dropdown.getInstance(kpiDropdownElement);
-            if (existingInstance) {
-                existingInstance.dispose();
-            }
-            
-            // Criar nova instância com autoClose: false
-            new bootstrap.Dropdown(kpiDropdownElement, {
-                autoClose: false
-            });
+    // Encontrar o dropdown de KPI e configurar para não fechar automaticamente
+    const kpiDropdownElement = document.getElementById('filtroKPIdropdown');
+    if (kpiDropdownElement) {
+        // Destruir instância existente se houver
+        const existingInstance = bootstrap.Dropdown.getInstance(kpiDropdownElement);
+        if (existingInstance) {
+            existingInstance.dispose();
         }
-    });
+
+        // Criar nova instância com autoClose: false
+        new bootstrap.Dropdown(kpiDropdownElement, {
+            autoClose: false
+        });
+    }
 
     // Função para obter a data da última atualização da base
     function obterUltimaAtualizacao() {
