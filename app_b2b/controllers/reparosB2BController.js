@@ -267,7 +267,7 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
         const connection = await db.mysqlPool.getConnection();
         try {
             // Obter parâmetros de filtro
-            const { regional, kpi } = req.query; // Removido o parâmetro data
+            const { regional, kpi, mes_ano } = req.query; // Adicionado o parâmetro mes_ano
             
             // Construir cláusulas WHERE dinamicamente
             let whereClause = "WHERE 1=1"; // Mudança para permitir mais flexibilidade
@@ -283,16 +283,33 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
                 params.push(kpi);
             }
             
+            // Adicionar filtro por mês/ano se fornecido
+            if (mes_ano) {
+                // O parâmetro mes_ano vem no formato YYYY-MM
+                whereClause += " AND (DATE_FORMAT(data_abertura, '%Y-%m') = ? OR DATE_FORMAT(data_encerramento, '%Y-%m') = ?)";
+                params.push(mes_ano, mes_ano); // Adiciona o mesmo valor duas vezes para ambas as condições
+            } else {
+                // Se não for fornecido, usar o mês atual
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = String(now.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
+                const currentMonthFormatted = `${currentYear}-${currentMonth}`;
+                
+                whereClause += " AND (DATE_FORMAT(data_abertura, '%Y-%m') = ? OR DATE_FORMAT(data_encerramento, '%Y-%m') = ?)";
+                params.push(currentMonthFormatted, currentMonthFormatted);
+            }
+            
             // Query para obter dados detalhados de entrantes vs encerramentos
             const query = `
                 SELECT
                     bd,
                     data_abertura,
                     data_encerramento,
-                    cluster
+                    cluster,
+                    regional_vivo
                 FROM reparosb2b
                 ${whereClause}
-                ORDER BY bd
+                ORDER BY regional_vivo, cluster, bd
             `;
             
             const [rows] = await connection.execute(query, params);

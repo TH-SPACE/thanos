@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Referências aos elementos de filtro
     const filtroRegional = document.getElementById('filtroRegional');
     const filtroKPI = document.getElementById('filtroKPI');
+    const filtroMes = document.getElementById('filtroMes');
     const botaoFiltrar = document.getElementById('aplicarFiltro');
 
     // Evento para abrir o diálogo de seleção de arquivo
@@ -148,11 +149,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Obter valores dos filtros
         const regional = filtroRegional.value;
         const kpi = filtroKPI.value;
+        const mesAno = filtroMes.value; // Valor no formato YYYY-MM
 
         // Parâmetros para a requisição
         const params = new URLSearchParams();
         if (regional) params.append('regional', regional);
         if (kpi) params.append('kpi', kpi);
+        if (mesAno) params.append('mes_ano', mesAno);
 
         // Faz a requisição para obter dados de análise com filtros
         $.get(`/b2b/analise-data?${params.toString()}`)
@@ -176,109 +179,282 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Função para atualizar a tabela de análise
     function updateAnalysisTable(data) {
-        const tbody = document.querySelector('#tabelaAnaliseCluster tbody');
-        const thead = document.querySelector('#tabelaAnaliseCluster thead');
-        tbody.innerHTML = '';
+        const container = document.getElementById('tabelasAnaliseContainer');
+        container.innerHTML = '';
         
-        // Determinar o número de dias no mês atual
-        const today = new Date();
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        
-        // Gerar cabeçalhos dos dias
-        let headerRow = '<tr><th>Tipo</th>';
-        for (let day = 1; day <= daysInMonth; day++) {
-            headerRow += `<th>${day}</th>`;
+        // Determinar o mês e ano selecionados no filtro ou usar o mês atual
+        let selectedDate = new Date();
+        if (filtroMes.value) {
+            const [year, month] = filtroMes.value.split('-');
+            selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+        } else {
+            // Define o mês atual como padrão no campo de filtro
+            const currentYear = selectedDate.getFullYear();
+            const currentMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            filtroMes.value = `${currentYear}-${currentMonth}`;
         }
-        headerRow += '</tr>';
-        thead.innerHTML = headerRow;
-
+        
+        const selectedYear = selectedDate.getFullYear();
+        const selectedMonth = selectedDate.getMonth();
+        const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+        
         // Verificar se data é um array e se está vazio
         if (!Array.isArray(data) || data.length === 0) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="${daysInMonth + 1}" class="text-center">Nenhum dado encontrado</td>`;
-            tbody.appendChild(tr);
+            const div = document.createElement('div');
+            div.className = 'alert alert-info';
+            div.textContent = 'Nenhum dado encontrado';
+            container.appendChild(div);
             return;
         }
 
-        // Criar as duas linhas solicitadas (Entrantes e Encerrados)
+        // Verificar se o filtro de regional está selecionado
+        const regionalFiltrada = filtroRegional.value;
         
-        // Linha 1: Entrantes por dia (contagem por data_abertura)
-        const entrantesRow = document.createElement('tr');
-        entrantesRow.innerHTML = '<td><strong>Entrantes</strong></td>';
-        
-        // Contar entrantes por dia
-        const entrantesPorDia = {};
-        for (let day = 1; day <= daysInMonth; day++) {
-            entrantesPorDia[day] = 0;
-        }
-        
-        // Processar os dados para contar entrantes por dia
-        data.forEach(row => {
-            if (row.data_abertura) {
-                const dataAbertura = new Date(row.data_abertura);
-                if (dataAbertura.getFullYear() === currentYear && dataAbertura.getMonth() === currentMonth) {
-                    const dia = dataAbertura.getDate();
-                    if (entrantesPorDia.hasOwnProperty(dia)) {
-                        entrantesPorDia[dia]++;
-                    }
-                }
-            }
-        });
-        
-        // Adicionar os valores de entrantes por dia
-        for (let day = 1; day <= daysInMonth; day++) {
-            entrantesRow.innerHTML += `<td>${entrantesPorDia[day]}</td>`;
-        }
-        tbody.appendChild(entrantesRow);
-        
-        // Linha 2: Encerrados por dia (contagem por data_encerramento)
-        const encerradosRow = document.createElement('tr');
-        encerradosRow.innerHTML = '<td><strong>Encerrados</strong></td>';
-        
-        // Contar encerrados por dia
-        const encerradosPorDia = {};
-        for (let day = 1; day <= daysInMonth; day++) {
-            encerradosPorDia[day] = 0;
-        }
-        
-        // Processar os dados para contar encerrados por dia
-        data.forEach(row => {
-            if (row.data_encerramento) {
-                const dataEncerramento = new Date(row.data_encerramento);
-                if (dataEncerramento.getFullYear() === currentYear && dataEncerramento.getMonth() === currentMonth) {
-                    const dia = dataEncerramento.getDate();
-                    if (encerradosPorDia.hasOwnProperty(dia)) {
-                        encerradosPorDia[dia]++;
-                    }
-                }
-            }
-        });
-        
-        // Adicionar os valores de encerrados por dia
-        for (let day = 1; day <= daysInMonth; day++) {
-            encerradosRow.innerHTML += `<td>${encerradosPorDia[day]}</td>`;
-        }
-        tbody.appendChild(encerradosRow);
-        
-        // Linha 3: Eficiência por dia (encerrados / entrantes * 100)
-        const eficienciaRow = document.createElement('tr');
-        eficienciaRow.innerHTML = '<td><strong>Eficiência (%)</strong></td>';
-        
-        // Calcular eficiência por dia
-        for (let day = 1; day <= daysInMonth; day++) {
-            const entrantes = entrantesPorDia[day] || 0;
-            const encerrados = encerradosPorDia[day] || 0;
-            let eficiencia = 0;
+        if (regionalFiltrada) {
+            // Caso 1: Regional está filtrada - mostrar uma tabela para cada cluster dentro da regional
+            const clustersUnicos = [...new Set(data.filter(item => item.cluster).map(item => item.cluster))];
             
-            if (entrantes > 0) {
-                eficiencia = ((encerrados / entrantes) * 100).toFixed(1);
-            }
+            clustersUnicos.forEach(cluster => {
+                const dadosCluster = data.filter(item => item.cluster === cluster);
+                
+                const card = document.createElement('div');
+                card.className = 'card mb-4';
+                
+                const header = document.createElement('div');
+                header.className = 'card-header bg-light';
+                header.innerHTML = `<h6 class="mb-0"><i class="fas fa-chart-line"></i> Cluster: ${cluster}</h6>`;
+                
+                const body = document.createElement('div');
+                body.className = 'card-body';
+                
+                const tableDiv = document.createElement('div');
+                tableDiv.className = 'table-responsive';
+                
+                const table = document.createElement('table');
+                table.className = 'table table-bordered';
+                table.id = `tabelaAnaliseCluster-${cluster.replace(/\s+/g, '_')}`; // ID único para cada tabela
+                
+                // Gerar cabeçalhos dos dias
+                let headerRow = document.createElement('thead');
+                headerRow.className = 'table-dark';
+                let headerContent = '<tr><th>Tipo</th>';
+                for (let day = 1; day <= daysInMonth; day++) {
+                    headerContent += `<th>${day}</th>`;
+                }
+                headerContent += '</tr>';
+                headerRow.innerHTML = headerContent;
+                
+                let tbody = document.createElement('tbody');
+                
+                // Linha 1: Entrantes por dia (contagem por data_abertura)
+                const entrantesRow = document.createElement('tr');
+                entrantesRow.innerHTML = '<td><strong>Entrantes</strong></td>';
+                
+                // Contar entrantes por dia
+                const entrantesPorDia = {};
+                for (let day = 1; day <= daysInMonth; day++) {
+                    entrantesPorDia[day] = 0;
+                }
+                
+                // Processar os dados para contar entrantes por dia
+                dadosCluster.forEach(row => {
+                    if (row.data_abertura) {
+                        const dataAbertura = new Date(row.data_abertura);
+                        if (dataAbertura.getFullYear() === selectedYear && dataAbertura.getMonth() === selectedMonth) {
+                            const dia = dataAbertura.getDate();
+                            if (entrantesPorDia.hasOwnProperty(dia)) {
+                                entrantesPorDia[dia]++;
+                            }
+                        }
+                    }
+                });
+                
+                // Adicionar os valores de entrantes por dia
+                for (let day = 1; day <= daysInMonth; day++) {
+                    entrantesRow.innerHTML += `<td>${entrantesPorDia[day]}</td>`;
+                }
+                
+                // Linha 2: Encerrados por dia (contagem por data_encerramento)
+                const encerradosRow = document.createElement('tr');
+                encerradosRow.innerHTML = '<td><strong>Encerrados</strong></td>';
+                
+                // Contar encerrados por dia
+                const encerradosPorDia = {};
+                for (let day = 1; day <= daysInMonth; day++) {
+                    encerradosPorDia[day] = 0;
+                }
+                
+                // Processar os dados para contar encerrados por dia
+                dadosCluster.forEach(row => {
+                    if (row.data_encerramento) {
+                        const dataEncerramento = new Date(row.data_encerramento);
+                        if (dataEncerramento.getFullYear() === selectedYear && dataEncerramento.getMonth() === selectedMonth) {
+                            const dia = dataEncerramento.getDate();
+                            if (encerradosPorDia.hasOwnProperty(dia)) {
+                                encerradosPorDia[dia]++;
+                            }
+                        }
+                    }
+                });
+                
+                // Adicionar os valores de encerrados por dia
+                for (let day = 1; day <= daysInMonth; day++) {
+                    encerradosRow.innerHTML += `<td>${encerradosPorDia[day]}</td>`;
+                }
+                
+                // Linha 3: Eficiência por dia (encerrados / entrantes * 100)
+                const eficienciaRow = document.createElement('tr');
+                eficienciaRow.innerHTML = '<td><strong>Eficiência (%)</strong></td>';
+                
+                // Calcular eficiência por dia
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const entrantes = entrantesPorDia[day] || 0;
+                    const encerrados = encerradosPorDia[day] || 0;
+                    let eficiencia = 0;
+                    
+                    if (entrantes > 0) {
+                        eficiencia = ((encerrados / entrantes) * 100).toFixed(1);
+                    }
+                    
+                    eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
+                }
+                
+                tbody.appendChild(entrantesRow);
+                tbody.appendChild(encerradosRow);
+                tbody.appendChild(eficienciaRow);
+                
+                table.appendChild(headerRow);
+                table.appendChild(tbody);
+                tableDiv.appendChild(table);
+                body.appendChild(tableDiv);
+                card.appendChild(header);
+                card.appendChild(body);
+                
+                container.appendChild(card);
+            });
+        } else {
+            // Caso 2: Regional não está filtrada - mostrar uma tabela para cada regional
+            const regionaisUnicas = [...new Set(data.filter(item => item.regional_vivo).map(item => item.regional_vivo))];
             
-            eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
+            regionaisUnicas.forEach(regional => {
+                const dadosRegional = data.filter(item => item.regional_vivo === regional);
+                
+                const card = document.createElement('div');
+                card.className = 'card mb-4';
+                
+                const header = document.createElement('div');
+                header.className = 'card-header bg-light';
+                header.innerHTML = `<h6 class="mb-0"><i class="fas fa-chart-line"></i> Regional: ${regional}</h6>`;
+                
+                const body = document.createElement('div');
+                body.className = 'card-body';
+                
+                const tableDiv = document.createElement('div');
+                tableDiv.className = 'table-responsive';
+                
+                const table = document.createElement('table');
+                table.className = 'table table-bordered';
+                table.id = `tabelaAnaliseRegional-${regional.replace(/\s+/g, '_')}`; // ID único para cada tabela
+                
+                // Gerar cabeçalhos dos dias
+                let headerRow = document.createElement('thead');
+                headerRow.className = 'table-dark';
+                let headerContent = '<tr><th>Tipo</th>';
+                for (let day = 1; day <= daysInMonth; day++) {
+                    headerContent += `<th>${day}</th>`;
+                }
+                headerContent += '</tr>';
+                headerRow.innerHTML = headerContent;
+                
+                let tbody = document.createElement('tbody');
+                
+                // Linha 1: Entrantes por dia (contagem por data_abertura)
+                const entrantesRow = document.createElement('tr');
+                entrantesRow.innerHTML = '<td><strong>Entrantes</strong></td>';
+                
+                // Contar entrantes por dia
+                const entrantesPorDia = {};
+                for (let day = 1; day <= daysInMonth; day++) {
+                    entrantesPorDia[day] = 0;
+                }
+                
+                // Processar os dados para contar entrantes por dia
+                dadosRegional.forEach(row => {
+                    if (row.data_abertura) {
+                        const dataAbertura = new Date(row.data_abertura);
+                        if (dataAbertura.getFullYear() === selectedYear && dataAbertura.getMonth() === selectedMonth) {
+                            const dia = dataAbertura.getDate();
+                            if (entrantesPorDia.hasOwnProperty(dia)) {
+                                entrantesPorDia[dia]++;
+                            }
+                        }
+                    }
+                });
+                
+                // Adicionar os valores de entrantes por dia
+                for (let day = 1; day <= daysInMonth; day++) {
+                    entrantesRow.innerHTML += `<td>${entrantesPorDia[day]}</td>`;
+                }
+                
+                // Linha 2: Encerrados por dia (contagem por data_encerramento)
+                const encerradosRow = document.createElement('tr');
+                encerradosRow.innerHTML = '<td><strong>Encerrados</strong></td>';
+                
+                // Contar encerrados por dia
+                const encerradosPorDia = {};
+                for (let day = 1; day <= daysInMonth; day++) {
+                    encerradosPorDia[day] = 0;
+                }
+                
+                // Processar os dados para contar encerrados por dia
+                dadosRegional.forEach(row => {
+                    if (row.data_encerramento) {
+                        const dataEncerramento = new Date(row.data_encerramento);
+                        if (dataEncerramento.getFullYear() === selectedYear && dataEncerramento.getMonth() === selectedMonth) {
+                            const dia = dataEncerramento.getDate();
+                            if (encerradosPorDia.hasOwnProperty(dia)) {
+                                encerradosPorDia[dia]++;
+                            }
+                        }
+                    }
+                });
+                
+                // Adicionar os valores de encerrados por dia
+                for (let day = 1; day <= daysInMonth; day++) {
+                    encerradosRow.innerHTML += `<td>${encerradosPorDia[day]}</td>`;
+                }
+                
+                // Linha 3: Eficiência por dia (encerrados / entrantes * 100)
+                const eficienciaRow = document.createElement('tr');
+                eficienciaRow.innerHTML = '<td><strong>Eficiência (%)</strong></td>';
+                
+                // Calcular eficiência por dia
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const entrantes = entrantesPorDia[day] || 0;
+                    const encerrados = encerradosPorDia[day] || 0;
+                    let eficiencia = 0;
+                    
+                    if (entrantes > 0) {
+                        eficiencia = ((encerrados / entrantes) * 100).toFixed(1);
+                    }
+                    
+                    eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
+                }
+                
+                tbody.appendChild(entrantesRow);
+                tbody.appendChild(encerradosRow);
+                tbody.appendChild(eficienciaRow);
+                
+                table.appendChild(headerRow);
+                table.appendChild(tbody);
+                tableDiv.appendChild(table);
+                body.appendChild(tableDiv);
+                card.appendChild(header);
+                card.appendChild(body);
+                
+                container.appendChild(card);
+            });
         }
-        tbody.appendChild(eficienciaRow);
     }
 
     // Função para atualizar o gráfico de análise
@@ -310,6 +486,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Adicionando evento para o botão Filtrar
     botaoFiltrar.addEventListener('click', loadAnalysisData);
+    
+    // Adicionando evento para o botão Limpar Filtros
+    document.getElementById('limparFiltros').addEventListener('click', function() {
+        // Limpar todos os filtros
+        filtroRegional.value = '';
+        filtroKPI.value = '';
+        
+        // Definir o mês atual como padrão
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+        filtroMes.value = `${currentYear}-${currentMonth}`;
+        
+        // Carregar os dados com os filtros limpos
+        loadAnalysisData();
+    });
     
     // Função para carregar opções de filtros
     function loadFilterOptions() {

@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <!-- CSS customizado -->
     <link rel="stylesheet" href="/b2b/css/reparos_b2b.css">
+    <style>
+        /* Centralizar itens a partir da segunda coluna */
+        #tabelasAnaliseContainer table th:nth-child(n+2),
+        #tabelasAnaliseContainer table td:nth-child(n+2) {
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body>
@@ -105,20 +112,25 @@
                         <div class="card-body">
                             <!-- Filtros -->
                             <div class="row mb-3">
-                                <div class="col-md-5">
+                                <div class="col-md-4">
                                     <label for="filtroRegional" class="form-label">Regional</label>
                                     <select class="form-select" id="filtroRegional">
                                         <option value="">Todas as Regionais</option>
                                     </select>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-md-3">
                                     <label for="filtroKPI" class="form-label">KPI</label>
                                     <select class="form-select" id="filtroKPI">
                                         <option value="">Todos os KPIs</option>
                                     </select>
                                 </div>
-                                <div class="col-md-2 d-flex align-items-end">
+                                <div class="col-md-2">
+                                    <label for="filtroMes" class="form-label">Mês/Ano</label>
+                                    <input type="month" class="form-control" id="filtroMes">
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end gap-2">
                                     <button class="btn btn-primary w-100" id="aplicarFiltro">Filtrar</button>
+                                    <button class="btn btn-secondary w-100" id="limparFiltros">Limpar</button>
                                 </div>
                             </div>
 
@@ -145,18 +157,8 @@
                                             <h6 class="mb-0"><i class="fas fa-chart-line"></i> Entrantes vs Encerramentos por Dia</h6>
                                         </div>
                                         <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered" id="tabelaAnaliseCluster">
-                                                    <thead class="table-dark">
-                                                        <tr>
-                                                            <th>Tipo</th>
-                                                            <!-- Cabeçalhos dos dias serão gerados via JavaScript -->
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <!-- Dados serão carregados via JavaScript -->
-                                                    </tbody>
-                                                </table>
+                                            <div id="tabelasAnaliseContainer">
+                                                <!-- Tabelas serão geradas via JavaScript -->
                                             </div>
                                         </div>
                                     </div>
