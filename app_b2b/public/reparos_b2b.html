@@ -27,7 +27,7 @@
         
         /* Ajustar tamanho da fonte para tabelas com muitas colunas */
         #tabelasAnaliseContainer table {
-            font-size: 0.9rem; /* Reduzi o tamanho da fonte */
+            font-size: 0.75rem; /* Reduzi o tamanho da fonte */
         }
         
         #tabelasAnaliseContainer table th,
@@ -57,7 +57,7 @@
         /* Melhorar responsividade para telas pequenas */
         @media (max-width: 768px) {
             #tabelasAnaliseContainer table {
-                font-size: 0.9rem;
+                font-size: 0.65rem;
             }
             
             #tabelasAnaliseContainer table th,
@@ -150,7 +150,7 @@
                 <div class="tab-pane fade show active" id="analise" role="tabpanel">
                     <div class="card mt-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5><i class="fas fa-chart-bar"></i> Desempenho BDs</h5>
+                            <h5><i class="fas fa-chart-bar"></i> Desempenho BDs <i class="fas fa-info-circle text-info ms-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#infoModal"></i></h5>
                             <div>
                                 <button class="btn btn-sm btn-outline-primary me-2" id="atualizarDados">
                                     <i class="fas fa-sync-alt"></i> Atualizar Dados
@@ -322,6 +322,50 @@
             });
         });
     </script>
+    
+    <!-- Modal de Informações -->
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="infoModalLabel"><i class="fas fa-info-circle"></i> Sobre o Sistema de Desempenho BDs</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <h6><i class="fas fa-chart-bar"></i> Visão Geral</h6>
+                    <p>Este sistema apresenta o desempenho dos BDs (Business Development) B2B, mostrando entrantes, encerramentos e eficiência por dia.</p>
+                    
+                    <h6><i class="fas fa-filter"></i> Como Funcionam os Filtros</h6>
+                    <ul>
+                        <li><strong>Filtro de Regional:</strong> Permite selecionar uma regional específica para visualizar os dados apenas dessa região. Se nenhum filtro for aplicado, serão mostradas todas as regionais.</li>
+                        <li><strong>Filtro de KPI:</strong> Permite filtrar os dados com base em um indicador específico.</li>
+                        <li><strong>Filtro de Mês/Ano:</strong> Permite selecionar o período específico para análise. O mês atual é selecionado por padrão.</li>
+                    </ul>
+                    
+                    <h6><i class="fas fa-table"></i> Interpretação da Tabela</h6>
+                    <ul>
+                        <li><strong>Entrantes:</strong> Quantidade de novos registros abertos no dia (baseado na data_abertura).</li>
+                        <li><strong>Encerrados:</strong> Quantidade de registros encerrados no dia (baseado na data_encerramento).</li>
+                        <li><strong>Eficiência (%):</strong> Percentual calculado como (Encerrados / Entrantes) * 100.</li>
+                        <li><strong>Total:</strong> Soma acumulada para o mês inteiro.</li>
+                    </ul>
+                    
+                    <h6><i class="fas fa-sync-alt"></i> Atualização de Dados</h6>
+                    <p>O indicador <strong>D-1</strong> mostra se os dados estão atualizados até ontem (D-1) ou estão desatualizados. Clique no botão "Atualizar Dados" para carregar as informações mais recentes.</p>
+                    
+                    <h6><i class="fas fa-lightbulb"></i> Dicas de Uso</h6>
+                    <ul>
+                        <li>Use os filtros para analisar dados específicos</li>
+                        <li>Clique em "Filtrar" após selecionar os filtros para aplicar as mudanças</li>
+                        <li>Clique em "Limpar" para resetar todos os filtros</li>
+                        <li>Os dados são atualizados automaticamente com base no mês selecionado</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
-
 </html>
