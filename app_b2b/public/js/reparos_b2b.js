@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const header = document.createElement('div');
                 header.className = 'card-header bg-light';
-                header.innerHTML = `<h6 class="mb-0"><i class="fas fa-chart-line"></i> Regional: ${regional}</h6>`;
+                header.innerHTML = `<h6 class="mb-0"><i class="fas fa-chart-line"></i> ${regional}</h6>`;
                 
                 const body = document.createElement('div');
                 body.className = 'card-body';
