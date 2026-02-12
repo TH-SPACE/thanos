@@ -589,4 +589,62 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Carregar opções de filtros quando a página é carregada
     loadFilterOptions();
+    
+    // Função para obter a data da última atualização da base
+    function obterUltimaAtualizacao() {
+        // Fazer uma requisição para obter a data da última atualização
+        $.get('/b2b/ultima-atualizacao')
+            .done(function(data) {
+                if (data && data.ultima_atualizacao) {
+                    // Formatar a data para exibição no tooltip
+                    const dataFormatada = new Date(data.ultima_atualizacao).toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
+                    // Verificar se a data de atualização é de hoje
+                    const dataAtualizacao = new Date(data.ultima_atualizacao);
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0); // Zerar horas para comparação apenas de data
+                    dataAtualizacao.setHours(0, 0, 0, 0);
+                    
+                    // Atualizar o tooltip com a data real
+                    const d1Indicator = document.getElementById('d1Indicator');
+                    d1Indicator.setAttribute('data-bs-original-title', `Última atualização: ${dataFormatada}`);
+                    
+                    // Definir cor do badge com base na data
+                    if (dataAtualizacao.getTime() === hoje.getTime()) {
+                        // Data de hoje - verde
+                        d1Indicator.className = 'badge bg-success';
+                    } else {
+                        // Data anterior - vermelho
+                        d1Indicator.className = 'badge bg-danger';
+                    }
+                    
+                    // Re-inicializar o tooltip para refletir a mudança
+                    var tooltip = bootstrap.Tooltip.getInstance(d1Indicator);
+                    if (tooltip) {
+                        tooltip.dispose();
+                    }
+                    new bootstrap.Tooltip(d1Indicator);
+                }
+            })
+            .fail(function(error) {
+                console.error('Erro ao obter a última atualização:', error);
+            });
+    }
+    
+    // Carregar a data da última atualização quando a página é carregada
+    obterUltimaAtualizacao();
+    
+    // Atualizar a data da última atualização após atualizar os dados
+    document.getElementById('atualizarDados').addEventListener('click', function() {
+        setTimeout(() => {
+            obterUltimaAtualizacao();
+        }, 2000); // Pequeno delay para garantir que a atualização foi concluída
+    });
 });

@@ -364,6 +364,38 @@ router.get('/filtros-opcoes', b2bAuth, async (req, res) => {
     }
 });
 
+// Rota para obter a data da última atualização da base
+router.get('/ultima-atualizacao', b2bAuth, async (req, res) => {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+        try {
+            // Consultar a data da última atualização (pode ser a data do último registro ou a data de modificação mais recente)
+            const query = `
+                SELECT MAX(updated_at) as ultima_atualizacao
+                FROM reparosb2b
+            `;
+            
+            const [rows] = await connection.execute(query);
+            
+            if (rows.length > 0 && rows[0].ultima_atualizacao) {
+                res.json({
+                    ultima_atualizacao: rows[0].ultima_atualizacao
+                });
+            } else {
+                // Se não encontrar registros, retornar a data atual
+                res.json({
+                    ultima_atualizacao: new Date()
+                });
+            }
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao obter a última atualização:', error);
+        res.status(500).json({ error: 'Erro ao obter a última atualização' });
+    }a
+});
+
 // Rota para obter perfil do usuário
 router.get('/perfil-usuario', b2bAuth, async (req, res) => {
     try {
