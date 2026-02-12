@@ -672,6 +672,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Inicializar o texto do dropdown
                 updateKPISelectionDisplay();
+                
+                // Marcar automaticamente os KPIs específicos
+                const kpisPadrao = ['KPI', 'EXP_LM', 'EXP_SLM_CLIENTE'];
+                kpisPadrao.forEach(kpi => {
+                    const checkbox = document.getElementById(`kpi_${kpi}`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        // Disparar o evento change para atualizar a interface
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                });
             })
             .fail(function(error) {
                 console.error('Erro ao carregar opções de KPI:', error);
