@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Gerar cabeçalhos dos dias
                 let headerRow = document.createElement('thead');
                 headerRow.className = 'table-dark';
-                let headerContent = '<tr><th>Tipo</th>';
+                let headerContent = '<tr><th>Dia</th>';
                 for (let day = 1; day <= daysInMonth; day++) {
                     headerContent += `<th>${day}</th>`;
                 }
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Gerar cabeçalhos dos dias
                 let headerRow = document.createElement('thead');
                 headerRow.className = 'table-dark';
-                let headerContent = '<tr><th>Tipo</th>';
+                let headerContent = '<tr><th>Dia</th>';
                 for (let day = 1; day <= daysInMonth; day++) {
                     headerContent += `<th>${day}</th>`;
                 }
