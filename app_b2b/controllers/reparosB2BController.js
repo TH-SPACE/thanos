@@ -267,17 +267,27 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
         const connection = await db.mysqlPool.getConnection();
         try {
             // Obter parâmetros de filtro
-            const { regional, kpi, mes_ano } = req.query; // Adicionado o parâmetro mes_ano
-            
+            const { regional, segmento, kpi, mes_ano } = req.query; // Adicionado o parâmetro segmento
+
             // Construir cláusulas WHERE dinamicamente
             let whereClause = "WHERE 1=1"; // Mudança para permitir mais flexibilidade
             const params = [];
-            
+
             if (regional) {
                 whereClause += " AND regional_vivo = ?";
                 params.push(regional);
             }
-            
+
+            // Aplicar filtro de segmento (padrão B2B se não for especificado)
+            const segmentoFiltro = segmento || 'B2B'; // Valor padrão é B2B
+            if (segmentoFiltro === 'Atacado') {
+                // Quando seleciona Atacado, filtra tudo que é atacado
+                whereClause += " AND segmento_novo = 'Atacado'";
+            } else if (segmentoFiltro === 'B2B') {
+                // Quando seleciona B2B, filtra tudo que não é Atacado
+                whereClause += " AND segmento_novo != 'Atacado'";
+            }
+
             if (kpi) {
                 // Verificar se kpi é uma lista separada por vírgula
                 const kpiArray = kpi.split(',');
@@ -292,7 +302,7 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
                     params.push(kpi);
                 }
             }
-            
+
             // Adicionar filtro por mês/ano se fornecido
             if (mes_ano) {
                 // O parâmetro mes_ano vem no formato YYYY-MM
@@ -304,11 +314,11 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
                 const currentYear = now.getFullYear();
                 const currentMonth = String(now.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
                 const currentMonthFormatted = `${currentYear}-${currentMonth}`;
-                
+
                 whereClause += " AND (DATE_FORMAT(data_abertura, '%Y-%m') = ? OR DATE_FORMAT(data_encerramento, '%Y-%m') = ?)";
                 params.push(currentMonthFormatted, currentMonthFormatted);
             }
-            
+
             // Query para obter dados detalhados de entrantes vs encerramentos
             const query = `
                 SELECT
@@ -321,7 +331,7 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
                 ${whereClause}
                 ORDER BY regional_vivo, cluster, bd
             `;
-            
+
             const [rows] = await connection.execute(query, params);
 
             res.json(rows);

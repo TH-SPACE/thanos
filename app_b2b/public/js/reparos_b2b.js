@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Referências aos elementos de filtro
     const filtroRegional = document.getElementById('filtroRegional');
+    const filtroSegmento = document.getElementById('filtroSegmento');
     const filtroKPI = document.getElementById('filtroKPI');
     const filtroMes = document.getElementById('filtroMes');
     const botaoFiltrar = document.getElementById('aplicarFiltro');
@@ -335,8 +336,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Obter valores dos filtros
         const regional = filtroRegional.value;
+        const segmento = filtroSegmento.value;
         const mesAno = filtroMes.value; // Valor no formato YYYY-MM
-        
+
         // Obter os KPIs selecionados
         const selectedKPIs = Array.from(document.querySelectorAll('.kpi-checkbox:checked')).map(cb => cb.value);
         const kpiParam = selectedKPIs.length > 0 ? selectedKPIs.join(',') : '';
@@ -344,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Parâmetros para a requisição
         const params = new URLSearchParams();
         if (regional) params.append('regional', regional);
+        if (segmento) params.append('segmento', segmento);
         if (kpiParam) params.append('kpi', kpiParam);
         if (mesAno) params.append('mes_ano', mesAno);
 
@@ -709,23 +712,46 @@ document.addEventListener('DOMContentLoaded', function() {
     // Eventos para os filtros - removendo o carregamento automático ao mudar os filtros
     // filtroRegional.addEventListener('change', loadAnalysisData);
     // filtroKPI.addEventListener('change', loadAnalysisData);
+    // filtroSegmento.addEventListener('change', loadAnalysisData); // Adicionando listener para o filtro de segmento
 
     // Adicionando evento para o botão Filtrar
-    botaoFiltrar.addEventListener('click', loadAnalysisData);
+    botaoFiltrar.addEventListener('click', function() {
+        loadAnalysisData();
+    });
+    
+    // Adicionando listeners para os filtros - apenas para atualizar visualmente, sem carregar dados
+    if (filtroRegional) {
+        filtroRegional.addEventListener('change', function() {
+            // Apenas atualiza visualmente, sem carregar dados
+        });
+    }
+    
+    if (filtroSegmento) {
+        filtroSegmento.addEventListener('change', function() {
+            // Apenas atualiza visualmente, sem carregar dados
+        });
+    }
+    
+    if (filtroMes) {
+        filtroMes.addEventListener('change', function() {
+            // Apenas atualiza visualmente, sem carregar dados
+        });
+    }
 
     // Adicionando evento para o botão Limpar Filtros
     document.getElementById('limparFiltros').addEventListener('click', function() {
         // Limpar todos os filtros
         filtroRegional.value = '';
-        
+        filtroSegmento.value = 'B2B'; // Manter o padrão B2B
+
         // Limpar todos os checkboxes de KPI
         document.querySelectorAll('.kpi-checkbox').forEach(checkbox => {
             checkbox.checked = false;
         });
-        
+
         // Atualizar o estado do checkbox "Selecionar Todos"
         document.getElementById('selectAllKPI').checked = false;
-        
+
         // Atualizar o texto do dropdown
         document.getElementById('filtroKPISelecionados').textContent = 'Nenhum KPI selecionado';
 
@@ -746,7 +772,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Carregar os dados com os filtros limpos (mas com os KPIs padrão selecionados)
+        // Carregar os dados com os filtros limpos (mas com o segmento padrão B2B)
         loadAnalysisData();
     });
 
