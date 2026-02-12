@@ -542,7 +542,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
         filtroMes.value = `${currentYear}-${currentMonth}`;
 
-        // Carregar os dados com os filtros limpos
+        // Marcar automaticamente os KPIs padrão após limpar
+        const kpisPadrao = ['KPI', 'EXP_LM', 'EXP_SLM_CLIENTE'];
+        kpisPadrao.forEach(kpi => {
+            const checkbox = document.getElementById(`kpi_${kpi}`);
+            if (checkbox) {
+                checkbox.checked = true;
+                // Disparar o evento change para atualizar a interface
+                checkbox.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Carregar os dados com os filtros limpos (mas com os KPIs padrão selecionados)
         loadAnalysisData();
     });
 
@@ -577,8 +588,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 const container = document.getElementById('kpiCheckboxes');
                 container.innerHTML = '';
                 
+                // Definir os KPIs prioritários que devem aparecer primeiro
+                const kpisPrioritarios = ['KPI', 'EXP_LM', 'EXP_SLM_CLIENTE'];
+                
+                // Primeiro, adicionar os KPIs prioritários
+                kpisPrioritarios.forEach(item => {
+                    if (data.includes(item)) { // Apenas se o item existir nos dados
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <div class="dropdown-item">
+                                <div class="form-check">
+                                    <input class="form-check-input kpi-checkbox" type="checkbox" id="kpi_${item}" value="${item}">
+                                    <label class="form-check-label" for="kpi_${item}">
+                                        ${item}
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(li);
+                    }
+                });
+                
+                // Depois, adicionar os demais KPIs que não estão na lista prioritária
                 data.forEach(item => {
-                    if (item) { // Verificar se o valor não é nulo ou vazio
+                    if (item && !kpisPrioritarios.includes(item)) { // Verificar se o valor não é nulo ou vazio e não está na lista prioritária
                         const li = document.createElement('li');
                         li.innerHTML = `
                             <div class="dropdown-item">
