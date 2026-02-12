@@ -27,13 +27,43 @@
         
         /* Ajustar tamanho da fonte para tabelas com muitas colunas */
         #tabelasAnaliseContainer table {
-            font-size: 0.9rem;
+            font-size: 0.75rem; /* Reduzi o tamanho da fonte */
         }
         
         #tabelasAnaliseContainer table th,
         #tabelasAnaliseContainer table td {
-            padding: 0.5rem;
+            padding: 0.25rem 0.1rem; /* Reduzi o padding */
             white-space: nowrap;
+        }
+        
+        /* Ajustar largura das colunas para caber na tela */
+        #tabelasAnaliseContainer table th,
+        #tabelasAnaliseContainer table td {
+            min-width: 25px; /* Largura mínima para caber os números */
+        }
+        
+        /* Ajustar a primeira coluna (Tipo) para não ser tão larga */
+        #tabelasAnaliseContainer table th:first-child,
+        #tabelasAnaliseContainer table td:first-child {
+            min-width: 80px; /* Largura específica para a coluna Tipo */
+        }
+        
+        /* Ajustar a coluna Total para não ser tão larga */
+        #tabelasAnaliseContainer table th:last-child,
+        #tabelasAnaliseContainer table td:last-child {
+            min-width: 50px; /* Largura específica para a coluna Total */
+        }
+        
+        /* Melhorar responsividade para telas pequenas */
+        @media (max-width: 768px) {
+            #tabelasAnaliseContainer table {
+                font-size: 0.65rem;
+            }
+            
+            #tabelasAnaliseContainer table th,
+            #tabelasAnaliseContainer table td {
+                padding: 0.15rem 0.05rem;
+            }
         }
     </style>
 </head>
