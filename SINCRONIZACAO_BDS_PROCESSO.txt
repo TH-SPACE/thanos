@@ -1,0 +1,405 @@
+================================================================================
+PROCESSO DE SINCRONIZAÇÃO AUTOMÁTICA - SISTEMA BDS
+================================================================================
+Data de criação: 2026-02-23
+Status: ✅ IMPLEMENTADO (Sincronização Manual)
+
+================================================================================
+OBJETIVO
+================================================================================
+
+Automatizar a obtenção de dados do sistema BDS (http://10.124.100.227:4012)
+para eliminar o upload manual de arquivos Excel no sistema Thanos B2B.
+
+FLUXO ATUAL (Manual - Upload Excel):
+1. Usuário acessa http://10.124.100.227:3001/bds
+2. Aplica filtros (regional, mês, etc.)
+3. Baixa arquivo Excel
+4. Acessa sistema Thanos
+5. Faz upload do arquivo manualmente
+
+FLUXO IMPLEMENTADO (Sincronização Manual via API):
+1. Usuário clica em "Sincronizar BDS" no sistema Thanos
+2. Escolhe período, regionais e KPIs
+3. Sistema busca dados automaticamente via API
+4. Dados são processados e inseridos no banco
+5. Tela é atualizada com novos dados
+
+FLUXO FUTURO (Automático - Agendado):
+1. Sistema roda automaticamente no horário configurado
+2. Usa filtros fixos do .env
+3. Nenhuma intervenção humana necessária
+
+================================================================================
+INFORMAÇÕES DA API BDS (Coletadas via F12)
+================================================================================
+
+ENDPOINT DE LOGIN:
+- URL: POST http://10.124.100.227:4012/api/login
+- Request: { "username": "g0056865", "password": "Thi0202@@" }
+- Response: {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": 135,
+      "username": "g0056865",
+      "email": "thiago.anunes@telefonica.com",
+      "role": "viewer"
+    }
+  }
+
+ENDPOINT DE DADOS:
+- URL: POST http://10.124.100.227:4012/api/bds
+- Headers: Authorization: Bearer <token>
+- Request Payload:
+  {
+    "regionalselecao": ["CENTRO-OESTE","NORTE"],
+    "kpiselecao": ["KPI","EXP_LM","EXP_SLM_CLIENTE",...],
+    "tipodata": "buscaporabertura",
+    "data": "2026-02-01",
+    "data2": "2026-02-23",
+    "cliente": ""
+  }
+- Response: Array de objetos com os dados dos BDS
+
+================================================================================
+ARQUIVOS IMPLEMENTADOS
+================================================================================
+
+1. app_b2b/controllers/sincronizacaoController.js (CRIADO)
+   - Rotas:
+     * POST /b2b/sincronizacao/sincronizar
+     * GET /b2b/sincronizacao/testar
+     * GET /b2b/sincronizacao/regionais
+     * GET /b2b/sincronizacao/kpis
+   - Funções:
+     * fazerRequisicao() - HTTP nativo (igual navegador)
+     * autenticarNoBDS() - Login e pega token
+     * buscarDadosBDS() - Busca dados com filtros
+     * corrigirCluster() - Corrige nome do cluster
+     * formatarData() - Formata datas para MySQL
+   - Processamento:
+     * Itera sobre dados retornados
+     * Mapeia campos da API para banco de dados
+     * Faz INSERT ou UPDATE (upsert)
+     * Aplica correção de clusters
+
+2. app_b2b/public/js/sincronizacao_b2b.js (CRIADO)
+   - Funções:
+     * sincronizarDadosBDS() - Chama API de sincronização
+     * mostrarFeedbackSincronizacao() - Feedback visual
+     * toggleTodosKPIs() - Selecionar/desmarcar todos KPIs
+     * carregarOpcoesSincronizacao() - Carrega regionais e KPIs
+     * inicializarModalSincronizacao() - Inicializa modal
+
+3. app_b2b/public/reparos_b2b.html (MODIFICADO)
+   - Adicionado botão "Sincronizar BDS" no header
+   - Adicionado modal de sincronização com:
+     * Seletor de data inicial e final
+     * Seletor de tipo de busca (abertura/encerramento)
+     * Checkboxes para regionais
+     * Checkboxes para KPIs
+     * Status da sincronização
+   - Incluídos scripts: sincronizacao_b2b.js
+
+4. app_b2b/routes/b2bRoutes.js (MODIFICADO)
+   - Importado sincronizacaoController
+   - Adicionada rota: /b2b/sincronizacao
+
+5. .env (CRIADO)
+   - BDS_API_URL=http://10.124.100.227:4012
+   - BDS_USUARIO=g0056865
+   - BDS_SENHA=Thi0202@@
+
+6. app_b2b/MANUAL_SINCRONIZACAO.md (CRIADO)
+   - Documentação completa de uso
+
+================================================================================
+COMO USAR (PASSO A PASSO)
+================================================================================
+
+PASSO 1: Acessar o sistema
+---------------------------------------------------------------------------
+URL: http://localhost:3000/b2b (ou seu servidor)
+
+PASSO 2: Clicar em "Sincronizar BDS"
+---------------------------------------------------------------------------
+Botão azul claro no topo: [📥 Sincronizar BDS]
+
+PASSO 3: Preencher o modal
+---------------------------------------------------------------------------
+- Data Inicial: 01/02/2026
+- Data Final: 23/02/2026
+- Tipo de Busca: Por Data de Abertura
+- Regionais: ☑ NORTE ☑ CENTRO-OESTE (ou deixar em branco para todas)
+- KPIs: ☑ Selecionar Todos (ou selecionar específicos)
+
+PASSO 4: Clicar em "Sincronizar BDS"
+---------------------------------------------------------------------------
+Aguardar processamento...
+
+PASSO 5: Ver resultado
+---------------------------------------------------------------------------
+✅ 85 inseridos, 15 atualizados
+
+A tabela é atualizada automaticamente!
+
+================================================================================
+MAPEAMENTO DE DADOS (API → Banco)
+================================================================================
+
+Todos os 84 campos são mapeados:
+
+API Campo          → Banco (reparosb2b)
+─────────────────────────────────────────
+bd                 → bd (chave única)
+id_circuito        → id_circuito
+bd_ant             → bd_ant
+lp_15              → lp_15
+designador_lp_13   → designador_lp_13
+id_comercial       → id_comercial
+data_abertura      → data_abertura (formatada)
+data_reparo        → data_reparo (formatada)
+data_encerramento  → data_encerramento (formatada)
+data_baixa         → data_baixa (formatada)
+last_update        → last_update (formatada)
+kpi                → kpi
+kpi_acesso         → kpi_acesso
+tipo_acesso        → tipo_acesso
+origem             → origem
+sistema_origem     → sistema_origem
+cod_grupo          → cod_grupo
+grupo_economico    → grupo_economico
+bd_raiz            → bd_raiz
+status_codigo      → status_codigo
+status_nome        → status_nome
+procedencia        → procedencia
+reclamacao         → reclamacao
+segmento_sistema   → segmento_sistema
+segmento_v3        → segmento_v3
+segmento_novo      → segmento_novo
+segmento_vivo_corp → segmento_vivo_corp
+projeto            → projeto
+cliente_nome       → cliente_nome
+cnpj               → cnpj
+cnpj_raiz          → cnpj_raiz
+endereco           → endereco
+localidade_codigo  → localidade_codigo
+area_codigo        → area_codigo
+escritorio_codigo  → escritorio_codigo
+cidade             → cidade
+uf                 → uf
+cluster            → cluster (corrigido)
+regional           → regional
+regional_vivo      → regional_vivo
+lp_operadora       → lp_operadora
+servico_cpcc_nome  → servico_cpcc_nome
+velocidade         → velocidade
+velocidade_kbps    → velocidade_kbps
+produto_nome       → produto_nome
+familia_produto    → familia_produto
+baixa_n1_codigo    → baixa_n1_codigo
+baixa_n2_codigo    → baixa_n2_codigo
+baixa_n3_codigo    → baixa_n3_codigo
+baixa_n4_codigo    → baixa_n4_codigo
+baixa_n5_codigo    → baixa_n5_codigo
+baixa_n1_nome      → baixa_n1_nome
+baixa_n2_nome      → baixa_n2_nome
+baixa_n3_nome      → baixa_n3_nome
+baixa_n4_nome      → baixa_n4_nome
+baixa_n5_nome      → baixa_n5_nome
+resumo_intragov    → resumo_intragov
+intragov_sigla     → intragov_sigla
+intragov_codigo    → intragov_codigo
+sla_horas          → sla_horas
+grupo              → grupo
+grupo_novo         → grupo_novo
+foco_acoes         → foco_acoes
+foco_novo          → foco_novo
+grupo_baixa_codigo → grupo_baixa_codigo
+grupo_abertura     → grupo_abertura
+usuario_abertura   → usuario_abertura
+grupo_baixa        → grupo_baixa
+usuario_baixa      → usuario_baixa
+grupo_responsavel  → grupo_responsavel
+operadora          → operadora
+tipo_operadora     → tipo_operadora
+tmr                → tmr
+tmr_sem_parada     → tmr_sem_parada
+tempo_parada       → tempo_parada
+decorrido_sem_parada → decorrido_sem_parada
+prazo              → prazo
+reincidencia_30d   → reincidencia_30d
+reincidencia_tipo  → reincidencia_tipo
+originou_reinc     → originou_reinc
+prox_reinc         → prox_reinc
+horario_func_inicio → horario_func_inicio
+horario_func_fim   → horario_func_fim
+R30_Tratativas     → R30_Tratativas
+
+================================================================================
+CORREÇÃO DE CLUSTERS (Regra de Negócio)
+================================================================================
+
+A mesma lógica do upload manual é aplicada na sincronização:
+
+CIDADES ESPECÍFICAS:
+- FORMOSA, CIDADE OCIDENTAL, VALPARAISO, PLANALTINA, LUZIANIA, LUZIÂNIA → BRASILIA
+- ANAPOLIS, ANÁPOLIS, JARAGUA, JARAGUÁ → ANAPOLIS
+
+POR ESTADO (UF):
+- PA → BELEM
+- AP, AM, RR → MANAUS
+- AC, MS, RO → CAMPO GRANDE
+- MT → CUIABA
+- GO → GOIANIA
+- TO → PALMAS
+- DF → BRASILIA
+- MA → SAO LUIS
+- Outros → OUTRO
+
+================================================================================
+FUNCIONALIDADES JÁ IMPLEMENTADAS
+================================================================================
+
+1. Download da base filtrada (download_b2b.js)
+   - Botão "Download" na interface
+   - Exporta dados em Excel com filtros aplicados
+   - Nome do arquivo: BDS_B2B_<mesAno>.xlsx
+
+2. Correção de cluster no upload manual (reparosB2BController.js)
+   - Função corrigirCluster() já existe
+   - Aplicada no INSERT e UPDATE de upload
+
+3. Correção de cluster na exportação
+   - Query SELECT retorna cluster já corrigido do banco
+
+4. Sincronização manual via API (sincronizacaoController.js)
+   - Botão "Sincronizar BDS" na interface
+   - Modal com filtros de período, regionais e KPIs
+   - Busca dados da API BDS
+   - Processa e salva no banco (INSERT/UPDATE)
+   - Correção automática de clusters
+
+================================================================================
+PRÓXIMOS PASSOS (Sincronização Automática)
+================================================================================
+
+QUANDO IMPLEMENTAR:
+- Após validar que a sincronização manual funciona bem
+- Quando houver necessidade de atualizações periódicas automáticas
+
+COMO SERÁ:
+
+1. Instalar node-cron:
+   npm install node-cron
+
+2. Criar arquivo de agendamento:
+   app_b2b/jobs/syncBDS.js
+
+3. Configurar filtros fixos no .env:
+   BDS_REGIONAIS_AUTOMATICO=["NORTE","CENTRO-OESTE"]
+   BDS_KPIS_AUTOMATICO=["KPI","EXP_LM","EXP_SLM_CLIENTE"]
+   BDS_DIAS_ATRAS=30
+   BDS_HORARIO_SYNC=0 2 * * *  (todo dia às 02:00)
+
+4. Implementar job:
+   const cron = require('node-cron');
+
+   cron.schedule(process.env.BDS_HORARIO_SYNC, async () => {
+       console.log('🔄 Sincronização automática...');
+       await sincronizarDados({
+           regionais: JSON.parse(process.env.BDS_REGIONAIS_AUTOMATICO),
+           kpis: JSON.parse(process.env.BDS_KPIS_AUTOMATICO),
+           dataInicial: getDaysAgo(30),
+           dataFinal: today
+       });
+   });
+
+5. Criar tabela de logs (opcional):
+   CREATE TABLE sync_logs (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       data_sync DATETIME,
+       periodoinicio DATE,
+       periodofim DATE,
+       inseridos INT,
+       atualizados INT,
+       erros INT,
+       status VARCHAR(20)
+   );
+
+================================================================================
+RISCOS E CONSIDERAÇÕES
+================================================================================
+
+RISCO: API externa indisponível
+MITIGAÇÃO: Timeout configurado, mensagem de erro clara
+
+RISCO: Dados duplicados
+MITIGAÇÃO: Upsert (INSERT ... ON DUPLICATE KEY UPDATE)
+
+RISCO: Token expirado
+MITIGAÇÃO: Renovar token automaticamente antes de cada requisição
+
+RISCO: Grande volume de dados
+MITIGAÇÃO: Processamento em lotes (batch de 100 registros)
+
+RISCO: Dados inconsistentes
+MITIGAÇÃO: Validação antes de inserir, log de erros
+
+================================================================================
+TESTES
+================================================================================
+
+Script de teste disponível:
+- test_bds_completo.js (raiz do projeto)
+
+Executar:
+node test_bds_completo.js
+
+O script testa:
+1. Login na API BDS
+2. Busca de dados com filtros
+3. Estrutura dos dados retornados
+4. Filtros personalizados
+
+================================================================================
+COMANDOS ÚTEIS
+================================================================================
+
+Testar conexão com BDS:
+node test_bds_completo.js
+
+Iniciar servidor:
+npm start
+
+Ou em modo desenvolvimento:
+npm run dev
+
+Verificar logs do servidor:
+tail -f logs/app.log (se houver log file)
+
+================================================================================
+HISTÓRICO DE ALTERAÇÕES
+================================================================================
+
+2026-02-23 - Implementação da Sincronização Manual
+✅ Criado controller sincronizacaoController.js
+✅ Criado frontend sincronizacao_b2b.js
+✅ Adicionado botão e modal na interface
+✅ Configurado arquivo .env
+✅ Implementado correção de clusters
+✅ Implementado formatação de datas
+✅ Implementado INSERT/UPDATE automático
+✅ Criada documentação MANUAL_SINCRONIZACAO.md
+
+2026-02-23 - Testes Iniciais
+✅ Script test_login_simples.js funcionou
+✅ Script test_bds_completo.js funcionou
+✅ Validação da API BDS concluída
+
+Status: ✅ Sincronização Manual Implementada
+Próximo: Aguardando validação do usuário para implementar automático
+
+================================================================================
+FIM DO DOCUMENTO
+================================================================================

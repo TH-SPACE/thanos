@@ -179,11 +179,14 @@
                     <div class="card mt-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-chart-bar"></i> Desempenho BDs <i class="fas fa-info-circle text-info ms-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#infoModal"></i></h5>
-                            <div>
-                                <button class="btn btn-sm btn-outline-primary me-2" id="atualizarDados">
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-info" id="btnSincronizar" data-bs-toggle="modal" data-bs-target="#modalSincronizacao" title="Sincronizar dados automaticamente da API BDS">
+                                    <i class="fas fa-cloud-download-alt"></i> Sincronizar BDS
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" id="atualizarDados">
                                     <i class="fas fa-sync-alt"></i> Atualizar Dados
                                 </button>
-                                <button class="btn btn-sm btn-outline-success me-2" id="btnDownload">
+                                <button class="btn btn-sm btn-outline-success" id="btnDownload">
                                     <i class="fas fa-download"></i> Download
                                 </button>
                                 <span class="badge" id="d1Indicator" title="" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="Data da última atualização da base" style="font-size: 1.2rem;">D-1</span>
@@ -306,6 +309,7 @@
     <!-- JavaScript customizado -->
     <script src="/b2b/js/reparos_b2b.js"></script>
     <script src="/b2b/js/download_b2b.js"></script>
+    <script src="/b2b/js/sincronizacao_b2b.js"></script>
 
     <script>
         // Carregar informações do usuário
@@ -313,6 +317,11 @@
             // Inicializar o botão de download
             if (typeof inicializarBotaoDownload === 'function') {
                 inicializarBotaoDownload();
+            }
+
+            // Inicializar modal de sincronização
+            if (typeof inicializarModalSincronizacao === 'function') {
+                inicializarModalSincronizacao();
             }
 
             $.get('/auth/usuario', function (usuario) {
@@ -438,6 +447,87 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Sincronização BDS -->
+    <div class="modal fade" id="modalSincronizacao" tabindex="-1" aria-labelledby="modalSincronizacaoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="modalSincronizacaoLabel">
+                        <i class="fas fa-cloud-download-alt"></i> Sincronizar Dados BDS
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Informação:</strong> Esta função busca dados diretamente do sistema BDS e os salva no banco de dados local.
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="syncDataInicial" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Data Inicial
+                            </label>
+                            <input type="date" class="form-control" id="syncDataInicial" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="syncDataFinal" class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Data Final
+                            </label>
+                            <input type="date" class="form-control" id="syncDataFinal" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="syncTipoData" class="form-label">
+                                <i class="fas fa-filter"></i> Tipo de Busca
+                            </label>
+                            <select class="form-select" id="syncTipoData">
+                                <option value="buscaporabertura">Por Data de Abertura</option>
+                                <option value="buscaporencerramento">Por Data de Encerramento</option>
+                                <option value="buscaporfechamento">Por Data de Fechamento</option>
+                                <option value="buscaporabertos">Apenas Abertos (sem data)</option>
+                            </select>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> "Apenas Abertos" busca registros sem data de encerramento
+                            </small>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <h6><i class="fas fa-map-marker-alt"></i> Regionais</h6>
+                        <div id="syncRegionaisContainer" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando...
+                            </div>
+                        </div>
+                        <small class="text-muted">Selecione "Todas" para sincronizar todas as regionais</small>
+                    </div>
+
+                    <div class="alert alert-secondary mb-3">
+                        <i class="fas fa-chart-line"></i>
+                        <strong>KPIs:</strong> Todos os KPIs serão sincronizados automaticamente.
+                    </div>
+
+                    <!-- Status da sincronização -->
+                    <div id="statusSincronizacao" class="alert alert-secondary" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Sincronizando...
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnSincronizarModal">
+                        <i class="fas fa-cloud-download-alt"></i> Sincronizar BDS
+                    </button>
                 </div>
             </div>
         </div>
