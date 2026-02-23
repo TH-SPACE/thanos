@@ -183,6 +183,9 @@
                                 <button class="btn btn-sm btn-outline-primary me-2" id="atualizarDados">
                                     <i class="fas fa-sync-alt"></i> Atualizar Dados
                                 </button>
+                                <button class="btn btn-sm btn-outline-success me-2" id="btnDownload">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
                                 <span class="badge" id="d1Indicator" title="" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-original-title="Data da última atualização da base" style="font-size: 1.2rem;">D-1</span>
                             </div>
                         </div>
@@ -302,10 +305,16 @@
 
     <!-- JavaScript customizado -->
     <script src="/b2b/js/reparos_b2b.js"></script>
+    <script src="/b2b/js/download_b2b.js"></script>
 
     <script>
         // Carregar informações do usuário
         $(document).ready(function () {
+            // Inicializar o botão de download
+            if (typeof inicializarBotaoDownload === 'function') {
+                inicializarBotaoDownload();
+            }
+
             $.get('/auth/usuario', function (usuario) {
                 if (usuario && usuario.nome) {
                     $('#nomeUsuarioNav').text(usuario.nome);

@@ -1034,11 +1034,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Carregar a data da última atualização quando a página é carregada
     obterUltimaAtualizacao();
-    
+
     // Atualizar a data da última atualização após atualizar os dados
     document.getElementById('atualizarDados').addEventListener('click', function() {
         setTimeout(() => {
             obterUltimaAtualizacao();
         }, 2000); // Pequeno delay para garantir que a atualização foi concluída
     });
+
+    // Inicializar o botão de download
+    if (typeof inicializarBotaoDownload === 'function') {
+        inicializarBotaoDownload();
+    }
 });

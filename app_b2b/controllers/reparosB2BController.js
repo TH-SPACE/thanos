@@ -261,6 +261,132 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
     }
 });
 
+// Rota para exportar dados filtrados em formato Excel
+router.get('/exportar-dados', b2bAuth, async (req, res) => {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+        try {
+            // Obter parâmetros de filtro
+            const { regional, segmento, kpi, mes_ano } = req.query;
+
+            // Construir cláusulas WHERE dinamicamente
+            let whereClause = "WHERE 1=1";
+            const params = [];
+
+            if (regional) {
+                whereClause += " AND regional_vivo = ?";
+                params.push(regional);
+            }
+
+            // Aplicar filtro de segmento (padrão B2B se não for especificado)
+            const segmentoFiltro = segmento || 'B2B';
+            if (segmentoFiltro === 'Atacado') {
+                whereClause += " AND segmento_novo = 'Atacado'";
+            } else if (segmentoFiltro === 'B2B') {
+                whereClause += " AND segmento_novo != 'Atacado'";
+            }
+
+            if (kpi) {
+                const kpiArray = kpi.split(',');
+                if (kpiArray.length > 1) {
+                    const placeholders = kpiArray.map(() => '?').join(',');
+                    whereClause += ` AND kpi IN (${placeholders})`;
+                    params.push(...kpiArray.map(item => item.trim()));
+                } else {
+                    whereClause += " AND kpi = ?";
+                    params.push(kpi);
+                }
+            }
+
+            // Adicionar filtro por mês/ano se fornecido
+            if (mes_ano) {
+                whereClause += " AND (DATE_FORMAT(data_abertura, '%Y-%m') = ? OR DATE_FORMAT(data_encerramento, '%Y-%m') = ?)";
+                params.push(mes_ano, mes_ano);
+            } else {
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+                const currentMonthFormatted = `${currentYear}-${currentMonth}`;
+
+                whereClause += " AND (DATE_FORMAT(data_abertura, '%Y-%m') = ? OR DATE_FORMAT(data_encerramento, '%Y-%m') = ?)";
+                params.push(currentMonthFormatted, currentMonthFormatted);
+            }
+
+            // Query para obter dados completos
+            const query = `
+                SELECT
+                    bd, id_circuito, bd_ant, lp_15, designador_lp_13, id_comercial,
+                    data_abertura, data_reparo, data_encerramento, data_baixa, last_update,
+                    kpi, kpi_acesso, tipo_acesso, origem, sistema_origem, cod_grupo,
+                    grupo_economico, bd_raiz, status_codigo, status_nome, procedencia,
+                    reclamacao, segmento_sistema, segmento_v3, segmento_novo, segmento_vivo_corp,
+                    projeto, cliente_nome, cnpj, cnpj_raiz, endereco, localidade_codigo,
+                    area_codigo, escritorio_codigo, cidade, uf, cluster, regional,
+                    regional_vivo, lp_operadora, servico_cpcc_nome, velocidade, velocidade_kbps,
+                    produto_nome, familia_produto, baixa_n1_codigo, baixa_n2_codigo, baixa_n3_codigo,
+                    baixa_n4_codigo, baixa_n5_codigo, baixa_n1_nome, baixa_n2_nome, baixa_n3_nome,
+                    baixa_n4_nome, baixa_n5_nome, resumo_intragov, intragov_sigla, intragov_codigo,
+                    sla_horas, grupo, grupo_novo, foco_acoes, foco_novo, grupo_baixa_codigo,
+                    grupo_abertura, usuario_abertura, grupo_baixa, usuario_baixa, grupo_responsavel,
+                    operadora, tipo_operadora, tmr, tmr_sem_parada, tempo_parada, decorrido_sem_parada,
+                    prazo, reincidencia_30d, reincidencia_tipo, originou_reinc, prox_reinc,
+                    horario_func_inicio, horario_func_fim, R30_Tratativas
+                FROM reparosb2b
+                ${whereClause}
+                ORDER BY regional_vivo, cluster, kpi, data_abertura
+            `;
+
+            const [rows] = await connection.execute(query, params);
+
+            // Criar workbook Excel
+            const XLSX = require('xlsx');
+            const workbook = XLSX.utils.book_new();
+
+            // Converter dados para formato de planilha
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+
+            // Ajustar largura das colunas
+            const wscols = [
+                { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+                { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
+                { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 20 },
+                { wch: 20 }, { wch: 30 }, { wch: 20 }, { wch: 30 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 5 }, { wch: 20 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 20 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+                { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 20 }, { wch: 20 }, { wch: 15 }
+            ];
+            worksheet['!cols'] = wscols;
+
+            // Adicionar planilha ao workbook
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Dados B2B');
+
+            // Gerar buffer do arquivo
+            const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+            // Configurar headers para download
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename="export_b2b.xlsx"');
+
+            // Enviar arquivo
+            res.send(buffer);
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao exportar dados B2B:', error);
+        res.status(500).json({ error: 'Erro ao exportar dados: ' + error.message });
+    }
+});
+
 // Rota para obter dados de análise
 router.get('/analise-data', b2bAuth, async (req, res) => {
     try {
