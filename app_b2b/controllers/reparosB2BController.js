@@ -171,6 +171,10 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
                     const columnNames = [];
                     const values = [];
 
+                    // Obter cidade e UF para correção do cluster (índices 35 e 36)
+                    const cidade = rowArray[35]?.toString().trim() || '';
+                    const uf = rowArray[36]?.toString().trim() || '';
+
                     // Percorrer cada índice do array de valores e associar à coluna correspondente
                     for (let i = 0; i < rowArray.length && i < columnMapping.length; i++) {
                         const columnName = columnMapping[i];
@@ -182,9 +186,15 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
 
                             // Verificar se é uma coluna de data e aplicar formatação adequada
                             const isDateColumn = ['data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update'].includes(columnName);
-                            
+
                             // Converter valor com formatação adequada
                             value = formatValue(value, isDateColumn);
+
+                            // Aplicar correção do cluster (índice 37 = coluna 'cluster')
+                            if (columnName === 'cluster') {
+                                value = corrigirCluster(cidade, uf);
+                            }
+
                             values.push(value);
                         }
                     }
@@ -204,6 +214,10 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
                         const updateAssignments = [];
                         const updateValues = [];
 
+                        // Obter cidade e UF para correção do cluster (índices 35 e 36)
+                        const cidade = rowArray[35]?.toString().trim() || '';
+                        const uf = rowArray[36]?.toString().trim() || '';
+
                         // Percorrer cada índice do array de valores e criar as cláusulas de atualização
                         // Começando do índice 1 para pular a coluna 'bd' (índice 0)
                         for (let i = 1; i < rowArray.length && i < columnMapping.length; i++) {
@@ -214,11 +228,16 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
                             if (columnName && columnName !== 'bd') {
                                 // Verificar se é uma coluna de data e aplicar formatação adequada
                                 const isDateColumn = ['data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update'].includes(columnName);
-                                
-                                updateAssignments.push(`${columnName} = ?`);
 
                                 // Converter valor com formatação adequada
                                 value = formatValue(value, isDateColumn);
+
+                                // Aplicar correção do cluster (índice 37 = coluna 'cluster')
+                                if (columnName === 'cluster') {
+                                    value = corrigirCluster(cidade, uf);
+                                }
+
+                                updateAssignments.push(`${columnName} = ?`);
                                 updateValues.push(value);
                             }
                         }
@@ -321,8 +340,8 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
                     grupo_economico, bd_raiz, status_codigo, status_nome, procedencia,
                     reclamacao, segmento_sistema, segmento_v3, segmento_novo, segmento_vivo_corp,
                     projeto, cliente_nome, cnpj, cnpj_raiz, endereco, localidade_codigo,
-                    area_codigo, escritorio_codigo, cidade, uf, cluster, regional,
-                    regional_vivo, lp_operadora, servico_cpcc_nome, velocidade, velocidade_kbps,
+                    area_codigo, escritorio_codigo, cidade, uf, cluster,
+                    regional, regional_vivo, lp_operadora, servico_cpcc_nome, velocidade, velocidade_kbps,
                     produto_nome, familia_produto, baixa_n1_codigo, baixa_n2_codigo, baixa_n3_codigo,
                     baixa_n4_codigo, baixa_n5_codigo, baixa_n1_nome, baixa_n2_nome, baixa_n3_nome,
                     baixa_n4_nome, baixa_n5_nome, resumo_intragov, intragov_sigla, intragov_codigo,
@@ -695,6 +714,39 @@ function formatValue(value, isDateColumn = false) {
 
     // Converter qualquer valor para string, removendo espaços extras
     return String(value).trim();
+}
+
+// Função para corrigir/normalizar o cluster com base na cidade e UF
+function corrigirCluster(cidade, uf) {
+    if (!cidade) return 'OUTRO';
+
+    // Cidades específicas para Brasília
+    const cidadesBrasilia = ['FORMOSA', 'CIDADE OCIDENTAL', 'VALPARAISO', 'PLANALTINA', 'LUZIANIA', 'LUZIÂNIA'];
+    if (cidadesBrasilia.includes(cidade.toUpperCase())) {
+        return 'BRASILIA';
+    }
+
+    // Cidades específicas para Anápolis
+    const cidadesAnapolis = ['ANAPOLIS', 'ANÁPOLIS', 'JARAGUA', 'JARAGUÁ'];
+    if (cidadesAnapolis.includes(cidade.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
+        return 'ANAPOLIS';
+    }
+
+    // Por estado
+    if (!uf) return 'OUTRO';
+
+    const ufUpper = uf.toUpperCase();
+
+    if (ufUpper === 'PA') return 'BELEM';
+    if (['AP', 'AM', 'RR'].includes(ufUpper)) return 'MANAUS';
+    if (['AC', 'MS', 'RO'].includes(ufUpper)) return 'CAMPO GRANDE';
+    if (ufUpper === 'MT') return 'CUIABA';
+    if (ufUpper === 'GO') return 'GOIANIA';
+    if (ufUpper === 'TO') return 'PALMAS';
+    if (ufUpper === 'DF') return 'BRASILIA';
+    if (ufUpper === 'MA') return 'SAO LUIS';
+
+    return 'OUTRO';
 }
 
 module.exports = router;
