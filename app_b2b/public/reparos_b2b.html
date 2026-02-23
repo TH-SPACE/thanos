@@ -156,10 +156,15 @@
                     <p class="text-muted">Sistema para análise de desempenho dos BDs B2B</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <!-- Botão de upload para usuários ADM -->
-                    <button class="btn btn-primary" id="uploadBtn" data-bs-toggle="modal" data-bs-target="#uploadModal" style="display: none;">
-                        <i class="fas fa-file-upload"></i> Upload XLSX
-                    </button>
+                    <!-- Botões para usuários ADM -->
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button class="btn btn-outline-info" id="btnSincronizarHeader" data-bs-toggle="modal" data-bs-target="#modalSincronizacao" title="Sincronizar dados automaticamente da API BDS" style="display: none;">
+                            <i class="fas fa-cloud-download-alt"></i> Sincronizar BDS
+                        </button>
+                        <button class="btn btn-primary" id="uploadBtn" data-bs-toggle="modal" data-bs-target="#uploadModal" title="Upload de arquivo Excel" style="display: none;">
+                            <i class="fas fa-file-upload"></i> Upload XLSX
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -179,10 +184,7 @@
                     <div class="card mt-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-chart-bar"></i> Desempenho BDs <i class="fas fa-info-circle text-info ms-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#infoModal"></i></h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-sm btn-outline-info" id="btnSincronizar" data-bs-toggle="modal" data-bs-target="#modalSincronizacao" title="Sincronizar dados automaticamente da API BDS">
-                                    <i class="fas fa-cloud-download-alt"></i> Sincronizar BDS
-                                </button>
+                            <div>
                                 <button class="btn btn-sm btn-outline-primary" id="atualizarDados">
                                     <i class="fas fa-sync-alt"></i> Atualizar Dados
                                 </button>
@@ -324,17 +326,24 @@
                 inicializarModalSincronizacao();
             }
 
+            // Função para mostrar botões de ADM
+            function mostrarBotoesAdm(mostrar) {
+                if (mostrar) {
+                    $('#uploadBtn').show();
+                    $('#btnSincronizarHeader').show();
+                }
+            }
+
             $.get('/auth/usuario', function (usuario) {
                 if (usuario && usuario.nome) {
                     $('#nomeUsuarioNav').text(usuario.nome);
                 } else {
                     $('#nomeUsuarioNav').text('Não identificado');
                 }
-                
-                // Verificar se o usuário tem perfil ADM para mostrar o botão de upload
-                if (usuario && usuario.perfil && usuario.perfil.toLowerCase().includes('adm')) {
-                    $('#uploadBtn').show();
-                }
+
+                // Verificar se o usuário tem perfil ADM para mostrar os botões
+                const ehAdm = usuario && usuario.perfil && usuario.perfil.toLowerCase().includes('adm');
+                mostrarBotoesAdm(ehAdm);
             }).fail(function () {
                 $('#nomeUsuarioNav').text('Não identificado');
             });
@@ -352,10 +361,9 @@
                         $('#perfilCargo').val(data.cargo || '');
                         $('#perfilPerfil').val(data.perfil || '');
 
-                        // Verificar se o usuário tem perfil ADM para mostrar o botão de upload
-                        if (data.perfil && data.perfil.toLowerCase().includes('adm')) {
-                            $('#uploadBtn').show();
-                        }
+                        // Verificar se o usuário tem perfil ADM para mostrar os botões
+                        const ehAdm = data.perfil && data.perfil.toLowerCase().includes('adm');
+                        mostrarBotoesAdm(ehAdm);
 
                         // Exibir o modal
                         $('#perfilModal').modal('show');

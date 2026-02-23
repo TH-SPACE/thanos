@@ -31,14 +31,25 @@ A sincronização manual com o sistema BDS foi implementada com sucesso.
 
 Acesse: `http://localhost:3000/b2b` (ou seu servidor)
 
-### Passo 2: Clicar em "Sincronizar BDS"
+### Passo 2: Verificar Permissão
 
-Botão azul claro no topo da página:
+**Atenção:** Os botões de **Upload XLSX** e **Sincronizar BDS** são visíveis apenas para usuários com perfil **ADM**.
+
+Se você não vir os botões, verifique com o administrador do sistema se seu usuário tem permissão ADM.
+
+### Passo 3: Clicar em "Sincronizar BDS"
+
+Botão azul claro no topo da página, ao lado do botão "Upload XLSX":
+
 ```
-[📥 Sincronizar BDS] [🔄 Atualizar Dados] [⬇️ Download]
+┌─────────────────────────────────────────────────────┐
+│  📊 Desempenho BDs                                  │
+│                                                     │
+│            [📥 Sincronizar BDS] [📤 Upload XLSX]    │
+└─────────────────────────────────────────────────────┘
 ```
 
-### Passo 3: Preencher o Modal
+### Passo 4: Preencher o Modal
 
 ```
 ┌─────────────────────────────────────────────┐

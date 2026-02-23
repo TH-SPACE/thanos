@@ -78,11 +78,20 @@ async function autenticarNoBDS() {
         }
     };
 
+    console.log('   📝 Payload:', payload);
+
     const response = await fazerRequisicao(options, payload);
 
+    console.log(`   📊 Status HTTP: ${response.statusCode}`);
+    
     if (response.statusCode === 200 && response.data.token) {
+        console.log(`   ✅ Login bem-sucedido!`);
+        console.log(`   👤 Usuário: ${response.data.user?.username || 'N/A'}`);
+        console.log(`   🔑 Token: ${response.data.token.substring(0, 50)}...`);
         return response.data.token;
     } else {
+        console.log(`   ❌ Falha na autenticação!`);
+        console.log(`   📊 Response: ${JSON.stringify(response.data)}`);
         throw new Error(response.data.message || 'Falha na autenticação');
     }
 }
@@ -120,6 +129,17 @@ async function buscarDadosBDS(token, filtros) {
         // Manter tipodata como está e deixar a API processar
     }
 
+    const payloadString = JSON.stringify(payload);
+    
+    console.log('   📝 Payload enviado:');
+    console.log(`      - regionalselecao: ${JSON.stringify(payload.regionalselecao)}`);
+    console.log(`      - kpiselecao: ${payload.kpiselecao.length} KPIs`);
+    console.log(`      - tipodata: ${payload.tipodata}`);
+    console.log(`      - data: ${payload.data}`);
+    console.log(`      - data2: ${payload.data2}`);
+    console.log(`      - cliente: ${payload.cliente}`);
+    console.log(`      - status: ${payload.status || 'N/A'}`);
+
     const options = {
         hostname: '10.124.100.227',
         port: '4012',
@@ -127,7 +147,7 @@ async function buscarDadosBDS(token, filtros) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(JSON.stringify(payload)),
+            'Content-Length': Buffer.byteLength(payloadString),
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
             'Authorization': `Bearer ${token}`,
@@ -138,11 +158,19 @@ async function buscarDadosBDS(token, filtros) {
         }
     };
 
-    const response = await fazerRequisicao(options, JSON.stringify(payload));
+    console.log(`   🔑 Authorization: Bearer ${token.substring(0, 50)}...`);
+
+    const response = await fazerRequisicao(options, payloadString);
+
+    console.log(`   📊 Status HTTP: ${response.statusCode}`);
 
     if (response.statusCode === 200 && Array.isArray(response.data)) {
+        console.log(`   ✅ Dados recebidos com sucesso!`);
+        console.log(`   📦 Quantidade de registros: ${response.data.length}`);
         return response.data;
     } else {
+        console.log(`   ❌ Falha ao buscar dados!`);
+        console.log(`   📊 Response: ${JSON.stringify(response.data)}`);
         throw new Error(response.data.message || 'Falha ao buscar dados');
     }
 }
@@ -213,23 +241,46 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
     try {
         const { regionais, kpis, dataInicial, dataFinal, tipoData, cliente } = req.body;
 
+        console.log('\n' + '='.repeat(70));
+        console.log('🔄 INICIANDO SINCRONIZAÇÃO BDS');
+        console.log('='.repeat(70));
+        console.log(`📅 Data/Hora: ${new Date().toLocaleString('pt-BR')}`);
+        console.log(`📊 Período: ${dataInicial} até ${dataFinal}`);
+        console.log(`📍 Tipo de Busca: ${tipoData}`);
+        console.log(`🗺️  Regionais: ${regionais && regionais.length > 0 ? regionais.join(', ') : 'Todas'}`);
+        console.log(`📈 KPIs: ${kpis ? kpis.length : 0} KPIs selecionados`);
+        if (kpis && kpis.length > 0) {
+            console.log(`   KPIs: ${kpis.join(', ')}`);
+        }
+        console.log('='.repeat(70));
+
         // Validar dados básicos
         if (!dataInicial || !dataFinal) {
-            return res.status(400).json({ error: 'Data inicial e final são obrigatórias' });
+            console.log('❌ ERRO: Data inicial e/ou final não informadas');
+            return res.status(400).json({ error: 'Data inicial e/ou final não informadas' });
         }
 
-        console.log(`\n🔄 Iniciando sincronização BDS...`);
-        console.log(`   Período: ${dataInicial} até ${dataFinal}`);
-        console.log(`   Regionais: ${regionais ? regionais.join(', ') : 'Todas'}`);
-        console.log(`   KPIs: ${kpis ? kpis.join(', ') : 'Todos'}`);
-
         // 1. Autenticar na API BDS
-        console.log('   📡 Autenticando...');
+        console.log('\n📡 [1/4] Autenticando na API BDS...');
+        console.log(`   URL: ${CONFIG.API_URL}/api/login`);
+        console.log(`   Usuário: ${CONFIG.USERNAME}`);
+        
         const token = await autenticarNoBDS();
-        console.log('   ✅ Token obtido!');
+        
+        console.log('   ✅ Token obtido com sucesso!');
+        console.log(`   Token: ${token.substring(0, 50)}...`);
 
         // 2. Buscar dados da API
-        console.log('   📊 Buscando dados...');
+        console.log('\n📊 [2/4] Buscando dados na API BDS...');
+        console.log(`   URL: ${CONFIG.API_URL}/api/bds`);
+        console.log(`   Método: POST`);
+        console.log(`   Filtros:`);
+        console.log(`     - regionalselecao: ${JSON.stringify(regionais || [])}`);
+        console.log(`     - kpiselecao: ${kpis ? kpis.length : 0} KPIs`);
+        console.log(`     - tipodata: ${tipoData}`);
+        console.log(`     - data: ${dataInicial}`);
+        console.log(`     - data2: ${dataFinal}`);
+        
         const dadosExternos = await buscarDadosBDS(token, {
             regionais,
             kpis,
@@ -242,6 +293,9 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
         console.log(`   ✅ ${dadosExternos.length} registros encontrados!`);
 
         if (dadosExternos.length === 0) {
+            console.log('\n⚠️  Nenhum dado encontrado para os filtros selecionados.');
+            console.log('='.repeat(70) + '\n');
+            
             return res.json({
                 success: true,
                 message: 'Nenhum dado encontrado para os filtros selecionados.',
@@ -252,12 +306,17 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
         }
 
         // 3. Conectar ao banco e processar dados
+        console.log('\n💾 [3/4] Conectando ao banco de dados...');
         const connection = await db.mysqlPool.getConnection();
+        console.log('   ✅ Conexão estabelecida!');
 
         try {
             let inseridos = 0;
             let atualizados = 0;
             let erros = 0;
+
+            console.log('\n📝 [4/4] Processando registros...');
+            console.log(`   Total de registros: ${dadosExternos.length}`);
 
             // Mapeamento de campos da API para o banco
             const mapeamentoCampos = {
@@ -348,11 +407,14 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
             };
 
             // Processar cada registro
-            for (const item of dadosExternos) {
+            for (let i = 0; i < dadosExternos.length; i++) {
+                const item = dadosExternos[i];
+                
                 try {
                     // Obter cidade e UF para correção do cluster
                     const cidade = item.cidade || '';
                     const uf = item.uf || '';
+                    const clusterOriginal = item.cluster;
 
                     // Mapear dados
                     const colunas = [];
@@ -386,7 +448,7 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
                     // Verificar se tem BD
                     const bd = item.bd;
                     if (!bd) {
-                        console.warn(`   ⚠️  Registro sem BD, ignorado`);
+                        console.warn(`   ⚠️  Registro ${i + 1}/${dadosExternos.length}: Sem BD, ignorado`);
                         erros++;
                         continue;
                     }
@@ -398,6 +460,11 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
                     try {
                         await connection.execute(insertQuery, valores);
                         inseridos++;
+                        
+                        // Log a cada 50 registros
+                        if ((i + 1) % 50 === 0) {
+                            console.log(`   📊 Progresso: ${i + 1}/${dadosExternos.length} processados...`);
+                        }
                     } catch (insertError) {
                         if (insertError.code === 'ER_DUP_ENTRY') {
                             // UPDATE
@@ -412,20 +479,31 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
                             const updateQuery = `UPDATE reparosb2b SET ${updateAssignments} WHERE bd = ?`;
                             await connection.execute(updateQuery, updateValues);
                             atualizados++;
+                            
+                            // Log a cada 50 registros
+                            if ((i + 1) % 50 === 0) {
+                                console.log(`   📊 Progresso: ${i + 1}/${dadosExternos.length} processados...`);
+                            }
                         } else {
                             throw insertError;
                         }
                     }
                 } catch (error) {
-                    console.error(`   ❌ Erro ao processar registro ${item.bd}: ${error.message}`);
+                    console.error(`   ❌ Erro ao processar registro ${item.bd || i + 1}: ${error.message}`);
                     erros++;
                 }
             }
 
-            console.log(`\n✅ Sincronização concluída!`);
-            console.log(`   Inseridos: ${inseridos}`);
-            console.log(`   Atualizados: ${atualizados}`);
-            console.log(`   Erros: ${erros}`);
+            console.log('\n' + '='.repeat(70));
+            console.log('✅ SINCRONIZAÇÃO CONCLUÍDA!');
+            console.log('='.repeat(70));
+            console.log(`📊 RESULTADOS:`);
+            console.log(`   ✅ Inseridos: ${inseridos}`);
+            console.log(`   🔄 Atualizados: ${atualizados}`);
+            console.log(`   ❌ Erros: ${erros}`);
+            console.log(`   📦 Total processado: ${dadosExternos.length}`);
+            console.log(`   📊 Taxa de sucesso: ${((inseridos + atualizados) / dadosExternos.length * 100).toFixed(1)}%`);
+            console.log('='.repeat(70) + '\n');
 
             res.json({
                 success: true,
@@ -437,9 +515,16 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
             });
         } finally {
             connection.release();
+            console.log('💾 Conexão com banco de dados liberada.\n');
         }
     } catch (error) {
-        console.error('❌ Erro na sincronização:', error.message);
+        console.error('\n' + '='.repeat(70));
+        console.error('❌ ERRO NA SINCRONIZAÇÃO');
+        console.error('='.repeat(70));
+        console.error(`   Mensagem: ${error.message}`);
+        console.error(`   Stack: ${error.stack}`);
+        console.error('='.repeat(70) + '\n');
+        
         res.status(500).json({
             success: false,
             error: error.message

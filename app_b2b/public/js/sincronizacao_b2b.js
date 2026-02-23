@@ -251,10 +251,16 @@ function inicializarModalSincronizacao() {
         });
     }
 
-    // Inicializar botão de sincronizar
-    const btnSincronizar = document.getElementById('btnSincronizarModal');
+    // Inicializar botão de sincronizar (header)
+    const btnSincronizar = document.getElementById('btnSincronizarHeader');
     if (btnSincronizar) {
         btnSincronizar.addEventListener('click', sincronizarDadosBDS);
+    }
+    
+    // Também inicializar o botão do modal
+    const btnSincronizarModal = document.getElementById('btnSincronizarModal');
+    if (btnSincronizarModal) {
+        btnSincronizarModal.addEventListener('click', sincronizarDadosBDS);
     }
 }
 
