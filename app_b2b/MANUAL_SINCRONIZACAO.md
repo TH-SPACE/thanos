@@ -83,14 +83,14 @@ Botão azul claro no topo da página, ao lado do botão "Upload XLSX":
 
 **Observação:** Os KPIs são sincronizados automaticamente (todos os 24 KPIs), não sendo necessário selecionar manualmente.
 
-### Passo 4: Aguardar Processamento
+### Passo 5: Aguardar Processamento
 
 Durante a sincronização, você verá:
 ```
 🔄 Sincronizando dados... Aguarde.
 ```
 
-### Passo 5: Resultado
+### Passo 6: Resultado
 
 Ao final:
 ```

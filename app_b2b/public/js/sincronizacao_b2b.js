@@ -251,13 +251,8 @@ function inicializarModalSincronizacao() {
         });
     }
 
-    // Inicializar botão de sincronizar (header)
-    const btnSincronizar = document.getElementById('btnSincronizarHeader');
-    if (btnSincronizar) {
-        btnSincronizar.addEventListener('click', sincronizarDadosBDS);
-    }
-    
-    // Também inicializar o botão do modal
+    // Inicializar botão de sincronizar do MODAL (não do header)
+    // O botão do header usa data-bs-toggle="modal" e abre o modal diretamente
     const btnSincronizarModal = document.getElementById('btnSincronizarModal');
     if (btnSincronizarModal) {
         btnSincronizarModal.addEventListener('click', sincronizarDadosBDS);
