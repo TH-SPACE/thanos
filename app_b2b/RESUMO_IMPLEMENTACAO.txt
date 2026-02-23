@@ -1,0 +1,350 @@
+================================================================================
+RESUMO DA IMPLEMENTAÇÃO - SINCRONIZAÇÃO BDS
+================================================================================
+Data: 2026-02-23
+Status: ✅ IMPLEMENTADO E FUNCIONAL
+
+================================================================================
+OBJETIVO PRINCIPAL
+================================================================================
+
+Criar funcionalidade para sincronizar dados automaticamente do sistema BDS
+(http://10.124.100.227:4012) com o sistema Thanos B2B, eliminando a necessidade
+de upload manual de arquivos Excel.
+
+================================================================================
+API BDS - INFORMAÇÕES COLETADAS
+================================================================================
+
+ENDPOINT DE LOGIN:
+- URL: POST http://10.124.100.227:4012/api/login
+- Request: { "username": "g0056865", "password": "Thi0202@@" }
+- Response: { "token": "JWT...", "user": {...} }
+
+ENDPOINT DE DADOS:
+- URL: POST http://10.124.100.227:4012/api/bds
+- Headers: Authorization: Bearer <token>
+- Payload:
+  {
+    "regionalselecao": ["CENTRO-OESTE","NORTE"],
+    "kpiselecao": ["KPI","EXP_LM",...],
+    "tipodata": "buscaporabertura",
+    "data": "2026-02-01",
+    "data2": "2026-02-23",
+    "cliente": ""
+  }
+- Response: Array de objetos com os dados dos BDS
+
+================================================================================
+ARQUIVOS CRIADOS/MODIFICADOS
+================================================================================
+
+1. app_b2b/controllers/sincronizacaoController.js (CRIADO)
+   - Rotas:
+     * POST /b2b/sincronizacao/sincronizar
+     * GET /b2b/sincronizacao/testar
+     * GET /b2b/sincronizacao/regionais
+   - Funções:
+     * fazerRequisicao() - HTTP nativo (igual navegador)
+     * autenticarNoBDS() - Login e pega token
+     * buscarDadosBDS() - Busca dados com filtros
+     * corrigirCluster() - Corrige nome do cluster
+     * formatarData() - Formata datas para MySQL
+   - Logs detalhados no console para acompanhamento
+
+2. app_b2b/public/js/sincronizacao_b2b.js (CRIADO)
+   - Funções:
+     * sincronizarDadosBDS() - Chama API de sincronização
+     * mostrarFeedbackSincronizacao() - Feedback visual
+     * toggleTodasRegionais() - Selecionar/desmarcar regionais
+     * atualizarTodasRegionais() - Atualiza checkbox "Todas"
+     * atualizarVisibilidadeDatas() - Esconde datas p/ "Apenas Abertos"
+     * carregarOpcoesSincronizacao() - Carrega regionais
+     * inicializarModalSincronizacao() - Inicializa modal
+
+3. app_b2b/public/reparos_b2b.html (MODIFICADO)
+   - Adicionado botão "Sincronizar BDS" no header (ao lado de Upload XLSX)
+   - Botões visíveis APENAS para usuários ADM
+   - Adicionado modal de sincronização com:
+     * Seletor de data inicial e final
+     * Seletor de tipo de busca (4 opções)
+     * Checkboxes para regionais (8 regionais)
+     * Informação sobre KPIs (todos automáticos)
+     * Status da sincronização
+
+4. app_b2b/routes/b2bRoutes.js (MODIFICADO)
+   - Importado sincronizacaoController
+   - Adicionada rota: /b2b/sincronizacao
+
+5. .env (CRIADO)
+   - BDS_API_URL=http://10.124.100.227:4012
+   - BDS_USUARIO=g0056865
+   - BDS_SENHA=Thi0202@@
+
+6. app_b2b/MANUAL_SINCRONIZACAO.md (CRIADO)
+   - Documentação completa de uso
+
+7. SINCRONIZACAO_BDS_PROCESSO.txt (ATUALIZADO)
+   - Histórico completo do processo
+
+================================================================================
+FUNCIONALIDADES IMPLEMENTADAS
+================================================================================
+
+1. SINCRONIZAÇÃO MANUAL VIA API
+   - Botão no header (ao lado de Upload XLSX)
+   - Visível apenas para usuários ADM
+   - Modal com filtros de período, regionais
+   - KPIs enviados automaticamente (todos os 24)
+
+2. TIPOS DE BUSCA DISPONÍVEIS:
+   - Por Data de Abertura
+   - Por Data de Encerramento
+   - Por Data de Fechamento
+   - Apenas Abertos (sem data)
+
+3. REGIONAIS DISPONÍVEIS (8):
+   - CENTRO-OESTE
+   - NORDESTE
+   - NORTE
+   - SP CAPITAL
+   - SP INTERIOR
+   - SUDESTE - LESTE
+   - SUDESTE - MINAS
+   - SUL
+
+4. KPIs (24 - TODOS AUTOMÁTICOS):
+   KPI, EXP_DYING_GASP, EXP_TLF, EXP_SLM_CLIENTE, EXP_PREVENTIVA,
+   EXP_PROJ_EFICIENCIA, EXP_TRIAGEM, EXP_SEDUC, EXP_LM,
+   EXP_PROATIVO_CLIENTE, EXP_REDUNDANCIA, EXP_BLACKLIST, EXP_PROJ_GRECIA,
+   EXP_FUST, EXP_INDEVIDO_CRM_V1, EXP_SERVICE_DESK, EXP_INDEVIDO_CRM_V2,
+   EXP_SIP_PABX, EXP_SISTEMAS_CLIENTE, EXP_TPL, EXP_ROBO_EDUCACAO,
+   EXP_MASSIVA_ITX_VOZ_B2B, KPI_GESTAO_DE_REDES, EXP_PROATIVO_ABERTO
+
+5. CORREÇÃO AUTOMÁTICA DE CLUSTERS:
+   - FORMOSA, CIDADE OCIDENTAL, VALPARAISO, PLANALTINA, LUZIANIA, LUZIÂNIA → BRASILIA
+   - ANAPOLIS, ANÁPOLIS, JARAGUA, JARAGUÁ → ANAPOLIS
+   - PA → BELEM
+   - AP, AM, RR → MANAUS
+   - AC, MS, RO → CAMPO GRANDE
+   - MT → CUIABA
+   - GO → GOIANIA
+   - TO → PALMAS
+   - DF → BRASILIA
+   - MA → SAO LUIS
+   - Outros → OUTRO
+
+6. FORMATAÇÃO AUTOMÁTICA DE DATAS:
+   - Converte DD/MM/YYYY HH:MM:SS → YYYY-MM-DD HH:MM:SS
+   - Converte DD/MM/YYYY → YYYY-MM-DD 00:00:00
+
+7. INSERT/UPDATE AUTOMÁTICO:
+   - Se registro não existe: INSERT
+   - Se registro já existe: UPDATE (pelo campo 'bd')
+
+8. LOGS DETALHADOS NO CONSOLE:
+   - Início da sincronização com data/hora
+   - Parâmetros enviados (período, regionais, KPIs)
+   - Autenticação na API BDS
+   - Busca de dados com filtros
+   - Progresso do processamento (a cada 50 registros)
+   - Resultado final (inseridos, atualizados, erros, taxa de sucesso)
+
+================================================================================
+COMO USAR (PASSO A PASSO)
+================================================================================
+
+1. Acessar: http://localhost:3000/b2b (ou servidor)
+
+2. Verificar permissão:
+   - Botões só aparecem para usuários ADM
+   - Se não aparecer, verificar perfil do usuário
+
+3. Clicar em [📥 Sincronizar BDS] no header
+
+4. Preencher modal:
+   - Data Inicial: 01/02/2026
+   - Data Final: 23/02/2026
+   - Tipo de Busca: Por Data de Abertura (ou outro)
+   - Regionais: Selecionar Todas (ou específicas)
+   - KPIs: Automático (todos 24)
+
+5. Clicar em [📥 Sincronizar BDS] no modal
+
+6. Confirmar sincronização
+
+7. Aguardar: "🔄 Sincronizando..."
+
+8. Resultado: "✅ 85 inseridos, 15 atualizados"
+
+9. Tabela atualizada automaticamente
+
+================================================================================
+FLUXO DE DADOS
+================================================================================
+
+FRONTEND (Modal):
+  ↓
+  [Data Inicial, Data Final, Tipo Busca, Regionais]
+  ↓
+  POST /b2b/sincronizacao/sincronizar
+  ↓
+BACKEND (Controller):
+  ↓
+  1. Autenticar na API BDS → Token
+  ↓
+  2. Buscar dados com filtros → Array de dados
+  ↓
+  3. Conectar ao MySQL
+  ↓
+  4. Para cada registro:
+     - Mapear campos API → Banco
+     - Formatar datas
+     - Corrigir cluster
+     - INSERT ou UPDATE
+  ↓
+  5. Retornar resultado
+  ↓
+FRONTEND:
+  ↓
+  Mostrar resultado e atualizar tabela
+
+================================================================================
+EXEMPLO DE LOG NO CONSOLE
+================================================================================
+
+======================================================================
+🔄 INICIANDO SINCRONIZAÇÃO BDS
+======================================================================
+📅 Data/Hora: 23/02/2026 18:30:45
+📊 Período: 2026-02-01 até 2026-02-23
+📍 Tipo de Busca: buscaporabertura
+🗺️  Regionais: NORTE, CENTRO-OESTE
+📈 KPIs: 24 KPIs selecionados
+======================================================================
+
+📡 [1/4] Autenticando na API BDS...
+   URL: http://10.124.100.227:4012/api/login
+   Usuário: g0056865
+   📊 Status HTTP: 200
+   ✅ Token obtido com sucesso!
+
+📊 [2/4] Buscando dados na API BDS...
+   URL: http://10.124.100.227:4012/api/bds
+   📊 Status HTTP: 200
+   ✅ 150 registros encontrados!
+
+💾 [3/4] Conectando ao banco de dados...
+   ✅ Conexão estabelecida!
+
+📝 [4/4] Processando registros...
+   Total de registros: 150
+   📊 Progresso: 50/150 processados...
+   📊 Progresso: 100/150 processados...
+   📊 Progresso: 150/150 processados...
+
+======================================================================
+✅ SINCRONIZAÇÃO CONCLUÍDA!
+======================================================================
+📊 RESULTADOS:
+   ✅ Inseridos: 120
+   🔄 Atualizados: 25
+   ❌ Erros: 5
+   📦 Total processado: 150
+   📊 Taxa de sucesso: 96.7%
+======================================================================
+
+================================================================================
+PRÓXIMOS PASSOS (FUTURO - NÃO IMPLEMENTADO)
+================================================================================
+
+1. SINCRONIZAÇÃO AUTOMÁTICA AGENDADA:
+   - Instalar node-cron: npm install node-cron
+   - Criar job em app_b2b/jobs/syncBDS.js
+   - Configurar no .env:
+     BDS_REGIONAIS_AUTOMATICO=["NORTE","CENTRO-OESTE"]
+     BDS_KPIS_AUTOMATICO=["KPI","EXP_LM","EXP_SLM_CLIENTE"]
+     BDS_DIAS_ATRAS=30
+     BDS_HORARIO_SYNC=0 2 * * *  (todo dia às 02:00)
+
+2. TABELA DE LOGS:
+   CREATE TABLE sync_logs (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       data_sync DATETIME,
+       periodoinicio DATE,
+       periodofim DATE,
+       inseridos INT,
+       atualizados INT,
+       erros INT,
+       status VARCHAR(20)
+   );
+
+3. FILTROS FIXOS:
+   - Quando for automático, filtros serão fixos (sem modal)
+   - Configurados no .env ou banco de dados
+
+================================================================================
+SOLUÇÃO DE PROBLEMAS
+================================================================================
+
+ERRO: "Falha na autenticação"
+SOLUÇÃO: Verificar .env (usuário e senha corretos)
+
+ERRO: "Nenhum dado encontrado"
+SOLUÇÃO: Ampliar período ou selecionar mais regionais/KPIs
+
+ERRO: "Timeout" ou "Conexão recusada"
+SOLUÇÃO: Verificar se está na rede interna/VPN
+
+ERRO: Botões não aparecem
+SOLUÇÃO: Verificar se usuário tem perfil ADM
+
+ERRO: Confirmação aparece antes do modal
+SOLUÇÃO: ✅ JÁ CORRIGIDO - Botão header só abre modal
+
+================================================================================
+TESTES
+================================================================================
+
+Script de teste disponível:
+- test_bds_completo.js (raiz do projeto)
+
+Executar:
+node test_bds_completo.js
+
+O script testa:
+1. Login na API BDS
+2. Busca de dados com filtros
+3. Estrutura dos dados retornados
+
+================================================================================
+HISTÓRICO DE ALTERAÇÕES
+================================================================================
+
+2026-02-23 - Implementação Inicial
+✅ Criado controller sincronizacaoController.js
+✅ Criado frontend sincronizacao_b2b.js
+✅ Adicionado botão e modal na interface
+✅ Configurado arquivo .env
+✅ Implementado correção de clusters
+✅ Implementado formatação de datas
+✅ Implementado INSERT/UPDATE automático
+
+2026-02-23 - Ajustes
+✅ Adicionados logs detalhados no console
+✅ Removida seleção manual de KPIs (envia todos fixos)
+✅ Atualizadas regionais (8 regionais)
+✅ Adicionados tipos de busca: fechamento e abertos
+
+2026-02-23 - Correções Finais
+✅ Movido botão para header (ao lado de Upload XLSX)
+✅ Botões visíveis apenas para ADM
+✅ Corrigido fluxo: modal abre sem confirmação
+✅ Confirmação aparece só após clicar no botão do modal
+
+Status: ✅ IMPLEMENTADO E FUNCIONAL
+Próximo: Aguardando validação do usuário
+
+================================================================================
+FIM DO DOCUMENTO
+================================================================================
