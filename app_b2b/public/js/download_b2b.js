@@ -70,24 +70,9 @@ function downloadBaseB2B() {
 
 // Função para gerar nome do arquivo com base nos filtros
 function gerarNomeArquivo(regional, segmento, mesAno) {
-    const dataHora = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    let partes = ['B2B'];
-
-    if (regional) {
-        partes.push(regional.replace(/\s+/g, '_'));
-    }
-
-    if (segmento) {
-        partes.push(segmento);
-    }
-
-    if (mesAno) {
-        partes.push(mesAno.replace('-', '_'));
-    }
-
-    partes.push(dataHora);
-
-    return `${partes.join('_')}.xlsx`;
+    // Usar o mês/ano filtrado ou o mês atual
+    const periodo = mesAno || new Date().toISOString().slice(0, 7);
+    return `BDS_B2B_${periodo}.xlsx`;
 }
 
 // Função para mostrar feedback visual durante o download
