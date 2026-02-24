@@ -342,6 +342,11 @@ HISTÓRICO DE ALTERAÇÕES
 ✅ Corrigido fluxo: modal abre sem confirmação
 ✅ Confirmação aparece só após clicar no botão do modal
 
+2026-02-23 - Correção do Filtro KPI
+✅ Corrigido problema onde tabelas carregavam sem filtro de KPI
+✅ loadAnalysisData() agora é chamado APÓS loadFilterOptions()
+✅ KPIs são marcados antes de carregar os dados
+
 Status: ✅ IMPLEMENTADO E FUNCIONAL
 Próximo: Aguardando validação do usuário
 

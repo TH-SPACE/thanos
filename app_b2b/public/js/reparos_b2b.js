@@ -700,14 +700,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Carrega os dados automaticamente quando a página é carregada
-    // Somente se a aba de análise estiver visível (ativa)
-    if (document.querySelector('#analise') && document.querySelector('#analise').classList.contains('active')) {
-        loadAnalysisData();
-    } else {
-        // Se a aba de análise não estiver ativa, carrega os dados assim mesmo
-        // pois agora só temos a aba de análise
-        loadAnalysisData();
-    }
+    // AGORA: Somente após os filtros (KPIs) serem carregados
+    // A função loadFilterOptions() agora chama loadAnalysisData() ao final
 
     // Eventos para os filtros - removendo o carregamento automático ao mudar os filtros
     // filtroRegional.addEventListener('change', loadAnalysisData);
@@ -935,6 +929,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         checkbox.dispatchEvent(new Event('change'));
                     }
                 });
+
+                // AGORA: Carregar os dados após os KPIs estarem marcados
+                loadAnalysisData();
             })
             .fail(function(error) {
                 console.error('Erro ao carregar opções de KPI:', error);
