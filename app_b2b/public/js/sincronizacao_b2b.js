@@ -203,21 +203,29 @@ function carregarOpcoesSincronizacao() {
         .then(regionais => {
             const container = document.getElementById('syncRegionaisContainer');
             if (container && regionais.length > 0) {
+                // Regionais que devem vir marcadas por padrão
+                const regionaisPadrao = ['CENTRO-OESTE', 'NORTE'];
+                
                 container.innerHTML = `
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="syncRegionalTodos" onchange="toggleTodasRegionais()" checked>
+                        <input class="form-check-input" type="checkbox" id="syncRegionalTodos" onchange="toggleTodasRegionais()">
                         <label class="form-check-label" for="syncRegionalTodos">
                             <strong>Selecionar Todas</strong>
                         </label>
                     </div>
                     <hr class="my-1">
-                    ${regionais.map(regional => `
+                    ${regionais.map(regional => {
+                        const marcado = regionaisPadrao.includes(regional) ? 'checked' : '';
+                        return `
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input sync-regional" type="checkbox" value="${regional}" id="sync_regional_${regional.replace(/\s+/g, '_')}" checked onchange="atualizarTodasRegionais()">
+                            <input class="form-check-input sync-regional" type="checkbox" value="${regional}" id="sync_regional_${regional.replace(/\s+/g, '_')}" ${marcado} onchange="atualizarTodasRegionais()">
                             <label class="form-check-label" for="sync_regional_${regional.replace(/\s+/g, '_')}">${regional}</label>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 `;
+                
+                // Atualizar o checkbox "Todas" baseado nas regionais marcadas
+                atualizarTodasRegionais();
             }
         })
         .catch(error => console.error('Erro ao carregar regionais:', error));
