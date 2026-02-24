@@ -35,7 +35,16 @@
                 <label for="viewType">Tipo de Visualização:</label>
                 <select id="viewType">
                     <option value="markers">Marcadores</option>
-                    <option value="heatmap">Mancha de Calor</option>
+                    <option value="heatmap">Mancha de Calor (Roxo/Azul)</option>
+                    <option value="heatmap-verde">Mancha de Calor (Verde)</option>
+                    <option value="heatmap-laranja">Mancha de Calor (Laranja/Vermelho)</option>
+                    <option value="heatmap-azul">Mancha de Calor (Azul)</option>
+                    <option value="heatmap-arcoiris">Mancha de Calor (Arco-Íris)</option>
+                    <option value="clusters">Agrupamento (Clusters)</option>
+                    <option value="circulos">Círculos Proporcionais</option>
+                    <option value="quadrantes">Quadrantes de Densidade</option>
+                    <option value="densidade-vermelho">Densidade (Vermelho)</option>
+                    <option value="densidade-lilas">Densidade (Lilás)</option>
                 </select>
             </div>
         </div>
@@ -64,6 +73,9 @@
     <!-- Carregar o script do Leaflet e do Heatmap -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.min.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <script src="script.js"></script>
 </body>
 </html>
