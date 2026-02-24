@@ -4,6 +4,67 @@ let markers = [];
 let rawData = [];
 let statesLayer = null;
 let highlightedStates = new Set();
+let baseLayers = {};
+let currentBaseLayer = null;
+let markersVisible = true;
+
+// Definição dos estilos de mapa base
+const mapStyles = {
+  osm: {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    name: "OpenStreetMap",
+  },
+  satellite: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution:
+      "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+    name: "Satélite (Esri)",
+  },
+  dark: {
+    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    name: "Dark Matter",
+  },
+  light: {
+    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    name: "Light Matter",
+  },
+  terrain: {
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="https://wiki.opentopomap.org">OpenTopoMap</a> &copy; OpenStreetMap contributors',
+    name: "Terreno",
+  },
+  streets: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    attribution:
+      "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012",
+    name: "Ruas (Esri)",
+  },
+  topo: {
+    url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by Humanitarian OpenStreetMap Team',
+    name: "Topográfico",
+  },
+  voyager: {
+    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    name: "Voyager (CartoDB)",
+  },
+  positron: {
+    url: "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    name: "Positron (CartoDB)",
+  },
+};
 
 // Carregar fronteiras dos estados
 function loadStateBoundaries() {
@@ -84,16 +145,34 @@ function initMap() {
   const brasilCoords = [-14.235, -51.9253];
 
   // Criar o mapa
-  map = L.map("map").setView(brasilCoords, 4);
+  map = L.map("map", {
+    zoomSnap: 0.1, // Zoom em incrementos de 0.5
+    zoomDelta: 0.1, // Zoom com setas muda 0.5
+    wheelDebounce: 200, // Delay entre scroll do mouse (ms)
+    wheelPxPerZoomLevel: 120, // Sensibilidade do scroll do mouse
+  }).setView(brasilCoords, 4);
 
-  // Adicionar camada do OpenStreetMap
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  }).addTo(map);
+  // Criar todas as camadas de mapa base
+  Object.keys(mapStyles).forEach((key) => {
+    const style = mapStyles[key];
+    baseLayers[key] = L.tileLayer(style.url, {
+      attribution: style.attribution,
+      name: style.name,
+    });
+  });
+
+  // Adicionar camada OpenStreetMap por padrão
+  baseLayers.osm.addTo(map);
+  currentBaseLayer = "osm";
 
   // Carregar fronteiras dos estados
   loadStateBoundaries();
+
+  // Adicionar evento para mudança de estilo do mapa
+  document.getElementById("mapType").addEventListener("change", function () {
+    const selectedStyle = this.value;
+    changeBaseMap(selectedStyle);
+  });
 
   // Adicionar evento para mudança no tipo de visualização
   document.getElementById("viewType").addEventListener("change", function () {
@@ -104,6 +183,97 @@ function initMap() {
     }
   });
 }
+
+// Função para mudar o estilo do mapa base
+function changeBaseMap(styleKey) {
+  // Remover camada atual
+  if (currentBaseLayer && baseLayers[currentBaseLayer]) {
+    map.removeLayer(baseLayers[currentBaseLayer]);
+  }
+
+  // Adicionar nova camada
+  if (baseLayers[styleKey]) {
+    baseLayers[styleKey].addTo(map);
+    currentBaseLayer = styleKey;
+  }
+}
+
+// Função para mostrar/ocultar marcadores
+function toggleMarkersVisibility() {
+  const button = document.getElementById("toggleMarkers");
+
+  if (markersVisible) {
+    // Ocultar marcadores
+    markers.forEach((marker) => {
+      if (map.hasLayer(marker)) {
+        map.removeLayer(marker);
+      }
+    });
+    markersVisible = false;
+    button.innerHTML = "📍 Mostrar Marcadores";
+    button.style.backgroundColor = "#28a745";
+  } else {
+    // Mostrar marcadores
+    const viewType = document.getElementById("viewType").value;
+    if (rawData.length > 0) {
+      clearMarkers();
+      displayOnMap(rawData);
+      highlightStatesFromData(rawData);
+    }
+    markersVisible = true;
+    button.innerHTML = "📍 Ocultar Marcadores";
+    button.style.backgroundColor = "#6c757d";
+  }
+}
+
+// Adicionar evento para o botão toggle
+document
+  .getElementById("toggleMarkers")
+  .addEventListener("click", toggleMarkersVisibility);
+
+// Função para tela cheia
+function toggleFullscreen() {
+  const mapContainer = document.querySelector(".map-container");
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
+
+  if (
+    !document.fullscreenElement &&
+    !document.mozFullScreenElement &&
+    !document.webkitFullscreenElement &&
+    !document.msFullscreenElement
+  ) {
+    // Entrar em tela cheia
+    if (mapContainer.requestFullscreen) {
+      mapContainer.requestFullscreen();
+    } else if (mapContainer.mozRequestFullScreen) {
+      mapContainer.mozRequestFullScreen();
+    } else if (mapContainer.webkitRequestFullscreen) {
+      mapContainer.webkitRequestFullscreen();
+    } else if (mapContainer.msRequestFullscreen) {
+      mapContainer.msRequestFullscreen();
+    }
+    fullscreenBtn.innerHTML = "⛶";
+    fullscreenBtn.title = "Sair da Tela Cheia";
+  } else {
+    // Sair da tela cheia
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozExitFullScreen) {
+      document.mozExitFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+    fullscreenBtn.innerHTML = "⛶";
+    fullscreenBtn.title = "Tela Cheia";
+  }
+}
+
+// Adicionar evento para o botão de tela cheia
+document
+  .getElementById("fullscreenBtn")
+  .addEventListener("click", toggleFullscreen);
 
 // Função para carregar o arquivo XLSX
 document.getElementById("uploadBtn").addEventListener("click", function () {
