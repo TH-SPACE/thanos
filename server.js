@@ -80,6 +80,9 @@ app.use("/todo_th", require("./todo_th/todo_th"));
 // Inicializar o serviço de sincronização do TMR
 require("./app_tmr/initTmrSync");
 
+// Inicializar o serviço de sincronização automática do BDS (B2B)
+require("./app_b2b/initB2BSync");
+
 // 🚀 Inicialização do servidor
 app.listen(PORT, "0.0.0.0", () => {
   // Mensagem formatada de inicialização
@@ -91,6 +94,8 @@ app.listen(PORT, "0.0.0.0", () => {
 ║  📦 Versão: v${version.padEnd(47 - version.length, " ")}     ║
 ║  ⏰ Serviço TMR: Sincronização automática ativa              ║
 ║  🔄 Atualizações a cada 12 horas                             ║
+║  📊 Serviço BDS: Sincronização automática 3x ao dia          ║
+║     - Horários: 05:00, 12:00 e 17:00                         ║
 ║                                                              ║
 ║  Sistema pronto para uso!                                    ║
 ╚══════════════════════════════════════════════════════════════╝

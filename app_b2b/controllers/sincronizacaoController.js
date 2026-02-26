@@ -235,11 +235,79 @@ function formatarData(data) {
 }
 
 /**
+ * Salvar log de sincronização no banco
+ */
+async function salvarLogSincronizacao(params) {
+    try {
+        const {
+            tipo_sync,
+            periodo_inicio,
+            periodo_fim,
+            regionais,
+            kpis,
+            tipo_busca,
+            total_registros,
+            registros_inseridos,
+            registros_atualizados,
+            registros_erro,
+            status_sync,
+            duracao_segundos,
+            mensagem,
+            erro_detalhe,
+            usuario
+        } = params;
+
+        const connection = await db.mysqlPool.getConnection();
+        
+        try {
+            const query = `
+                INSERT INTO logs_sync_b2b (
+                    data_sync, tipo_sync, periodo_inicio, periodo_fim,
+                    regionais, kpis, tipo_busca,
+                    total_registros, registros_inseridos, registros_atualizados, registros_erro,
+                    status_sync, duracao_segundos, mensagem, erro_detalhe, usuario
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            
+            const values = [
+                new Date(),
+                tipo_sync || 'manual',
+                periodo_inicio || null,
+                periodo_fim || null,
+                regionais ? JSON.stringify(regionais) : null,
+                kpis ? JSON.stringify(kpis) : null,
+                tipo_busca || null,
+                total_registros || 0,
+                registros_inseridos || 0,
+                registros_atualizados || 0,
+                registros_erro || 0,
+                status_sync || 'sucesso',
+                duracao_segundos || null,
+                mensagem || null,
+                erro_detalhe || null,
+                usuario || null
+            ];
+            
+            await connection.execute(query, values);
+            console.log('   📝 Log de sincronização salvo com sucesso!');
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('   ⚠️  Erro ao salvar log de sincronização:', error.message);
+        // Não lança erro para não falhar a sincronização principal
+    }
+}
+
+/**
  * Rota para sincronizar dados manualmente
  */
 router.post('/sincronizar', b2bAuth, async (req, res) => {
+    const dataInicio = Date.now();
+    
     try {
         const { regionais, kpis, dataInicial, dataFinal, tipoData, cliente } = req.body;
+        const usuario = req.session?.usuario?.email || req.session?.usuario?.nome || 'desconhecido';
 
         console.log('\n' + '='.repeat(70));
         console.log('🔄 INICIANDO SINCRONIZAÇÃO BDS');
@@ -252,6 +320,7 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
         if (kpis && kpis.length > 0) {
             console.log(`   KPIs: ${kpis.join(', ')}`);
         }
+        console.log(`👤 Usuário: ${usuario}`);
         console.log('='.repeat(70));
 
         // Validar dados básicos
@@ -505,6 +574,29 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
             console.log(`   📊 Taxa de sucesso: ${((inseridos + atualizados) / dadosExternos.length * 100).toFixed(1)}%`);
             console.log('='.repeat(70) + '\n');
 
+            // Calcular duração e salvar log
+            const duracao = ((Date.now() - dataInicio) / 1000).toFixed(2);
+            const status_sync = erros === 0 ? 'sucesso' : (inseridos + atualizados > 0 ? 'parcial' : 'erro');
+            const mensagem = `Sincronização manual concluída! ${inseridos} inseridos, ${atualizados} atualizados, ${erros} erros.`;
+
+            // Salvar log na tabela
+            await salvarLogSincronizacao({
+                tipo_sync: 'manual',
+                periodo_inicio: dataInicial,
+                periodo_fim: dataFinal,
+                regionais,
+                kpis,
+                tipo_busca: tipoData,
+                total_registros: dadosExternos.length,
+                registros_inseridos: inseridos,
+                registros_atualizados: atualizados,
+                registros_erro: erros,
+                status_sync,
+                duracao_segundos: parseFloat(duracao),
+                mensagem,
+                usuario
+            });
+
             res.json({
                 success: true,
                 message: `Sincronização concluída! ${inseridos} inseridos, ${atualizados} atualizados.`,
@@ -524,7 +616,27 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
         console.error(`   Mensagem: ${error.message}`);
         console.error(`   Stack: ${error.stack}`);
         console.error('='.repeat(70) + '\n');
-        
+
+        // Salvar log do erro
+        const duracao = ((Date.now() - dataInicio) / 1000).toFixed(2);
+        await salvarLogSincronizacao({
+            tipo_sync: 'manual',
+            periodo_inicio: dataInicial || null,
+            periodo_fim: dataFinal || null,
+            regionais,
+            kpis,
+            tipo_busca: tipoData,
+            total_registros: 0,
+            registros_inseridos: 0,
+            registros_atualizados: 0,
+            registros_erro: 0,
+            status_sync: 'erro',
+            duracao_segundos: parseFloat(duracao),
+            mensagem: 'Erro na sincronização manual',
+            erro_detalhe: error.message,
+            usuario
+        });
+
         res.status(500).json({
             success: false,
             error: error.message
@@ -585,6 +697,107 @@ router.get('/regionais', b2bAuth, async (req, res) => {
         res.json(regionais);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Rota para obter logs de sincronização
+ */
+router.get('/logs', b2bAuth, async (req, res) => {
+    try {
+        const { limite = 100, tipo_sync, status_sync, data_inicio, data_fim } = req.query;
+        
+        const connection = await db.mysqlPool.getConnection();
+        
+        try {
+            let query = 'SELECT * FROM logs_sync_b2b WHERE 1=1';
+            const params = [];
+            
+            if (tipo_sync) {
+                query += ' AND tipo_sync = ?';
+                params.push(tipo_sync);
+            }
+            
+            if (status_sync) {
+                query += ' AND status_sync = ?';
+                params.push(status_sync);
+            }
+            
+            if (data_inicio) {
+                query += ' AND DATE(data_sync) >= ?';
+                params.push(data_inicio);
+            }
+            
+            if (data_fim) {
+                query += ' AND DATE(data_sync) <= ?';
+                params.push(data_fim);
+            }
+            
+            query += ' ORDER BY data_sync DESC LIMIT ?';
+            params.push(parseInt(limite));
+            
+            const [logs] = await connection.execute(query, params);
+            
+            res.json({
+                success: true,
+                logs,
+                total: logs.length
+            });
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao buscar logs:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * Rota para obter resumo dos logs (dashboard)
+ */
+router.get('/logs/resumo', b2bAuth, async (req, res) => {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+        
+        try {
+            // Resumo dos últimos 30 dias
+            const [resumo] = await connection.execute(`
+                SELECT 
+                    DATE(data_sync) AS data,
+                    tipo_sync,
+                    COUNT(*) AS quantidade_syncs,
+                    SUM(registros_inseridos) AS total_inseridos,
+                    SUM(registros_atualizados) AS total_atualizados,
+                    SUM(registros_erro) AS total_erros,
+                    SUM(total_registros) AS total_processado,
+                    ROUND(AVG(duracao_segundos), 2) AS duracao_media_segundos,
+                    ROUND(
+                        (SUM(CASE WHEN status_sync = 'sucesso' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 
+                        2
+                    ) AS taxa_sucesso_percentual
+                FROM logs_sync_b2b
+                WHERE data_sync >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                GROUP BY DATE(data_sync), tipo_sync
+                ORDER BY data DESC
+            `);
+            
+            res.json({
+                success: true,
+                resumo,
+                periodo: 'Últimos 30 dias'
+            });
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao buscar resumo:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
     }
 });
 
