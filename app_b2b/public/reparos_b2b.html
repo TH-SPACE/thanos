@@ -158,6 +158,9 @@
                 <div class="col-md-4 text-end">
                     <!-- Botões para usuários ADM -->
                     <div class="d-flex gap-2 justify-content-end">
+                        <button class="btn btn-outline-secondary" id="btnLogsHeader" data-bs-toggle="modal" data-bs-target="#modalLogs" title="Ver logs de sincronização" style="display: none;">
+                            <i class="fas fa-clipboard-list"></i> Logs
+                        </button>
                         <button class="btn btn-outline-info" id="btnSincronizarHeader" data-bs-toggle="modal" data-bs-target="#modalSincronizacao" title="Sincronizar dados automaticamente da API BDS" style="display: none;">
                             <i class="fas fa-cloud-download-alt"></i> Sincronizar BDS
                         </button>
@@ -326,11 +329,17 @@
                 inicializarModalSincronizacao();
             }
 
+            // Inicializar modal de logs
+            if (typeof inicializarModalLogs === 'function') {
+                inicializarModalLogs();
+            }
+
             // Função para mostrar botões de ADM
             function mostrarBotoesAdm(mostrar) {
                 if (mostrar) {
                     $('#uploadBtn').show();
                     $('#btnSincronizarHeader').show();
+                    $('#btnLogsHeader').show();
                 }
             }
 
@@ -536,6 +545,100 @@
                     <button type="button" class="btn btn-primary" id="btnSincronizarModal">
                         <i class="fas fa-cloud-download-alt"></i> Sincronizar BDS
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Logs de Sincronização -->
+    <div class="modal fade" id="modalLogs" tabindex="-1" aria-labelledby="modalLogsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title" id="modalLogsLabel">
+                        <i class="fas fa-clipboard-list"></i> Logs de Sincronização
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Resumo dos últimos 30 dias -->
+                    <div id="resumoLogsContainer">
+                        <h6 class="mb-3"><i class="fas fa-chart-bar"></i> Resumo dos Últimos 30 Dias</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover" id="tabelaResumoLogs">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Tipo</th>
+                                        <th>Qtd Syncs</th>
+                                        <th>Inseridos</th>
+                                        <th>Atualizados</th>
+                                        <th>Erros</th>
+                                        <th>Total</th>
+                                        <th>Duração Média</th>
+                                        <th>Taxa Sucesso</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="9" class="text-center">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Carregando...</span>
+                                            </div>
+                                            Carregando resumo...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Últimas sincronizações -->
+                    <div id="ultimasLogsContainer">
+                        <h6 class="mb-3">
+                            <i class="fas fa-history"></i> Últimas Sincronizações
+                            <button class="btn btn-sm btn-outline-primary ms-2" id="btnAtualizarLogs" title="Atualizar logs">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover" id="tabelaUltimasLogs">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Tipo</th>
+                                        <th>Status</th>
+                                        <th>Total</th>
+                                        <th>Inseridos</th>
+                                        <th>Atualizados</th>
+                                        <th>Erros</th>
+                                        <th>Duração</th>
+                                        <th>Mensagem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="9" class="text-center">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Carregando...</span>
+                                            </div>
+                                            Carregando logs...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div id="statusLogs" class="alert alert-secondary mt-3" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Carregando logs...
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>

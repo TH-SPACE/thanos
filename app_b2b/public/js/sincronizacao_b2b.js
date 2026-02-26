@@ -273,3 +273,180 @@ window.inicializarModalSincronizacao = inicializarModalSincronizacao;
 window.toggleTodasRegionais = toggleTodasRegionais;
 window.atualizarTodasRegionais = atualizarTodasRegionais;
 window.atualizarVisibilidadeDatas = atualizarVisibilidadeDatas;
+
+/**
+ * Módulo de Logs de Sincronização
+ */
+
+// Formatar tipo de sincronização
+function formatarTipoSync(tipo) {
+    const tipos = {
+        'manual': '<span class="badge bg-primary"><i class="fas fa-hand-pointer"></i> Manual</span>',
+        'automatico': '<span class="badge bg-info"><i class="fas fa-robot"></i> Automático</span>',
+        'upload': '<span class="badge bg-success"><i class="fas fa-file-upload"></i> Upload</span>'
+    };
+    return tipos[tipo] || tipo;
+}
+
+// Formatar status
+function formatarStatus(status) {
+    const statusMap = {
+        'sucesso': '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Sucesso</span>',
+        'parcial': '<span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle"></i> Parcial</span>',
+        'erro': '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Erro</span>'
+    };
+    return statusMap[status] || status;
+}
+
+// Formatar data/hora
+function formatarDataHora(dataStr) {
+    if (!dataStr) return '-';
+    const data = new Date(dataStr);
+    return data.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Formatar data apenas
+function formatarData(dataStr) {
+    if (!dataStr) return '-';
+    const data = new Date(dataStr);
+    return data.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+// Carregar resumo dos logs
+async function carregarResumoLogs() {
+    try {
+        const response = await fetch('/b2b/sincronizacao/logs/resumo');
+        const result = await response.json();
+
+        const tbody = document.querySelector('#tabelaResumoLogs tbody');
+        
+        if (!result.success || !result.resumo || result.resumo.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-muted">
+                        <i class="fas fa-info-circle"></i> Nenhum registro encontrado nos últimos 30 dias.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = result.resumo.map(log => `
+            <tr>
+                <td>${formatarData(log.data)}</td>
+                <td>${formatarTipoSync(log.tipo_sync)}</td>
+                <td class="text-center">${log.quantidade_syncs}</td>
+                <td class="text-center">${log.total_inseridos || 0}</td>
+                <td class="text-center">${log.total_atualizados || 0}</td>
+                <td class="text-center">${log.total_erros || 0}</td>
+                <td class="text-center">${log.total_processado || 0}</td>
+                <td class="text-center">${log.duracao_media_segundos ? log.duracao_media_segundos + 's' : '-'}</td>
+                <td class="text-center">
+                    ${log.taxa_sucesso_percentual ? 
+                        `<span class="badge ${log.taxa_sucesso_percentual >= 90 ? 'bg-success' : log.taxa_sucesso_percentual >= 70 ? 'bg-warning' : 'bg-danger'}">
+                            ${log.taxa_sucesso_percentual}%
+                        </span>` : 
+                        '-'}
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Erro ao carregar resumo:', error);
+        document.querySelector('#tabelaResumoLogs tbody').innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Erro ao carregar resumo.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Carregar últimas sincronizações
+async function carregarUltimasLogs() {
+    try {
+        const response = await fetch('/b2b/sincronizacao/logs?limite=50');
+        const result = await response.json();
+
+        const tbody = document.querySelector('#tabelaUltimasLogs tbody');
+        
+        if (!result.success || !result.logs || result.logs.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-muted">
+                        <i class="fas fa-info-circle"></i> Nenhum registro encontrado.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = result.logs.map(log => `
+            <tr>
+                <td>${formatarDataHora(log.data_sync)}</td>
+                <td>${formatarTipoSync(log.tipo_sync)}</td>
+                <td>${formatarStatus(log.status_sync)}</td>
+                <td class="text-center">${log.total_registros}</td>
+                <td class="text-center">${log.registros_inseridos}</td>
+                <td class="text-center">${log.registros_atualizados}</td>
+                <td class="text-center">${log.registros_erro}</td>
+                <td class="text-center">${log.duracao_segundos ? log.duracao_segundos + 's' : '-'}</td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${log.mensagem || ''}">
+                    ${log.mensagem || '-'}
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Erro ao carregar logs:', error);
+        document.querySelector('#tabelaUltimasLogs tbody').innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Erro ao carregar logs.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Carregar todos os logs (resumo + últimas)
+async function carregarLogs() {
+    await Promise.all([
+        carregarResumoLogs(),
+        carregarUltimasLogs()
+    ]);
+}
+
+// Inicializar modal de logs
+function inicializarModalLogs() {
+    const modalLogs = document.getElementById('modalLogs');
+    
+    if (modalLogs) {
+        modalLogs.addEventListener('shown.bs.modal', () => {
+            carregarLogs();
+        });
+    }
+
+    // Botão de atualizar logs
+    const btnAtualizarLogs = document.getElementById('btnAtualizarLogs');
+    if (btnAtualizarLogs) {
+        btnAtualizarLogs.addEventListener('click', () => {
+            carregarLogs();
+        });
+    }
+}
+
+// Exportar funções de logs
+window.carregarLogs = carregarLogs;
+window.carregarResumoLogs = carregarResumoLogs;
+window.carregarUltimasLogs = carregarUltimasLogs;
+window.inicializarModalLogs = inicializarModalLogs;
