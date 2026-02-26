@@ -103,7 +103,7 @@ async function syncDadosTmr() {
 
                 await connection.execute(query, flatValues);
 
-                console.log(`Lote ${Math.floor(i / batchSize) + 1} de ${Math.ceil(valores.length / batchSize)} inserido com sucesso (${batch.length} registros)`);
+                // console.log(`Lote ${Math.floor(i / batchSize) + 1} de ${Math.ceil(valores.length / batchSize)} inserido com sucesso (${batch.length} registros)`);
             }
 
             console.log(`Sincronização concluída. ${dadosOracle.length} registros transferidos.`);
