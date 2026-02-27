@@ -874,21 +874,19 @@ document.addEventListener('DOMContentLoaded', function() {
                                     // Disparar o evento change para cada checkbox para atualizar a interface
                                     checkbox.dispatchEvent(new Event('change'));
                                 });
-                                
+
                                 // Disparar o evento change para o checkbox "Selecionar Todos" também
                                 selectAllCheckbox.dispatchEvent(new Event('change'));
                             }
                         }
-                        e.stopPropagation(); // Impede que o evento propague e feche o dropdown
                     });
                 }
-                
+
                 // Adicionar eventos para os checkboxes individuais
                 document.querySelectorAll('.kpi-checkbox').forEach(checkbox => {
-                    checkbox.addEventListener('change', function(e) {
-                        e.stopPropagation(); // Impede que o evento propague e feche o dropdown
+                    checkbox.addEventListener('change', function() {
                         updateKPISelectionDisplay();
-                        
+
                         // Atualizar o estado do checkbox "Selecionar Todos"
                         const allCheckboxes = document.querySelectorAll('.kpi-checkbox');
                         const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
@@ -896,14 +894,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         selectAllCheckbox.checked = allChecked;
                     });
                 });
-                
-                // Impedir que o dropdown feche ao clicar nos labels
-                document.querySelectorAll('#kpiCheckboxes label').forEach(label => {
-                    label.addEventListener('click', function(e) {
-                        e.stopPropagation(); // Impede que o evento propague e feche o dropdown
-                    });
-                });
-                
+
                 // Adicionar evento para clicar em toda a área do item do dropdown
                 document.querySelectorAll('#kpiCheckboxes .dropdown-item').forEach(item => {
                     item.addEventListener('click', function(e) {
@@ -917,7 +908,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 checkbox.dispatchEvent(new Event('change'));
                             }
                         }
-                        e.stopPropagation(); // Impede que o evento propague e feche o dropdown
                     });
                 });
                 
@@ -1000,26 +990,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 updateProcedenciaSelectionDisplay();
                             }
                         }
-                        e.stopPropagation();
                     });
                 }
 
                 // Adicionar eventos para os checkboxes individuais
                 document.querySelectorAll('.procedencia-checkbox').forEach(checkbox => {
-                    checkbox.addEventListener('change', function(e) {
-                        e.stopPropagation();
+                    checkbox.addEventListener('change', function() {
                         updateProcedenciaSelectionDisplay();
                         const allCheckboxes = document.querySelectorAll('.procedencia-checkbox');
                         const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
                         const selectAllCheckbox = document.getElementById('selectAllProcedencia');
                         selectAllCheckbox.checked = allChecked;
-                    });
-                });
-
-                // Impedir que o dropdown feche ao clicar nos labels
-                document.querySelectorAll('#procedenciaCheckboxes label').forEach(label => {
-                    label.addEventListener('click', function(e) {
-                        e.stopPropagation();
                     });
                 });
 
@@ -1033,7 +1014,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 checkbox.dispatchEvent(new Event('change'));
                             }
                         }
-                        e.stopPropagation();
                     });
                 });
 
@@ -1085,22 +1065,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Carregar opções de filtros quando a página é carregada
     loadFilterOptions();
-    
-    // Configurar o dropdown de KPI para não fechar automaticamente
-    // Encontrar o dropdown de KPI e configurar para não fechar automaticamente
-    const kpiDropdownElement = document.getElementById('filtroKPIdropdown');
-    if (kpiDropdownElement) {
-        // Destruir instância existente se houver
-        const existingInstance = bootstrap.Dropdown.getInstance(kpiDropdownElement);
-        if (existingInstance) {
-            existingInstance.dispose();
-        }
-
-        // Criar nova instância com autoClose: false
-        new bootstrap.Dropdown(kpiDropdownElement, {
-            autoClose: false
-        });
-    }
 
     // Função para obter a data da última atualização da base
     function obterUltimaAtualizacao() {
