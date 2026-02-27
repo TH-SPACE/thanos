@@ -579,8 +579,8 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
                         }
                     }
 
-                    // Verificar se tem BD
-                    const bd = item.bd;
+                    // Verificar se tem BD (campo agora é maiúsculo: 'BD' na nova API)
+                    const bd = item.BD || item.bd;
                     if (!bd) {
                         console.warn(`   ⚠️  Registro ${i + 1}/${dadosExternos.length}: Sem BD, ignorado`);
                         erros++;
@@ -623,7 +623,7 @@ router.post('/sincronizar', b2bAuth, async (req, res) => {
                         }
                     }
                 } catch (error) {
-                    console.error(`   ❌ Erro ao processar registro ${item.bd || i + 1}: ${error.message}`);
+                    console.error(`   ❌ Erro ao processar registro ${item.BD || item.bd || i + 1}: ${error.message}`);
                     erros++;
                 }
             }
