@@ -898,6 +898,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Adicionar evento para clicar em toda a área do item do dropdown
                 document.querySelectorAll('#kpiCheckboxes .dropdown-item').forEach(item => {
                     item.addEventListener('click', function(e) {
+                        // Impede que o dropdown feche ao clicar nos itens
+                        e.stopPropagation();
+                        
                         // Verificar se o clique foi diretamente no item e não em um input ou label
                         if (e.target === this || e.target.classList.contains('form-check')) {
                             // Alternar o checkbox correspondente
@@ -1007,6 +1010,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Adicionar evento para clicar em toda a área do item do dropdown
                 document.querySelectorAll('#procedenciaCheckboxes .dropdown-item').forEach(item => {
                     item.addEventListener('click', function(e) {
+                        // Impede que o dropdown feche ao clicar nos itens
+                        e.stopPropagation();
+                        
                         if (e.target === this || e.target.classList.contains('form-check')) {
                             const checkbox = this.querySelector('.form-check-input');
                             if (checkbox) {
@@ -1065,6 +1071,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Carregar opções de filtros quando a página é carregada
     loadFilterOptions();
+
+    // Configurar dropdowns para fechar apenas ao clicar fora
+    function configurarDropdown(dropdownId) {
+        const dropdownElement = document.getElementById(dropdownId);
+        if (dropdownElement) {
+            // Destruir instância existente se houver
+            const existingInstance = bootstrap.Dropdown.getInstance(dropdownElement);
+            if (existingInstance) {
+                existingInstance.dispose();
+            }
+
+            // Criar nova instância com autoClose: 'outside' (fecha apenas ao clicar fora)
+            new bootstrap.Dropdown(dropdownElement, {
+                autoClose: 'outside'
+            });
+        }
+    }
+
+    // Configurar ambos os dropdowns
+    configurarDropdown('filtroKPIdropdown');
+    configurarDropdown('filtroProcedenciaDropdown');
 
     // Função para obter a data da última atualização da base
     function obterUltimaAtualizacao() {
