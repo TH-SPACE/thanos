@@ -1,0 +1,558 @@
+[
+
+    {
+
+        "BD": "6575116",
+
+        "bd_raiz": "358103288",
+
+        "protocolo_crm": "INC9098694",
+
+        "ID_VANTIVE": "1893150",
+
+        "STATUS": "Fechado",
+
+        "tipo_ngem": null,
+
+        "procedencia": "Proativo",
+
+        "reclamacao": "Falha de redundância / Contingência",
+
+        "SEGMENTO_SIGITM": "OPERADORA",
+
+        "SEGMENTO_COMERCIAL": "ATACADO",
+
+        "SEGMENTO_COMERCIAL_NOVO": "ATACADO",
+
+        "segmento_v3": "ATACADO",
+
+        "atendimento_valor": "Vip 8",
+
+        "SLM_FLAG": null,
+
+        "CLIENTE": "TVF INTERNET RAPIDA LTDA",
+
+        "cnpj": "34596821000154",
+
+        "cnpj_raiz": "34596821",
+
+        "cod_grupo": "4034596821",
+
+        "grupo_economico": "TVF INTERNET",
+
+        "CNL": "62193",
+
+        "AREA": null,
+
+        "ESCRITORIO": null,
+
+        "ENDERECO": "AVENIDA Pedro Ludovico, 00000 Vila Santana",
+
+        "cidade": "URUACU",
+
+        "uf": "GO",
+
+        "cluster": "GOIANIA",
+
+        "regional": "FSPO",
+
+        "regional_vivo": "CENTRO-OESTE",
+
+        "lp_15": "621930189315092",
+
+        "LP_13": "6219301893150",
+
+        "lp_operadora": "621930212889992",
+
+        "servico_cpcc_nome": null,
+
+        "CPCC": null,
+
+        "velocidade": "10 Gbps",
+
+        "velocidade_kbps": "10485760",
+
+        "produto_nome": "IP DEDICADO",
+
+        "SERVICO": null,
+
+        "familia_produto": "Dados",
+
+        "data_abertura": "25/02/2026 01:20:04",
+
+        "data_abertura_dia_semana": 4,
+
+        "data_abertura_dia": 25,
+
+        "data_abertura_mes": 2,
+
+        "data_abertura_ano": 2026,
+
+        "MES_ANO_ABERTURA": "02/2026",
+
+        "data_reparo": "25/02/2026 10:42:53",
+
+        "data_reparo_dia_semana": 4,
+
+        "data_reparo_dia": 25,
+
+        "data_reparo_mes": 2,
+
+        "data_reparo_ano": 2026,
+
+        "data_encerramento": "25/02/2026 10:43:53",
+
+        "data_encerramento_dia_semana": 4,
+
+        "data_encerramento_dia": 25,
+
+        "data_encerramento_mes": 2,
+
+        "data_encerramento_ano": 2026,
+
+        "MES_ANO_ENC": "02/2026",
+
+        "data_baixa": "25/02/2026 10:42:53",
+
+        "data_baixa_dia_semana": 4,
+
+        "data_baixa_dia": 25,
+
+        "data_baixa_mes": 2,
+
+        "data_baixa_ano": 2026,
+
+        "baixa_n1_codigo": "5",
+
+        "BAIXA_N1": "TRANSMISSÃO",
+
+        "baixa_n2_codigo": "7",
+
+        "BAIXA_N2": "SDH",
+
+        "baixa_n3_codigo": "0",
+
+        "BAIXA_N3": "OUTROS",
+
+        "baixa_n4_codigo": "3",
+
+        "BAIXA_N4": "FALHA DE EQUIPAMENTO",
+
+        "baixa_n5_codigo": "D",
+
+        "BAIXA_N5": "REARME / RESET",
+
+        "BAIXA_CODIGO": "5703D",
+
+        "resumo_intragov": "FALHA NO CIRCUITO - TRANSMISSÃO",
+
+        "intragov_sigla": "FCT",
+
+        "intragov_codigo": 13,
+
+        "acionamento_tecnico": 0,
+
+        "acionamento_operadora": 0,
+
+        "acionamento_integradora": 0,
+
+        "acionamento_parceiro": 0,
+
+        "acionamento_transmissao": 0,
+
+        "acionamento_ccr": 0,
+
+        "acionamento_osp": 0,
+
+        "acionamento_diag_b2b": 0,
+
+        "sla_horas": "4",
+
+        "sla_tipo": null,
+
+        "GRUPO_MIS": "TRANSMISSÃO",
+
+        "GRUPO_PER_B2B": "TRANSMISSÃO",
+
+        "FOCO_MIS": "ENGENHARIA E O&M",
+
+        "FOCO_PER_B2B": "ENGENHARIA E O&M",
+
+        "grupo_baixa": "MASSIVA_ATIVA",
+
+        "usuario_baixa": "RAFAEL TOMIO KOBATA",
+
+        "grupo_abertura": "INTERNACIONAL CARRIERS",
+
+        "usuario_abertura": "Rogerio de Almeida Junior",
+
+        "grupo_responsavel": "HD2",
+
+        "operadora": "VIVO_FIBRA",
+
+        "tipo_operadora": "onnet",
+
+        "massiva_flag": 1,
+
+        "TMR_MIN": "562,8166666666667",
+
+        "prazo": 0,
+
+        "TEMPO_PARADA_MIN": null,
+
+        "REINC_30D": 1,
+
+        "REINC_30D_GRUPO": 0,
+
+        "REINC_TIPO": "REINCIDENTE_30D",
+
+        "originou_reinc": null,
+
+        "REINC_30D_ATACADO": 1,
+
+        "REINC_TIPO_ATACADO": null,
+
+        "REINC_30D_ACESSO": 0,
+
+        "REINC_TIPO_ACESSO": null,
+
+        "prox_reinc": null,
+
+        "originou_reinc_grupo": null,
+
+        "prox_reinc_grupo": null,
+
+        "maior_doze_flag": 0,
+
+        "tipo_empresa": null,
+
+        "kpi": "EXP_REDUNDANCIA",
+
+        "kpi_acesso": "EXP_REDUNDANCIA",
+
+        "origem": "VIVO1",
+
+        "sistema_origem": "SIGITM",
+
+        "id_projeto": null,
+
+        "projeto": null,
+
+        "top_atacado": null,
+
+        "tj": null,
+
+        "last_update": "25/02/2026 10:45:06",
+
+        "decorrido_sem_parada": 33769,
+
+        "TRIAGEM_FLAG": 1,
+
+        "PLANTA_FLAG": 0,
+
+        "tipo_acesso": null,
+
+        "contato_nome": "GESTÃO INTERNACIONAL",
+
+        "reclamante_nome": "GESTÃO INTERNACIONAL",
+
+        "reclamante_telefone": "11 3292-5520",
+
+        "contato_telefone": "0800 771 1158",
+
+        "flag_intragov": 0,
+
+        "R30_Tratativas": 1,
+
+        "tmr_exp_reparo_min": "562,816666666",
+
+        "tmr_exp_min": "562,816666666",
+
+        "id_circuito": "621930189315092",
+
+        "bd_ant": "6536303",
+
+        "status_codigo": 90,
+
+        "id_comercial": "1893150"
+
+    },
+
+    {
+
+        "BD": "6575119",
+
+        "bd_raiz": "358103288",
+
+        "protocolo_crm": "INC9098704",
+
+        "ID_VANTIVE": "1892991",
+
+        "STATUS": "Fechado",
+
+        "tipo_ngem": null,
+
+        "procedencia": "Proativo",
+
+        "reclamacao": "Falha de redundância / Contingência",
+
+        "SEGMENTO_SIGITM": "OPERADORA",
+
+        "SEGMENTO_COMERCIAL": "ATACADO",
+
+        "SEGMENTO_COMERCIAL_NOVO": "ATACADO",
+
+        "segmento_v3": "ATACADO",
+
+        "atendimento_valor": "Vip 8",
+
+        "SLM_FLAG": null,
+
+        "CLIENTE": "TVF INTERNET RAPIDA LTDA",
+
+        "cnpj": "34596821000154",
+
+        "cnpj_raiz": "34596821",
+
+        "cod_grupo": "4034596821",
+
+        "grupo_economico": "TVF INTERNET",
+
+        "CNL": "62158",
+
+        "AREA": null,
+
+        "ESCRITORIO": null,
+
+        "ENDERECO": "RUA SANTANA, 00002 CENTRO",
+
+        "cidade": "PORANGATU",
+
+        "uf": "GO",
+
+        "cluster": "GOIANIA",
+
+        "regional": "FSPO",
+
+        "regional_vivo": "CENTRO-OESTE",
+
+        "lp_15": "621580189299195",
+
+        "LP_13": "6215801892991",
+
+        "lp_operadora": "621580189299195\t",
+
+        "servico_cpcc_nome": null,
+
+        "CPCC": null,
+
+        "velocidade": "10 Gbps",
+
+        "velocidade_kbps": "10485760",
+
+        "produto_nome": "IP DEDICADO",
+
+        "SERVICO": null,
+
+        "familia_produto": "Dados",
+
+        "data_abertura": "25/02/2026 01:26:52",
+
+        "data_abertura_dia_semana": 4,
+
+        "data_abertura_dia": 25,
+
+        "data_abertura_mes": 2,
+
+        "data_abertura_ano": 2026,
+
+        "MES_ANO_ABERTURA": "02/2026",
+
+        "data_reparo": "25/02/2026 10:43:43",
+
+        "data_reparo_dia_semana": 4,
+
+        "data_reparo_dia": 25,
+
+        "data_reparo_mes": 2,
+
+        "data_reparo_ano": 2026,
+
+        "data_encerramento": "25/02/2026 10:44:43",
+
+        "data_encerramento_dia_semana": 4,
+
+        "data_encerramento_dia": 25,
+
+        "data_encerramento_mes": 2,
+
+        "data_encerramento_ano": 2026,
+
+        "MES_ANO_ENC": "02/2026",
+
+        "data_baixa": "25/02/2026 10:43:43",
+
+        "data_baixa_dia_semana": 4,
+
+        "data_baixa_dia": 25,
+
+        "data_baixa_mes": 2,
+
+        "data_baixa_ano": 2026,
+
+        "baixa_n1_codigo": "5",
+
+        "BAIXA_N1": "TRANSMISSÃO",
+
+        "baixa_n2_codigo": "7",
+
+        "BAIXA_N2": "SDH",
+
+        "baixa_n3_codigo": "0",
+
+        "BAIXA_N3": "OUTROS",
+
+        "baixa_n4_codigo": "3",
+
+        "BAIXA_N4": "FALHA DE EQUIPAMENTO",
+
+        "baixa_n5_codigo": "D",
+
+        "BAIXA_N5": "REARME / RESET",
+
+        "BAIXA_CODIGO": "5703D",
+
+        "resumo_intragov": "FALHA NO CIRCUITO - TRANSMISSÃO",
+
+        "intragov_sigla": "FCT",
+
+        "intragov_codigo": 13,
+
+        "acionamento_tecnico": 0,
+
+        "acionamento_operadora": 0,
+
+        "acionamento_integradora": 0,
+
+        "acionamento_parceiro": 0,
+
+        "acionamento_transmissao": 0,
+
+        "acionamento_ccr": 0,
+
+        "acionamento_osp": 0,
+
+        "acionamento_diag_b2b": 0,
+
+        "sla_horas": "4",
+
+        "sla_tipo": null,
+
+        "GRUPO_MIS": "TRANSMISSÃO",
+
+        "GRUPO_PER_B2B": "TRANSMISSÃO",
+
+        "FOCO_MIS": "ENGENHARIA E O&M",
+
+        "FOCO_PER_B2B": "ENGENHARIA E O&M",
+
+        "grupo_baixa": "MASSIVA_ATIVA",
+
+        "usuario_baixa": "RAFAEL TOMIO KOBATA",
+
+        "grupo_abertura": "INTERNACIONAL CARRIERS",
+
+        "usuario_abertura": "Rogerio de Almeida Junior",
+
+        "grupo_responsavel": "HD2",
+
+        "operadora": "VIVO_FIBRA",
+
+        "tipo_operadora": "onnet",
+
+        "massiva_flag": 1,
+
+        "TMR_MIN": "556,85",
+
+        "prazo": 0,
+
+        "TEMPO_PARADA_MIN": null,
+
+        "REINC_30D": 1,
+
+        "REINC_30D_GRUPO": 0,
+
+        "REINC_TIPO": "REINCIDENTE_30D",
+
+        "originou_reinc": null,
+
+        "REINC_30D_ATACADO": 1,
+
+        "REINC_TIPO_ATACADO": null,
+
+        "REINC_30D_ACESSO": 0,
+
+        "REINC_TIPO_ACESSO": null,
+
+        "prox_reinc": null,
+
+        "originou_reinc_grupo": null,
+
+        "prox_reinc_grupo": null,
+
+        "maior_doze_flag": 0,
+
+        "tipo_empresa": null,
+
+        "kpi": "EXP_REDUNDANCIA",
+
+        "kpi_acesso": "EXP_REDUNDANCIA",
+
+        "origem": "VIVO1",
+
+        "sistema_origem": "SIGITM",
+
+        "id_projeto": null,
+
+        "projeto": null,
+
+        "top_atacado": null,
+
+        "tj": null,
+
+        "last_update": "25/02/2026 10:45:06",
+
+        "decorrido_sem_parada": 33411,
+
+        "TRIAGEM_FLAG": 1,
+
+        "PLANTA_FLAG": 0,
+
+        "tipo_acesso": null,
+
+        "contato_nome": "GESTÃO INTERNACIONAL",
+
+        "reclamante_nome": "GESTÃO INTERNACIONAL",
+
+        "reclamante_telefone": "11 3292-5520",
+
+        "contato_telefone": "0800 771 1158",
+
+        "flag_intragov": 0,
+
+        "R30_Tratativas": 1,
+
+        "tmr_exp_reparo_min": "556,85",
+
+        "tmr_exp_min": "556,85",
+
+        "id_circuito": "621580189299195",
+
+        "bd_ant": "6536320",
+
+        "status_codigo": 90,
+
+        "id_comercial": "1892991"
+
+    }
+]

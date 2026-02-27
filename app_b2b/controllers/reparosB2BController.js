@@ -60,99 +60,152 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
             let updatedCount = 0;
 
             // Pular a primeira linha se for cabeçalho (verificar se é cabeçalho comparando com o mapeamento)
-            const hasHeader = jsonData.length > 0 && 
-                             jsonData[0][0] === 'bd' && 
-                             jsonData[0][1] === 'id_circuito'; // Verificar se a primeira linha tem os nomes das colunas esperados
-            
+            const hasHeader = jsonData.length > 0 &&
+                             (jsonData[0][0] === 'bd' || jsonData[0][0] === 'BD') &&
+                             jsonData[0][1] === 'bd_raiz'; // Verificar se a primeira linha tem os nomes das colunas esperados
+
             const startIndex = hasHeader ? 1 : 0;
 
             // Definir o mapeamento fixo de colunas baseado na ordem esperada no arquivo Excel
-            // A ordem deve corresponder exatamente à estrutura da tabela reparosb2b
+            // A ordem deve corresponder exatamente à estrutura da tabela reparosb2b (ORDEM DO JSON - NOVA ESTRUTURA)
             const columnMapping = [
                 'bd',                    // 0
-                'id_circuito',          // 1
-                'bd_ant',               // 2
-                'lp_15',                // 3
-                'designador_lp_13',     // 4
-                'id_comercial',         // 5
-                'data_abertura',        // 6
-                'data_reparo',          // 7
-                'data_encerramento',    // 8
-                'data_baixa',           // 9
-                'last_update',          // 10
-                'kpi',                  // 11
-                'kpi_acesso',           // 12
-                'tipo_acesso',          // 13
-                'origem',               // 14
-                'sistema_origem',       // 15
-                'cod_grupo',            // 16
-                'grupo_economico',      // 17
-                'bd_raiz',              // 18
-                'status_codigo',        // 19
-                'status_nome',          // 20
-                'procedencia',          // 21
-                'reclamacao',           // 22
-                'segmento_sistema',     // 23
-                'segmento_v3',          // 24
-                'segmento_novo',        // 25
-                'segmento_vivo_corp',   // 26
-                'projeto',              // 27
-                'cliente_nome',         // 28
-                'cnpj',                 // 29
-                'cnpj_raiz',            // 30
-                'endereco',             // 31
-                'localidade_codigo',    // 32
-                'area_codigo',          // 33
-                'escritorio_codigo',    // 34
-                'cidade',               // 35
-                'uf',                   // 36
-                'cluster',              // 37
-                'regional',             // 38
-                'regional_vivo',        // 39
-                'lp_operadora',         // 40
-                'servico_cpcc_nome',    // 41
-                'velocidade',           // 42
-                'velocidade_kbps',      // 43
-                'produto_nome',         // 44
-                'familia_produto',      // 45
-                'baixa_n1_codigo',      // 46
-                'baixa_n2_codigo',      // 47
-                'baixa_n3_codigo',      // 48
-                'baixa_n4_codigo',      // 49
-                'baixa_n5_codigo',      // 50
-                'baixa_n1_nome',        // 51
-                'baixa_n2_nome',        // 52
-                'baixa_n3_nome',        // 53
-                'baixa_n4_nome',        // 54
-                'baixa_n5_nome',        // 55
-                'resumo_intragov',      // 56
-                'intragov_sigla',       // 57
-                'intragov_codigo',      // 58
-                'sla_horas',            // 59
-                'grupo',                // 60
-                'grupo_novo',           // 61
-                'foco_acoes',           // 62
-                'foco_novo',            // 63
-                'grupo_baixa_codigo',   // 64
-                'grupo_abertura',       // 65
-                'usuario_abertura',     // 66
-                'grupo_baixa',          // 67
-                'usuario_baixa',        // 68
-                'grupo_responsavel',    // 69
-                'operadora',            // 70
-                'tipo_operadora',       // 71
-                'tmr',                  // 72
-                'tmr_sem_parada',       // 73
-                'tempo_parada',         // 74
-                'decorrido_sem_parada', // 75
-                'prazo',                // 76
-                'reincidencia_30d',     // 77
-                'reincidencia_tipo',    // 78
-                'originou_reinc',       // 79
-                'prox_reinc',           // 80
-                'horario_func_inicio',  // 81
-                'horario_func_fim',     // 82
-                'R30_Tratativas'        // 83
+                'bd_raiz',              // 1
+                'protocolo_crm',        // 2
+                'id_vantive',           // 3
+                'status_nome',          // 4
+                'tipo_ngem',            // 5
+                'procedencia',          // 6
+                'reclamacao',           // 7
+                'segmento_sistema',     // 8
+                'segmento_comercial',   // 9
+                'segmento_novo',        // 10
+                'segmento_v3',          // 11
+                'atendimento_valor',    // 12
+                'slm_flag',             // 13
+                'cliente_nome',         // 14
+                'cnpj',                 // 15
+                'cnpj_raiz',            // 16
+                'cod_grupo',            // 17
+                'grupo_economico',      // 18
+                'localidade_codigo',    // 19
+                'area_codigo',          // 20
+                'escritorio_codigo',    // 21
+                'endereco',             // 22
+                'cidade',               // 23
+                'uf',                   // 24
+                'cluster',              // 25
+                'regional',             // 26
+                'regional_vivo',        // 27
+                'lp_15',                // 28
+                'designador_lp_13',     // 29
+                'lp_operadora',         // 30
+                'servico_cpcc_nome',    // 31
+                'cpcc',                 // 32
+                'velocidade',           // 33
+                'velocidade_kbps',      // 34
+                'produto_nome',         // 35
+                'servico',              // 36
+                'familia_produto',      // 37
+                'data_abertura',        // 38
+                'data_abertura_dia_semana', // 39
+                'data_abertura_dia',    // 40
+                'data_abertura_mes',    // 41
+                'data_abertura_ano',    // 42
+                'mes_ano_abertura',     // 43
+                'data_reparo',          // 44
+                'data_reparo_dia_semana', // 45
+                'data_reparo_dia',      // 46
+                'data_reparo_mes',      // 47
+                'data_reparo_ano',      // 48
+                'data_encerramento',    // 49
+                'data_encerramento_dia_semana', // 50
+                'data_encerramento_dia', // 51
+                'data_encerramento_mes', // 52
+                'data_encerramento_ano', // 53
+                'mes_ano_enc',          // 54
+                'data_baixa',           // 55
+                'data_baixa_dia_semana', // 56
+                'data_baixa_dia',       // 57
+                'data_baixa_mes',       // 58
+                'data_baixa_ano',       // 59
+                'baixa_n1_codigo',      // 60
+                'baixa_n1_nome',        // 61
+                'baixa_n2_codigo',      // 62
+                'baixa_n2_nome',        // 63
+                'baixa_n3_codigo',      // 64
+                'baixa_n3_nome',        // 65
+                'baixa_n4_codigo',      // 66
+                'baixa_n4_nome',        // 67
+                'baixa_n5_codigo',      // 68
+                'baixa_n5_nome',        // 69
+                'baixa_codigo',         // 70
+                'resumo_intragov',      // 71
+                'intragov_sigla',       // 72
+                'intragov_codigo',      // 73
+                'acionamento_tecnico',  // 74
+                'acionamento_operadora', // 75
+                'acionamento_integradora', // 76
+                'acionamento_parceiro', // 77
+                'acionamento_transmissao', // 78
+                'acionamento_ccr',      // 79
+                'acionamento_osp',      // 80
+                'acionamento_diag_b2b', // 81
+                'sla_horas',            // 82
+                'sla_tipo',             // 83
+                'grupo',                // 84
+                'grupo_novo',           // 85
+                'foco_acoes',           // 86
+                'foco_novo',            // 87
+                'grupo_baixa',          // 88
+                'usuario_baixa',        // 89
+                'grupo_abertura',       // 90
+                'usuario_abertura',     // 91
+                'grupo_responsavel',    // 92
+                'operadora',            // 93
+                'tipo_operadora',       // 94
+                'massiva_flag',         // 95
+                'tmr',                  // 96
+                'prazo',                // 97
+                'tempo_parada',         // 98
+                'reincidencia_30d',     // 99
+                'reincidencia_30d_grupo', // 100
+                'reincidencia_tipo',    // 101
+                'originou_reinc',       // 102
+                'reincidencia_30d_atacado', // 103
+                'reincidencia_tipo_atacado', // 104
+                'reincidencia_30d_acesso', // 105
+                'reincidencia_tipo_acesso', // 106
+                'prox_reinc',           // 107
+                'originou_reinc_grupo', // 108
+                'prox_reinc_grupo',     // 109
+                'maior_doze_flag',      // 110
+                'tipo_empresa',         // 111
+                'kpi',                  // 112
+                'kpi_acesso',           // 113
+                'origem',               // 114
+                'sistema_origem',       // 115
+                'id_projeto',           // 116
+                'projeto',              // 117
+                'top_atacado',          // 118
+                'tj',                   // 119
+                'last_update',          // 120
+                'tmr_sem_parada',       // 121
+                'triagem_flag',         // 122
+                'planta_flag',          // 123
+                'tipo_acesso',          // 124
+                'contato_nome',         // 125
+                'reclamante_nome',      // 126
+                'reclamante_telefone',  // 127
+                'contato_telefone',     // 128
+                'flag_intragov',        // 129
+                'R30_Tratativas',       // 130
+                'tmr_exp_reparo_min',   // 131
+                'tmr_exp_min',          // 132
+                'id_circuito',          // 133
+                'bd_ant',               // 134
+                'status_codigo',        // 135
+                'id_comercial'          // 136
             ];
 
             for (let rowIndex = startIndex; rowIndex < jsonData.length; rowIndex++) {
@@ -171,9 +224,9 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
                     const columnNames = [];
                     const values = [];
 
-                    // Obter cidade e UF para correção do cluster (índices 35 e 36)
-                    const cidade = rowArray[35]?.toString().trim() || '';
-                    const uf = rowArray[36]?.toString().trim() || '';
+                    // Obter cidade e UF para correção do cluster (índices 23 e 24 na nova estrutura)
+                    const cidade = rowArray[23]?.toString().trim() || '';
+                    const uf = rowArray[24]?.toString().trim() || '';
 
                     // Percorrer cada índice do array de valores e associar à coluna correspondente
                     for (let i = 0; i < rowArray.length && i < columnMapping.length; i++) {
@@ -185,12 +238,16 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
                             columnNames.push(columnName);
 
                             // Verificar se é uma coluna de data e aplicar formatação adequada
-                            const isDateColumn = ['data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update'].includes(columnName);
+                            const isDateColumn = ['data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update',
+                                                  'data_abertura_dia_semana', 'data_abertura_dia', 'data_abertura_mes', 'data_abertura_ano',
+                                                  'data_reparo_dia_semana', 'data_reparo_dia', 'data_reparo_mes', 'data_reparo_ano',
+                                                  'data_encerramento_dia_semana', 'data_encerramento_dia', 'data_encerramento_mes', 'data_encerramento_ano',
+                                                  'data_baixa_dia_semana', 'data_baixa_dia', 'data_baixa_mes', 'data_baixa_ano'].includes(columnName);
 
                             // Converter valor com formatação adequada
                             value = formatValue(value, isDateColumn);
 
-                            // Aplicar correção do cluster (índice 37 = coluna 'cluster')
+                            // Aplicar correção do cluster (índice 25 = coluna 'cluster')
                             if (columnName === 'cluster') {
                                 value = corrigirCluster(cidade, uf);
                             }
@@ -214,9 +271,9 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
                         const updateAssignments = [];
                         const updateValues = [];
 
-                        // Obter cidade e UF para correção do cluster (índices 35 e 36)
-                        const cidade = rowArray[35]?.toString().trim() || '';
-                        const uf = rowArray[36]?.toString().trim() || '';
+                        // Obter cidade e UF para correção do cluster (índices 23 e 24 na nova estrutura)
+                        const cidade = rowArray[23]?.toString().trim() || '';
+                        const uf = rowArray[24]?.toString().trim() || '';
 
                         // Percorrer cada índice do array de valores e criar as cláusulas de atualização
                         // Começando do índice 1 para pular a coluna 'bd' (índice 0)
@@ -227,12 +284,16 @@ router.post('/upload-reparos', b2bAuth, upload.single('file'), async (req, res) 
                             // Não atualizar a coluna 'bd' pois é a chave primária
                             if (columnName && columnName !== 'bd') {
                                 // Verificar se é uma coluna de data e aplicar formatação adequada
-                                const isDateColumn = ['data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update'].includes(columnName);
+                                const isDateColumn = ['data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update',
+                                                      'data_abertura_dia_semana', 'data_abertura_dia', 'data_abertura_mes', 'data_abertura_ano',
+                                                      'data_reparo_dia_semana', 'data_reparo_dia', 'data_reparo_mes', 'data_reparo_ano',
+                                                      'data_encerramento_dia_semana', 'data_encerramento_dia', 'data_encerramento_mes', 'data_encerramento_ano',
+                                                      'data_baixa_dia_semana', 'data_baixa_dia', 'data_baixa_mes', 'data_baixa_ano'].includes(columnName);
 
                                 // Converter valor com formatação adequada
                                 value = formatValue(value, isDateColumn);
 
-                                // Aplicar correção do cluster (índice 37 = coluna 'cluster')
+                                // Aplicar correção do cluster (índice 25 = coluna 'cluster')
                                 if (columnName === 'cluster') {
                                     value = corrigirCluster(cidade, uf);
                                 }
