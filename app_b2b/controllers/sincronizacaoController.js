@@ -211,9 +211,21 @@ function corrigirCluster(cidade, uf) {
  */
 function formatarData(data) {
     if (!data) return null;
-
+    
+    // Se for objeto Date, converter para string
+    if (data instanceof Date) {
+        return data.toISOString().slice(0, 19).replace('T', ' ');
+    }
+    
+    // Converter para string se não for
+    data = String(data);
+    
     // Se já estiver no formato YYYY-MM-DD HH:MM:SS
     if (/^\d{4}-\d{2}-\d{2}/.test(data)) {
+        // Se tiver hora, manter, senão adicionar 00:00:00
+        if (data.length === 10) {
+            return data + ' 00:00:00';
+        }
         return data;
     }
 

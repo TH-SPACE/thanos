@@ -169,23 +169,38 @@ function corrigirCluster(cidade, uf) {
  */
 function formatarData(data) {
     if (!data) return null;
+    
+    // Se for objeto Date, converter para string
+    if (data instanceof Date) {
+        return data.toISOString().slice(0, 19).replace('T', ' ');
+    }
+    
+    // Converter para string se não for
+    data = String(data);
+    
+    // Se já estiver no formato YYYY-MM-DD HH:MM:SS
     if (/^\d{4}-\d{2}-\d{2}/.test(data)) {
-        // Se já tiver hora, manter, senão adicionar 00:00:00
+        // Se tiver hora, manter, senão adicionar 00:00:00
         if (data.length === 10) {
             return data + ' 00:00:00';
         }
         return data;
     }
+
+    // Se estiver no formato DD/MM/YYYY HH:MM:SS
     const match = data.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2}:\d{2})$/);
     if (match) {
         const [, dia, mes, ano, hora] = match;
         return `${ano}-${mes}-${dia} ${hora}`;
     }
+
+    // Se estiver apenas DD/MM/YYYY
     const matchDate = data.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (matchDate) {
         const [, dia, mes, ano] = matchDate;
         return `${ano}-${mes}-${dia} 00:00:00`;
     }
+
     return data;
 }
 
