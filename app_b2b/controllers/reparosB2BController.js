@@ -347,7 +347,7 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
         const connection = await db.mysqlPool.getConnection();
         try {
             // Obter parâmetros de filtro
-            const { regional, segmento, kpi, mes_ano } = req.query;
+            const { regional, segmento, procedencia, kpi, mes_ano } = req.query;
 
             // Construir cláusulas WHERE dinamicamente
             let whereClause = "WHERE 1=1";
@@ -364,6 +364,19 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
                 whereClause += " AND segmento_novo = 'Atacado'";
             } else if (segmentoFiltro === 'B2B') {
                 whereClause += " AND segmento_novo != 'Atacado'";
+            }
+
+            // Aplicar filtro de procedência
+            if (procedencia) {
+                const procedenciaArray = procedencia.split(',');
+                if (procedenciaArray.length > 1) {
+                    const placeholders = procedenciaArray.map(() => '?').join(',');
+                    whereClause += ` AND procedencia IN (${placeholders})`;
+                    params.push(...procedenciaArray.map(item => item.trim()));
+                } else {
+                    whereClause += " AND procedencia = ?";
+                    params.push(procedencia);
+                }
             }
 
             if (kpi) {
@@ -489,10 +502,10 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
         const connection = await db.mysqlPool.getConnection();
         try {
             // Obter parâmetros de filtro
-            const { regional, segmento, kpi, mes_ano } = req.query; // Adicionado o parâmetro segmento
+            const { regional, segmento, procedencia, kpi, mes_ano } = req.query;
 
             // Construir cláusulas WHERE dinamicamente
-            let whereClause = "WHERE 1=1"; // Mudança para permitir mais flexibilidade
+            let whereClause = "WHERE 1=1";
             const params = [];
 
             if (regional) {
@@ -501,13 +514,24 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
             }
 
             // Aplicar filtro de segmento (padrão B2B se não for especificado)
-            const segmentoFiltro = segmento || 'B2B'; // Valor padrão é B2B
+            const segmentoFiltro = segmento || 'B2B';
             if (segmentoFiltro === 'Atacado') {
-                // Quando seleciona Atacado, filtra tudo que é atacado
                 whereClause += " AND segmento_novo = 'Atacado'";
             } else if (segmentoFiltro === 'B2B') {
-                // Quando seleciona B2B, filtra tudo que não é Atacado
                 whereClause += " AND segmento_novo != 'Atacado'";
+            }
+
+            // Aplicar filtro de procedência
+            if (procedencia) {
+                const procedenciaArray = procedencia.split(',');
+                if (procedenciaArray.length > 1) {
+                    const placeholders = procedenciaArray.map(() => '?').join(',');
+                    whereClause += ` AND procedencia IN (${placeholders})`;
+                    params.push(...procedenciaArray.map(item => item.trim()));
+                } else {
+                    whereClause += " AND procedencia = ?";
+                    params.push(procedencia);
+                }
             }
 
             if (kpi) {
@@ -529,12 +553,12 @@ router.get('/analise-data', b2bAuth, async (req, res) => {
             if (mes_ano) {
                 // O parâmetro mes_ano vem no formato YYYY-MM
                 whereClause += " AND (DATE_FORMAT(data_abertura, '%Y-%m') = ? OR DATE_FORMAT(data_encerramento, '%Y-%m') = ?)";
-                params.push(mes_ano, mes_ano); // Adiciona o mesmo valor duas vezes para ambas as condições
+                params.push(mes_ano, mes_ano);
             } else {
                 // Se não for fornecido, usar o mês atual
                 const now = new Date();
                 const currentYear = now.getFullYear();
-                const currentMonth = String(now.getMonth() + 1).padStart(2, '0'); // Janeiro é 0, então somamos 1
+                const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
                 const currentMonthFormatted = `${currentYear}-${currentMonth}`;
 
                 whereClause += " AND (DATE_FORMAT(data_abertura, '%Y-%m') = ? OR DATE_FORMAT(data_encerramento, '%Y-%m') = ?)";
@@ -576,7 +600,7 @@ router.get('/filtros-opcoes', b2bAuth, async (req, res) => {
         }
 
         // Validar campo para evitar SQL injection
-        const camposValidos = ['regional_vivo', 'kpi'];
+        const camposValidos = ['regional_vivo', 'kpi', 'procedencia'];
         if (!camposValidos.includes(campo)) {
             return res.status(400).json({ error: 'Campo inválido' });
         }

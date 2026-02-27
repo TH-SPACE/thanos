@@ -339,6 +339,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const segmento = filtroSegmento.value;
         const mesAno = filtroMes.value; // Valor no formato YYYY-MM
 
+        // Obter as procedências selecionadas
+        const selectedProcedencias = Array.from(document.querySelectorAll('.procedencia-checkbox:checked')).map(cb => cb.value);
+        const procedenciaParam = selectedProcedencias.length > 0 ? selectedProcedencias.join(',') : '';
+
         // Obter os KPIs selecionados
         const selectedKPIs = Array.from(document.querySelectorAll('.kpi-checkbox:checked')).map(cb => cb.value);
         const kpiParam = selectedKPIs.length > 0 ? selectedKPIs.join(',') : '';
@@ -347,6 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const params = new URLSearchParams();
         if (regional) params.append('regional', regional);
         if (segmento) params.append('segmento', segmento);
+        if (procedenciaParam) params.append('procedencia', procedenciaParam);
         if (kpiParam) params.append('kpi', kpiParam);
         if (mesAno) params.append('mes_ano', mesAno);
 
@@ -918,7 +923,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Inicializar o texto do dropdown
                 updateKPISelectionDisplay();
-                
+
                 // Marcar automaticamente os KPIs específicos
                 const kpisPadrao = ['KPI', 'EXP_LM', 'EXP_SLM_CLIENTE'];
                 kpisPadrao.forEach(kpi => {
@@ -936,21 +941,137 @@ document.addEventListener('DOMContentLoaded', function() {
             .fail(function(error) {
                 console.error('Erro ao carregar opções de KPI:', error);
             });
+
+        // Carregar opções de Procedência
+        $.get('/b2b/filtros-opcoes?campo=procedencia')
+            .done(function(data) {
+                const container = document.getElementById('procedenciaCheckboxes');
+                container.innerHTML = '';
+
+                // Procedências padrão (ordem fixa)
+                const procedenciasPadrao = ['Proativo', 'Reativo', 'Triagem', 'Preventivo'];
+
+                // Criar checkboxes para cada procedência
+                procedenciasPadrao.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="dropdown-item">
+                            <div class="form-check">
+                                <input class="form-check-input procedencia-checkbox" type="checkbox" id="procedencia_${item}" value="${item}">
+                                <label class="form-check-label" for="procedencia_${item}">
+                                    ${item}
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(li);
+                });
+
+                // Marcar Proativo e Reativo por padrão
+                document.getElementById('procedencia_Proativo').checked = true;
+                document.getElementById('procedencia_Reativo').checked = true;
+                // Triagem e Preventivo vêm desmarcados
+
+                // Atualizar display inicial
+                updateProcedenciaSelectionDisplay();
+
+                // Adicionar evento para o checkbox "Selecionar Todos"
+                document.getElementById('selectAllProcedencia').addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.procedencia-checkbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                    updateProcedenciaSelectionDisplay();
+                });
+
+                // Adicionar evento para clicar em toda a área do item "Selecionar Todos"
+                const selectAllProcedenciaItem = document.querySelector('#filtroProcedenciaOptions .dropdown-item');
+                if (selectAllProcedenciaItem) {
+                    selectAllProcedenciaItem.addEventListener('click', function(e) {
+                        if (e.target === this || e.target.classList.contains('form-check')) {
+                            const selectAllCheckbox = this.querySelector('.form-check-input');
+                            if (selectAllCheckbox) {
+                                selectAllCheckbox.checked = !selectAllCheckbox.checked;
+                                const checkboxes = document.querySelectorAll('.procedencia-checkbox');
+                                checkboxes.forEach(checkbox => {
+                                    checkbox.checked = selectAllCheckbox.checked;
+                                    checkbox.dispatchEvent(new Event('change'));
+                                });
+                                updateProcedenciaSelectionDisplay();
+                            }
+                        }
+                        e.stopPropagation();
+                    });
+                }
+
+                // Adicionar eventos para os checkboxes individuais
+                document.querySelectorAll('.procedencia-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function(e) {
+                        e.stopPropagation();
+                        updateProcedenciaSelectionDisplay();
+                        const allCheckboxes = document.querySelectorAll('.procedencia-checkbox');
+                        const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+                        const selectAllCheckbox = document.getElementById('selectAllProcedencia');
+                        selectAllCheckbox.checked = allChecked;
+                    });
+                });
+
+                // Impedir que o dropdown feche ao clicar nos labels
+                document.querySelectorAll('#procedenciaCheckboxes label').forEach(label => {
+                    label.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                });
+
+                // Adicionar evento para clicar em toda a área do item do dropdown
+                document.querySelectorAll('#procedenciaCheckboxes .dropdown-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        if (e.target === this || e.target.classList.contains('form-check')) {
+                            const checkbox = this.querySelector('.form-check-input');
+                            if (checkbox) {
+                                checkbox.checked = !checkbox.checked;
+                                checkbox.dispatchEvent(new Event('change'));
+                            }
+                        }
+                        e.stopPropagation();
+                    });
+                });
+
+                // Inicializar o texto do dropdown
+                updateProcedenciaSelectionDisplay();
+            })
+            .fail(function(error) {
+                console.error('Erro ao carregar opções de procedência:', error);
+            });
     }
     
     // Função para atualizar o texto do dropdown de KPI
     function updateKPISelectionDisplay() {
         const selectedCheckboxes = document.querySelectorAll('.kpi-checkbox:checked');
         const totalCheckboxes = document.querySelectorAll('.kpi-checkbox');
-        
+
         const selectedValues = Array.from(selectedCheckboxes).map(cb => cb.value);
-        
+
         if (selectedValues.length === 0) {
             document.getElementById('filtroKPISelecionados').textContent = 'Nenhum KPI selecionado';
         } else if (selectedValues.length === totalCheckboxes.length) {
             document.getElementById('filtroKPISelecionados').textContent = 'Todos os KPIs';
         } else {
             document.getElementById('filtroKPISelecionados').textContent = `${selectedValues.length} KPI(s) selecionado(s)`;
+        }
+    }
+
+    // Função para atualizar o texto do dropdown de Procedência
+    function updateProcedenciaSelectionDisplay() {
+        const selectedCheckboxes = document.querySelectorAll('.procedencia-checkbox:checked');
+        const selectedValues = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+        if (selectedValues.length === 0) {
+            document.getElementById('filtroProcedenciaSelecionados').textContent = 'Nenhuma procedência';
+        } else if (selectedValues.length === 4) {
+            document.getElementById('filtroProcedenciaSelecionados').textContent = 'Todas as procedências';
+        } else {
+            document.getElementById('filtroProcedenciaSelecionados').textContent = selectedValues.join(', ');
         }
     }
 
