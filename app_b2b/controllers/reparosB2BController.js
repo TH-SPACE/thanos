@@ -392,25 +392,37 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
                 params.push(currentMonthFormatted, currentMonthFormatted);
             }
 
-            // Query para obter dados completos
+            // Query para obter dados completos (NOVA ESTRUTURA - API 2026-02-27)
             const query = `
                 SELECT
-                    bd, id_circuito, bd_ant, lp_15, designador_lp_13, id_comercial,
+                    bd, bd_raiz, protocolo_crm, id_vantive, status_nome, tipo_ngem,
+                    procedencia, reclamacao, segmento_sistema, segmento_comercial, segmento_novo, segmento_v3,
+                    atendimento_valor, slm_flag, cliente_nome, cnpj, cnpj_raiz, cod_grupo, grupo_economico,
+                    localidade_codigo, area_codigo, escritorio_codigo, endereco, cidade, uf, cluster,
+                    regional, regional_vivo, lp_15, designador_lp_13, lp_operadora, servico_cpcc_nome,
+                    cpcc, velocidade, velocidade_kbps, produto_nome, servico, familia_produto,
                     data_abertura, data_reparo, data_encerramento, data_baixa, last_update,
-                    kpi, kpi_acesso, tipo_acesso, origem, sistema_origem, cod_grupo,
-                    grupo_economico, bd_raiz, status_codigo, status_nome, procedencia,
-                    reclamacao, segmento_sistema, segmento_v3, segmento_novo, segmento_vivo_corp,
-                    projeto, cliente_nome, cnpj, cnpj_raiz, endereco, localidade_codigo,
-                    area_codigo, escritorio_codigo, cidade, uf, cluster,
-                    regional, regional_vivo, lp_operadora, servico_cpcc_nome, velocidade, velocidade_kbps,
-                    produto_nome, familia_produto, baixa_n1_codigo, baixa_n2_codigo, baixa_n3_codigo,
-                    baixa_n4_codigo, baixa_n5_codigo, baixa_n1_nome, baixa_n2_nome, baixa_n3_nome,
-                    baixa_n4_nome, baixa_n5_nome, resumo_intragov, intragov_sigla, intragov_codigo,
-                    sla_horas, grupo, grupo_novo, foco_acoes, foco_novo, grupo_baixa_codigo,
+                    kpi, kpi_acesso, tipo_acesso, origem, sistema_origem, id_projeto, projeto,
+                    baixa_n1_codigo, baixa_n1_nome, baixa_n2_codigo, baixa_n2_nome,
+                    baixa_n3_codigo, baixa_n3_nome, baixa_n4_codigo, baixa_n4_nome,
+                    baixa_n5_codigo, baixa_n5_nome, baixa_codigo,
+                    resumo_intragov, intragov_sigla, intragov_codigo, flag_intragov,
+                    acionamento_tecnico, acionamento_operadora, acionamento_integradora,
+                    acionamento_parceiro, acionamento_transmissao, acionamento_ccr,
+                    acionamento_osp, acionamento_diag_b2b,
+                    sla_horas, sla_tipo, grupo, grupo_novo, foco_acoes, foco_novo,
                     grupo_abertura, usuario_abertura, grupo_baixa, usuario_baixa, grupo_responsavel,
-                    operadora, tipo_operadora, tmr, tmr_sem_parada, tempo_parada, decorrido_sem_parada,
-                    prazo, reincidencia_30d, reincidencia_tipo, originou_reinc, prox_reinc,
-                    horario_func_inicio, horario_func_fim, R30_Tratativas
+                    operadora, tipo_operadora, massiva_flag,
+                    tmr, tmr_sem_parada, tempo_parada, tmr_exp_reparo_min, tmr_exp_min, prazo,
+                    reincidencia_30d, reincidencia_30d_grupo, reincidencia_tipo,
+                    originou_reinc, reincidencia_30d_atacado, reincidencia_tipo_atacado,
+                    reincidencia_30d_acesso, reincidencia_tipo_acesso,
+                    prox_reinc, originou_reinc_grupo, prox_reinc_grupo,
+                    maior_doze_flag, tipo_empresa, top_atacado, tj,
+                    triagem_flag, planta_flag,
+                    contato_nome, contato_telefone, reclamante_nome, reclamante_telefone,
+                    R30_Tratativas,
+                    id_circuito, bd_ant, status_codigo, id_comercial
                 FROM reparosb2b
                 ${whereClause}
                 ORDER BY regional_vivo, cluster, kpi, data_abertura
@@ -425,24 +437,28 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
             // Converter dados para formato de planilha
             const worksheet = XLSX.utils.json_to_sheet(rows);
 
-            // Ajustar largura das colunas
+            // Ajustar largura das colunas (NOVA ESTRUTURA - ~100 colunas)
             const wscols = [
-                { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
+                { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 20 }, { wch: 2 },
+                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 },
+                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 20 },
                 { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
-                { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
-                { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 20 },
-                { wch: 20 }, { wch: 30 }, { wch: 20 }, { wch: 30 }, { wch: 15 },
-                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 5 }, { wch: 20 },
-                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
-                { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
-                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
-                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 20 },
-                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
-                { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-                { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-                { wch: 20 }, { wch: 20 }, { wch: 15 }
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }
             ];
             worksheet['!cols'] = wscols;
 
@@ -655,24 +671,41 @@ router.get('/modelo-upload', b2bAuth, (req, res) => {
         const path = require('path');
         const XLSX = require('xlsx');
         
-        // Dados de exemplo com todos os cabeçalhos
+        // Dados de exemplo com todos os cabeçalhos (NOVA ESTRUTURA - API 2026-02-27)
         const headers = [
-            'bd', 'id_circuito', 'bd_ant', 'lp_15', 'designador_lp_13', 'id_comercial', 
-            'data_abertura', 'data_reparo', 'data_encerramento', 'data_baixa', 'last_update', 
-            'kpi', 'kpi_acesso', 'tipo_acesso', 'origem', 'sistema_origem', 'cod_grupo', 
-            'grupo_economico', 'bd_raiz', 'status_codigo', 'status_nome', 'procedencia', 
-            'reclamacao', 'segmento_sistema', 'segmento_v3', 'segmento_novo', 'segmento_vivo_corp', 
-            'projeto', 'cliente_nome', 'cnpj', 'cnpj_raiz', 'endereco', 'localidade_codigo', 
-            'area_codigo', 'escritorio_codigo', 'cidade', 'uf', 'cluster', 'regional', 
-            'regional_vivo', 'lp_operadora', 'servico_cpcc_nome', 'velocidade', 'velocidade_kbps', 
-            'produto_nome', 'familia_produto', 'baixa_n1_codigo', 'baixa_n2_codigo', 'baixa_n3_codigo', 
-            'baixa_n4_codigo', 'baixa_n5_codigo', 'baixa_n1_nome', 'baixa_n2_nome', 'baixa_n3_nome', 
-            'baixa_n4_nome', 'baixa_n5_nome', 'resumo_intragov', 'intragov_sigla', 'intragov_codigo', 
-            'sla_horas', 'grupo', 'grupo_novo', 'foco_acoes', 'foco_novo', 'grupo_baixa_codigo', 
-            'grupo_abertura', 'usuario_abertura', 'grupo_baixa', 'usuario_baixa', 'grupo_responsavel', 
-            'operadora', 'tipo_operadora', 'tmr', 'tmr_sem_parada', 'tempo_parada', 'decorrido_sem_parada', 
-            'prazo', 'reincidencia_30d', 'reincidencia_tipo', 'originou_reinc', 'prox_reinc', 
-            'horario_func_inicio', 'horario_func_fim', 'R30_Tratativas'
+            'bd', 'bd_raiz', 'protocolo_crm', 'id_vantive', 'status_nome', 'tipo_ngem',
+            'procedencia', 'reclamacao', 'segmento_sistema', 'segmento_comercial', 'segmento_novo', 'segmento_v3',
+            'atendimento_valor', 'slm_flag', 'cliente_nome', 'cnpj', 'cnpj_raiz', 'cod_grupo', 'grupo_economico',
+            'localidade_codigo', 'area_codigo', 'escritorio_codigo', 'endereco', 'cidade', 'uf', 'cluster',
+            'regional', 'regional_vivo', 'lp_15', 'designador_lp_13', 'lp_operadora', 'servico_cpcc_nome',
+            'cpcc', 'velocidade', 'velocidade_kbps', 'produto_nome', 'servico', 'familia_produto',
+            'data_abertura', 'data_abertura_dia_semana', 'data_abertura_dia', 'data_abertura_mes', 'data_abertura_ano', 'mes_ano_abertura',
+            'data_reparo', 'data_reparo_dia_semana', 'data_reparo_dia', 'data_reparo_mes', 'data_reparo_ano',
+            'data_encerramento', 'data_encerramento_dia_semana', 'data_encerramento_dia', 'data_encerramento_mes', 'data_encerramento_ano', 'mes_ano_enc',
+            'data_baixa', 'data_baixa_dia_semana', 'data_baixa_dia', 'data_baixa_mes', 'data_baixa_ano',
+            'last_update',
+            'baixa_n1_codigo', 'baixa_n1_nome', 'baixa_n2_codigo', 'baixa_n2_nome',
+            'baixa_n3_codigo', 'baixa_n3_nome', 'baixa_n4_codigo', 'baixa_n4_nome',
+            'baixa_n5_codigo', 'baixa_n5_nome', 'baixa_codigo',
+            'resumo_intragov', 'intragov_sigla', 'intragov_codigo',
+            'acionamento_tecnico', 'acionamento_operadora', 'acionamento_integradora',
+            'acionamento_parceiro', 'acionamento_transmissao', 'acionamento_ccr',
+            'acionamento_osp', 'acionamento_diag_b2b',
+            'sla_horas', 'sla_tipo',
+            'grupo', 'grupo_novo', 'foco_acoes', 'foco_novo',
+            'grupo_abertura', 'usuario_abertura', 'grupo_baixa', 'usuario_baixa', 'grupo_responsavel',
+            'operadora', 'tipo_operadora', 'massiva_flag',
+            'tmr', 'prazo', 'tempo_parada',
+            'reincidencia_30d', 'reincidencia_30d_grupo', 'reincidencia_tipo',
+            'originou_reinc', 'reincidencia_30d_atacado', 'reincidencia_tipo_atacado',
+            'reincidencia_30d_acesso', 'reincidencia_tipo_acesso',
+            'prox_reinc', 'originou_reinc_grupo', 'prox_reinc_grupo',
+            'maior_doze_flag', 'tipo_empresa',
+            'kpi', 'kpi_acesso', 'origem', 'sistema_origem', 'id_projeto', 'projeto', 'top_atacado', 'tj',
+            'tmr_sem_parada', 'triagem_flag', 'planta_flag', 'tipo_acesso',
+            'contato_nome', 'reclamante_nome', 'reclamante_telefone', 'contato_telefone', 'flag_intragov',
+            'R30_Tratativas', 'tmr_exp_reparo_min', 'tmr_exp_min',
+            'id_circuito', 'bd_ant', 'status_codigo', 'id_comercial'
         ];
         
         // Criar uma planilha com apenas o cabeçalho
