@@ -408,14 +408,19 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
             // Query para obter dados completos (NOVA ESTRUTURA - API 2026-02-27)
             const query = `
                 SELECT
-                    bd, bd_raiz, protocolo_crm, id_vantive, status_nome, tipo_ngem,
-                    procedencia, reclamacao, segmento_sistema, segmento_comercial, segmento_novo, segmento_v3,
+                    bd, bd_raiz, protocolo_crm, id_vantive, id_circuito, bd_ant, id_comercial,
+                    status_codigo, status_nome, tipo_ngem,
+                    procedencia, reclamacao, segmento_sistema, segmento_comercial, segmento_novo, segmento_v3, segmento_vivo_corp,
                     atendimento_valor, slm_flag, cliente_nome, cnpj, cnpj_raiz, cod_grupo, grupo_economico,
-                    localidade_codigo, area_codigo, escritorio_codigo, endereco, cidade, uf, cluster,
+                    endereco, cidade, uf, cluster,
+                    localidade_codigo, area_codigo, escritorio_codigo,
                     regional, regional_vivo, lp_15, designador_lp_13, lp_operadora, servico_cpcc_nome,
                     cpcc, velocidade, velocidade_kbps, produto_nome, servico, familia_produto,
-                    data_abertura, data_reparo, data_encerramento, data_baixa, last_update,
-                    kpi, kpi_acesso, tipo_acesso, origem, sistema_origem, id_projeto, projeto,
+                    data_abertura, data_abertura_dia_semana, data_abertura_dia, data_abertura_mes, data_abertura_ano, mes_ano_abertura,
+                    data_reparo, data_reparo_dia_semana, data_reparo_dia, data_reparo_mes, data_reparo_ano,
+                    data_encerramento, data_encerramento_dia_semana, data_encerramento_dia, data_encerramento_mes, data_encerramento_ano, mes_ano_enc,
+                    data_baixa, data_baixa_dia_semana, data_baixa_dia, data_baixa_mes, data_baixa_ano,
+                    last_update,
                     baixa_n1_codigo, baixa_n1_nome, baixa_n2_codigo, baixa_n2_nome,
                     baixa_n3_codigo, baixa_n3_nome, baixa_n4_codigo, baixa_n4_nome,
                     baixa_n5_codigo, baixa_n5_nome, baixa_codigo,
@@ -431,11 +436,14 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
                     originou_reinc, reincidencia_30d_atacado, reincidencia_tipo_atacado,
                     reincidencia_30d_acesso, reincidencia_tipo_acesso,
                     prox_reinc, originou_reinc_grupo, prox_reinc_grupo,
-                    maior_doze_flag, tipo_empresa, top_atacado, tj,
+                    maior_doze_flag, tipo_empresa,
+                    id_projeto, projeto, top_atacado, tj,
+                    kpi, kpi_acesso, origem, sistema_origem,
                     triagem_flag, planta_flag,
+                    tipo_acesso,
                     contato_nome, contato_telefone, reclamante_nome, reclamante_telefone,
                     R30_Tratativas,
-                    id_circuito, bd_ant, status_codigo, id_comercial
+                    created_at, updated_at
                 FROM reparosb2b
                 ${whereClause}
                 ORDER BY regional_vivo, cluster, kpi, data_abertura
@@ -447,21 +455,29 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
             const XLSX = require('xlsx');
             const workbook = XLSX.utils.book_new();
 
-            // Converter dados para formato de planilha
-            const worksheet = XLSX.utils.json_to_sheet(rows);
+            // Converter dados para formato de planilha com cabeçalhos em maiúsculo
+            const worksheet = XLSX.utils.json_to_sheet(rows, {
+                header: Object.keys(rows[0] || {}).map(key => key.toUpperCase())
+            });
 
-            // Ajustar largura das colunas (NOVA ESTRUTURA - ~100 colunas)
+            // Ajustar largura das colunas (NOVA ESTRUTURA COMPLETA - 121 colunas)
             const wscols = [
-                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
-                { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 20 }, { wch: 15 },
+                { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
                 { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 },
-                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 20 }, { wch: 2 },
-                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 },
-                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 20 },
+                { wch: 30 }, { wch: 20 }, { wch: 2 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
                 { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
-                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
                 { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
                 { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
                 { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
                 { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
@@ -470,8 +486,13 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
                 { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
                 { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
                 { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-                { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-                { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+                { wch: 20 },
+                { wch: 20 }, { wch: 20 }
             ];
             worksheet['!cols'] = wscols;
 
