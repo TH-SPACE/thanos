@@ -456,9 +456,16 @@ router.get('/exportar-dados', b2bAuth, async (req, res) => {
             const workbook = XLSX.utils.book_new();
 
             // Converter dados para formato de planilha com cabeçalhos em maiúsculo
-            const worksheet = XLSX.utils.json_to_sheet(rows, {
-                header: Object.keys(rows[0] || {}).map(key => key.toUpperCase())
+            // Mapear cada linha para ter chaves em maiúsculo
+            const rowsWithUppercaseKeys = rows.map(row => {
+                const newRow = {};
+                for (const [key, value] of Object.entries(row)) {
+                    newRow[key.toUpperCase()] = value;
+                }
+                return newRow;
             });
+            
+            const worksheet = XLSX.utils.json_to_sheet(rowsWithUppercaseKeys);
 
             // Ajustar largura das colunas (NOVA ESTRUTURA COMPLETA - 121 colunas)
             const wscols = [
