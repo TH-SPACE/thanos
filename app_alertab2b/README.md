@@ -8,6 +8,8 @@ Módulo do ThanOS para sincronizar e gerenciar dados do Backlog BDSLA.
 - **Filtro de UF**: Salva apenas Centro-Oeste e Norte
 - **Correção automática**: Regional e Cluster baseados em UF/cidade
 - **Dashboard por cluster**: Tempo de backlog em horas e dias
+- **🚨 Alerta de reparos críticos**: Reparos Ativos > 12h, 15h, 18h
+- **📥 Download em Excel**: Exporta base completa ou filtrada
 - **Logs de sincronização**: Histórico completo
 - **Filtros dinâmicos**: Dropdowns carregados do banco
 
@@ -69,9 +71,11 @@ http://localhost:3001/alerta-b2b/
 | `/alerta-b2b/backlog` | GET | Buscar registros (com filtros) |
 | `/alerta-b2b/estatisticas` | GET | Estatísticas (com filtros) |
 | `/alerta-b2b/status-por-cluster` | GET | Status por cluster |
+| `/alerta-b2b/reparos-criticos` | GET | **Reparos Ativos críticos** |
 | `/alerta-b2b/dashboard` | GET | Dashboard tempo de backlog |
 | `/alerta-b2b/logs` | GET | Logs de sincronização |
 | `/alerta-b2b/filtros` | GET | Filtros disponíveis |
+| `/alerta-b2b/exportar` | GET | **Baixar Excel/CSV** |
 
 ## 🔍 Filtros Disponíveis
 

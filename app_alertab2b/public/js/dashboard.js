@@ -22,18 +22,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===========================================
 function configurarEventListeners() {
     document.getElementById('btnAtualizar').addEventListener('click', () => {
+        carregarReparosCriticost();
         carregarEstatisticas();
         carregarDashboard();
         carregarStatusPorCluster();
     });
 
     document.getElementById('btnFiltrar').addEventListener('click', () => {
+        carregarReparosCriticost();
         carregarEstatisticas();
         carregarDashboard();
         carregarStatusPorCluster();
     });
 
     document.getElementById('btnLimpar').addEventListener('click', limparFiltros);
+
+    document.getElementById('btnVerCriticost').addEventListener('click', () => {
+        window.open('/alerta-b2b/?status=Ativo&urgente=true', '_blank');
+    });
+
+    document.getElementById('btnVerAtencao').addEventListener('click', () => {
+        window.open('/alerta-b2b/?status=Ativo&atencao=true', '_blank');
+    });
 }
 
 // ===========================================
@@ -62,9 +72,39 @@ function limparFiltros() {
     document.getElementById('filtroCluster').value = '';
     document.getElementById('filtroStatus').value = '';
     
+    carregarReparosCriticost();
     carregarEstatisticas();
     carregarDashboard();
     carregarStatusPorCluster();
+}
+
+// ===========================================
+// Carregar Reparos Críticos
+// ===========================================
+async function carregarReparosCriticost() {
+    try {
+        const response = await fetch(`${API_BASE}/reparos-criticos`);
+        const resultado = await response.json();
+
+        if (resultado.success) {
+            const resumo = resultado.dados.resumo;
+
+            document.getElementById('alertUrgente').textContent = formatarNumero(resumo.urgente || 0);
+            document.getElementById('alertAtencao').textContent = formatarNumero(resumo.atencao || 0);
+            document.getElementById('alertAlerta').textContent = formatarNumero(resumo.alerta || 0);
+            document.getElementById('alertMonitorar').textContent = formatarNumero(resumo.monitorar || 0);
+
+            // Mostrar/esconder seção de alertas
+            const alertSection = document.getElementById('alertSection');
+            if (resumo.urgente === 0 && resumo.atencao === 0 && resumo.alerta === 0) {
+                alertSection.style.display = 'none';
+            } else {
+                alertSection.style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao carregar reparos críticos:', error);
+    }
 }
 
 // ===========================================
