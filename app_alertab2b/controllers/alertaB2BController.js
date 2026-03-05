@@ -377,9 +377,9 @@ async function processarCSV(registros) {
         // UF's do Centro-Oeste e Norte
         const UFS_PERMITIDAS = [
             // Centro-Oeste
-            'GO', 'MATO GROSSO', 'MT', 'MATO GROSSO DO SUL', 'MS', 'DISTRITO FEDERAL', 'DF',
+            'GO', 'MT', 'MS', 'DF',
             // Norte
-            'AC', 'AMAPA', 'AP', 'AMAZONAS', 'AM', 'PARA', 'PA', 'RONDONIA', 'RO', 'RORAIMA', 'RR', 'TOCANTINS', 'TO'
+            'AC', 'AP', 'AM', 'PA', 'RO', 'RR', 'TO', 'MA'
         ];
 
         console.log(`   📊 Total de registros para processar: ${registros.length}`);
