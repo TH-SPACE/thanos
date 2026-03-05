@@ -451,7 +451,8 @@ async function executarSincronizacao(fonte = 'url') {
     console.log('🔄 INICIANDO SINCRONIZAÇÃO ALERTA B2B');
     console.log('='.repeat(70));
     console.log(`📅 Data/Hora: ${new Date().toLocaleString('pt-BR')}`);
-    console.log(`📡 Fonte: ${fonte === 'arquivo' ? 'Arquivo local' : CONFIG.CSV_URL}`);
+    console.log(`📡 Fonte recebida: "${fonte}"`);
+    console.log(`📡 Fonte será usada: ${fonte === 'arquivo' ? 'Arquivo local' : CONFIG.CSV_URL}`);
     console.log('='.repeat(70));
 
     try {
