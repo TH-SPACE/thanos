@@ -434,3 +434,214 @@ function mostrarMensagem(mensagem, tipo) {
         msgDiv.remove();
     }, 5000);
 }
+
+// ===========================================
+// Modal de Logs
+// ===========================================
+async function abrirModalLogs() {
+    const modal = document.getElementById('modalLogs');
+    const modalBody = document.getElementById('modalLogsBody');
+    
+    modalBody.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    modal.classList.add('show');
+    
+    try {
+        const response = await fetch(`${API_BASE}/logs?limite=50`);
+        const resultado = await response.json();
+        
+        if (resultado.success && resultado.dados.length > 0) {
+            let html = `
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Tipo</th>
+                            <th>Filtro UF</th>
+                            <th>Total</th>
+                            <th>Inseridos</th>
+                            <th>Filtrados</th>
+                            <th>Erros</th>
+                            <th>Status</th>
+                            <th>Duração</th>
+                            <th>Mensagem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            resultado.dados.forEach(log => {
+                const statusClass = `logs-${log.status_sync}`;
+                const dataFormat = new Date(log.data_sync).toLocaleString('pt-BR');
+                
+                html += `
+                    <tr>
+                        <td>${dataFormat}</td>
+                        <td>${log.tipo_sync}</td>
+                        <td>${log.filtro_uf || 'CO-NORTE'}</td>
+                        <td>${log.total_registros}</td>
+                        <td>${log.registros_inseridos}</td>
+                        <td>${log.registros_filtrados || 0}</td>
+                        <td>${log.registros_erro}</td>
+                        <td class="${statusClass}">${log.status_sync}</td>
+                        <td>${log.duracao_segundos ? log.duracao_segundos + 's' : '-'}</td>
+                        <td title="${log.mensagem}">${log.mensagem ? log.mensagem.substring(0, 50) + '...' : '-'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            modalBody.innerHTML = html;
+        } else {
+            modalBody.innerHTML = '<p class="no-data">Nenhum log de sincronização encontrado</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao buscar logs:', error);
+        modalBody.innerHTML = '<p class="error-message">Erro ao carregar logs</p>';
+    }
+}
+
+function fecharModalLogs() {
+    const modal = document.getElementById('modalLogs');
+    modal.classList.remove('show');
+}
+
+// ===========================================
+// Modal Dashboard
+// ===========================================
+async function abrirModalDashboard() {
+    const modal = document.getElementById('modalDashboard');
+    const modalBody = document.getElementById('modalDashboardBody');
+    
+    modalBody.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    modal.classList.add('show');
+    
+    try {
+        const response = await fetch(`${API_BASE}/dashboard`);
+        const resultado = await response.json();
+        
+        if (resultado.success) {
+            const { clusters, total } = resultado.dados;
+            
+            let html = `
+                <div style="margin-bottom: 20px; padding: 15px; background: #fef3c7; border-radius: 8px;">
+                    <strong>📊 Total Geral:</strong> ${total.total_geral || 0} registros | 
+                    <strong>⏱️ Tempo Médio:</strong> ${total.media_geral_horas ? parseFloat(total.media_geral_horas).toFixed(1) + 'h' : '-'}
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Cluster</th>
+                                <th>Total</th>
+                                <th>Ativos</th>
+                                <th>Parados</th>
+                                <th>< 1h</th>
+                                <th>1-3h</th>
+                                <th>3-6h</th>
+                                <th>6-8h</th>
+                                <th>8-24h</th>
+                                <th>1-3d</th>
+                                <th>3-5d</th>
+                                <th>5-7d</th>
+                                <th>7-15d</th>
+                                <th>15-30d</th>
+                                <th>> 30d</th>
+                                <th>Média</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            clusters.forEach(cluster => {
+                html += `
+                    <tr>
+                        <td>${cluster.cluster}</td>
+                        <td><strong>${cluster.total_registros}</strong></td>
+                        <td>${cluster.ativos}</td>
+                        <td>${cluster.parados}</td>
+                        <td><span class="time-badge time-0-1h">${cluster.menos_1_hora || 0}</span></td>
+                        <td><span class="time-badge time-1-3h">${cluster.entre_1_3_horas || 0}</span></td>
+                        <td><span class="time-badge time-3-6h">${cluster.entre_3_6_horas || 0}</span></td>
+                        <td><span class="time-badge time-6-8h">${cluster.entre_6_8_horas || 0}</span></td>
+                        <td><span class="time-badge time-8-24h">${cluster.entre_8_24_horas || 0}</span></td>
+                        <td><span class="time-badge time-1-3d">${cluster.entre_1_3_dias || 0}</span></td>
+                        <td><span class="time-badge time-3-5d">${cluster.entre_3_5_dias || 0}</span></td>
+                        <td><span class="time-badge time-5-7d">${cluster.entre_5_7_dias || 0}</span></td>
+                        <td><span class="time-badge time-7-15d">${cluster.entre_7_15_dias || 0}</span></td>
+                        <td><span class="time-badge time-15-30d">${cluster.entre_15_30_dias || 0}</span></td>
+                        <td><span class="time-badge time-30d-plus">${cluster.mais_30_dias || 0}</span></td>
+                        <td>${cluster.tempo_medio_horas ? parseFloat(cluster.tempo_medio_horas).toFixed(1) + 'h' : '-'}</td>
+                    </tr>
+                `;
+            });
+            
+            // Linha de total
+            html += `
+                <tr class="dashboard-total">
+                    <td>TOTAL</td>
+                    <td>${total.total_geral || 0}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.ativos || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.parados || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.menos_1_hora || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_1_3_horas || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_3_6_horas || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_6_8_horas || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_8_24_horas || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_1_3_dias || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_3_5_dias || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_5_7_dias || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_7_15_dias || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.entre_15_30_dias || 0), 0)}</td>
+                    <td>${clusters.reduce((sum, c) => sum + (c.mais_30_dias || 0), 0)}</td>
+                    <td>${total.media_geral_horas ? parseFloat(total.media_geral_horas).toFixed(1) + 'h' : '-'}</td>
+                </tr>
+            `;
+            
+            html += '</tbody></table></div>';
+            
+            // Legenda
+            html += `
+                <div style="margin-top: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px;">
+                    <strong>Legenda:</strong><br>
+                    <span class="time-badge time-0-1h">&lt; 1h</span>
+                    <span class="time-badge time-1-3h">1-3h</span>
+                    <span class="time-badge time-3-6h">3-6h</span>
+                    <span class="time-badge time-6-8h">6-8h</span>
+                    <span class="time-badge time-8-24h">8-24h</span>
+                    <span class="time-badge time-1-3d">1-3d</span>
+                    <span class="time-badge time-3-5d">3-5d</span>
+                    <span class="time-badge time-5-7d">5-7d</span>
+                    <span class="time-badge time-7-15d">7-15d</span>
+                    <span class="time-badge time-15-30d">15-30d</span>
+                    <span class="time-badge time-30d-plus">&gt; 30d</span>
+                </div>
+            `;
+            
+            modalBody.innerHTML = html;
+        } else {
+            modalBody.innerHTML = '<p class="no-data">Erro ao carregar dashboard</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao buscar dashboard:', error);
+        modalBody.innerHTML = '<p class="error-message">Erro ao carregar dashboard</p>';
+    }
+}
+
+function fecharModalDashboard() {
+    const modal = document.getElementById('modalDashboard');
+    modal.classList.remove('show');
+}
+
+// Fechar modal ao clicar fora
+window.onclick = function(event) {
+    const modalLogs = document.getElementById('modalLogs');
+    const modalDashboard = document.getElementById('modalDashboard');
+    
+    if (event.target === modalLogs) {
+        fecharModalLogs();
+    }
+    if (event.target === modalDashboard) {
+        fecharModalDashboard();
+    }
+}
