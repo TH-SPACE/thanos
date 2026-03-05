@@ -196,6 +196,41 @@ async function salvarLogSincronizacao(params) {
 }
 
 /**
+ * Corrigir regional com base na UF
+ * Norte e Nordeste → NORTE
+ * Centro-Oeste → CENTRO-OESTE
+ * Sudeste → SUDESTE
+ * Sul → SUL
+ */
+function corrigirRegional(uf) {
+    if (!uf) return 'OUTRO';
+    
+    const ufUpper = uf.toUpperCase().trim();
+    
+    // Norte
+    const norte = ['AP', 'AM', 'PA', 'RR', 'MA'];
+    if (norte.includes(ufUpper)) return 'NORTE';
+    
+    // Nordeste
+    const nordeste = ['PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA'];
+    if (nordeste.includes(ufUpper)) return 'NORDESTE';
+    
+    // Centro-Oeste
+    const centroOeste = ['GO', 'MT', 'MS', 'DF', 'TO', 'RO', 'AC'];
+    if (centroOeste.includes(ufUpper)) return 'CENTRO-OESTE';
+    
+    // Sudeste
+    const sudeste = ['SP', 'RJ', 'MG', 'ES'];
+    if (sudeste.includes(ufUpper)) return 'SUDESTE';
+    
+    // Sul
+    const sul = ['PR', 'SC', 'RS'];
+    if (sul.includes(ufUpper)) return 'SUL';
+    
+    return 'OUTRO';
+}
+
+/**
  * Corrigir cluster com base na cidade e UF
  * Similar ao app_b2b
  */
@@ -302,6 +337,11 @@ async function processarCSV(registros) {
                             valor = parseInt(valor) || 0;
                         }
 
+                        // Corrigir regional automaticamente baseado na UF
+                        if (dbCampo === 'regional') {
+                            valor = corrigirRegional(uf);
+                        }
+
                         // Corrigir cluster automaticamente (sempre calcula)
                         if (dbCampo === 'cluster') {
                             valor = corrigirCluster(cidade, uf);
@@ -311,6 +351,9 @@ async function processarCSV(registros) {
                     } else if (dbCampo === 'cluster') {
                         // Se não veio cluster do CSV, calcula mesmo assim
                         dadosMapeados[dbCampo] = corrigirCluster(cidade, uf);
+                    } else if (dbCampo === 'regional') {
+                        // Se não veio regional do CSV, calcula baseado na UF
+                        dadosMapeados[dbCampo] = corrigirRegional(uf);
                     }
                 }
 
@@ -487,6 +530,8 @@ async function buscarBacklog(filtros = {}) {
             dataFim
         } = filtros;
 
+        console.log('🔍 buscarBacklog - Filtros recebidos:', filtros);
+
         const offset = (pagina - 1) * limite;
 
         let query = 'SELECT * FROM backlog_b2b WHERE 1=1';
@@ -547,14 +592,19 @@ async function buscarBacklog(filtros = {}) {
             params.push(dataFim);
         }
 
+        console.log('📝 Query SQL:', query);
+        console.log('📦 Params:', params);
+
         query += ' ORDER BY last_update DESC LIMIT ? OFFSET ?';
         params.push(limite, offset);
 
         const connection = await db.mysqlPool.getConnection();
-        
+
         try {
             const [registros] = await connection.execute(query, params);
             const [countResult] = await connection.execute(countQuery, params.slice(0, -2));
+
+            console.log('✅ Registros encontrados:', registros.length);
 
             return {
                 success: true,
@@ -569,7 +619,7 @@ async function buscarBacklog(filtros = {}) {
         }
 
     } catch (error) {
-        console.error('Erro ao buscar backlog:', error.message);
+        console.error('❌ Erro ao buscar backlog:', error.message);
         return { success: false, error: error.message };
     }
 }

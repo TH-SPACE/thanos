@@ -203,10 +203,10 @@ async function carregarEstatisticas(filtros = {}) {
 // ===========================================
 async function carregarDados() {
     const tbody = document.getElementById('tabelaBody');
-    tbody.innerHTML = '<tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="loading"><div class="spinner"></div></td></tr>';
 
     const filtros = coletarFiltros();
-    
+
     // Filtrar apenas valores não vazios
     const filtrosValidos = {};
     for (const [chave, valor] of Object.entries(filtros)) {
@@ -214,8 +214,10 @@ async function carregarDados() {
             filtrosValidos[chave] = valor;
         }
     }
-    
+
     estadoAtual.filtros = filtrosValidos;
+
+    console.log('📡 Filtros válidos:', filtrosValidos);
 
     try {
         const params = new URLSearchParams({
@@ -224,15 +226,20 @@ async function carregarDados() {
             ...filtrosValidos
         });
 
-        const response = await fetch(`${API_BASE}/backlog?${params}`);
+        const url = `${API_BASE}/backlog?${params}`;
+        console.log('🌐 URL da requisição:', url);
+
+        const response = await fetch(url);
         const resultado = await response.json();
+
+        console.log('📦 Resultado da API:', resultado);
 
         if (resultado.success) {
             estadoAtual.totalRegistros = resultado.paginacao.total;
             estadoAtual.totalPaginas = resultado.paginacao.totalPaginas;
 
             if (resultado.dados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="no-data">Nenhum registro encontrado</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" class="no-data">Nenhum registro encontrado</td></tr>';
             } else {
                 tbody.innerHTML = '';
                 resultado.dados.forEach(item => {
@@ -243,15 +250,16 @@ async function carregarDados() {
 
             atualizarInfoTabela();
             renderizarPaginacao();
-            
+
             // Atualizar estatísticas com os filtros aplicados
             carregarEstatisticas(filtrosValidos);
         } else {
-            tbody.innerHTML = '<tr><td colspan="9" class="no-data">Erro ao carregar dados</td></tr>';
+            console.error('❌ Erro na resposta:', resultado);
+            tbody.innerHTML = '<tr><td colspan="11" class="no-data">Erro ao carregar dados</td></tr>';
         }
     } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        tbody.innerHTML = '<tr><td colspan="9" class="no-data">Erro ao carregar dados</td></tr>';
+        console.error('💥 Erro ao carregar dados:', error);
+        tbody.innerHTML = '<tr><td colspan="11" class="no-data">Erro ao carregar dados</td></tr>';
     }
 }
 
@@ -285,6 +293,7 @@ function coletarFiltros() {
     const dataFim = document.getElementById('filtroDataFim').value;
     if (dataFim) filtros.dataFim = dataFim;
 
+    console.log('🔍 Filtros coletados:', filtros);
     return filtros;
 }
 
@@ -319,6 +328,8 @@ function criarLinhaTabela(item) {
         <td><strong>${item.bd || '-'}</strong></td>
         <td>${item.nome_cliente || '-'}</td>
         <td>${item.regional || '-'}</td>
+        <td><strong>${item.cluster || '-'}</strong></td>
+        <td>${item.municipio || '-'}</td>
         <td>${statusBadge}</td>
         <td>${item.grupo || '-'}</td>
         <td>${item.procedencia || '-'}</td>
