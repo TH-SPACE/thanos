@@ -56,7 +56,7 @@ const MAPEAMENTO_COLUNAS = {
     'area_escalonada': 'area_escalonada',
     'nivel_escalonamento': 'nivel_escalonamento',
     'vivo_gi': 'vivo_gi',
-    'cluster': 'cluster',
+    'cluster': 'cluster',  // Se vier do CSV, usa. Senão, calcula
     'segmento_v3': 'segmento_v3'
 };
 
@@ -302,12 +302,15 @@ async function processarCSV(registros) {
                             valor = parseInt(valor) || 0;
                         }
 
-                        // Corrigir cluster automaticamente
+                        // Corrigir cluster automaticamente (sempre calcula)
                         if (dbCampo === 'cluster') {
                             valor = corrigirCluster(cidade, uf);
                         }
 
                         dadosMapeados[dbCampo] = valor;
+                    } else if (dbCampo === 'cluster') {
+                        // Se não veio cluster do CSV, calcula mesmo assim
+                        dadosMapeados[dbCampo] = corrigirCluster(cidade, uf);
                     }
                 }
 
@@ -651,7 +654,10 @@ async function buscarEstatisticas(filtros = {}) {
                 ${whereClause}
             `;
 
-            const [resultado] = await connection.execute(query, params);
+            console.log('Executando query:', query);
+            console.log('Com params:', params);
+
+            const [resultado] = await connection.execute(query, params.length > 0 ? params : []);
 
             // Tratar valores nulos
             const dadosTratados = {
@@ -672,7 +678,7 @@ async function buscarEstatisticas(filtros = {}) {
                 ORDER BY quantidade DESC
             `;
 
-            const [regionais] = await connection.execute(queryRegionais, params);
+            const [regionais] = await connection.execute(queryRegionais, params.length > 0 ? params : []);
 
             const queryStatus = `
                 SELECT status, COUNT(*) as quantidade
@@ -682,7 +688,7 @@ async function buscarEstatisticas(filtros = {}) {
                 ORDER BY quantidade DESC
             `;
 
-            const [status] = await connection.execute(queryStatus, params);
+            const [status] = await connection.execute(queryStatus, params.length > 0 ? params : []);
 
             return {
                 success: true,

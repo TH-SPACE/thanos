@@ -97,14 +97,22 @@ async function sincronizarDados() {
 // ===========================================
 async function carregarEstatisticas(filtros = {}) {
     try {
-        const params = new URLSearchParams(filtros);
+        // Filtrar apenas valores não vazios
+        const filtrosValidos = {};
+        for (const [chave, valor] of Object.entries(filtros)) {
+            if (valor && valor.trim() !== '') {
+                filtrosValidos[chave] = valor;
+            }
+        }
+        
+        const params = new URLSearchParams(filtrosValidos);
         const response = await fetch(`${API_BASE}/estatisticas?${params}`);
         const resultado = await response.json();
 
+        console.log('Resultado estatísticas:', resultado);
+
         if (resultado.success) {
             const dados = resultado.dados.geral;
-            
-            console.log('Estatísticas recebidas:', dados);
             
             document.getElementById('statTotal').textContent = formatarNumero(dados.total_registros || 0);
             document.getElementById('statAtivos').textContent = formatarNumero(dados.ativos || 0);
@@ -124,16 +132,25 @@ async function carregarEstatisticas(filtros = {}) {
 // ===========================================
 async function carregarDados() {
     const tbody = document.getElementById('tabelaBody');
-    tbody.innerHTML = '<tr><td colspan="10" class="loading"><div class="spinner"></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr>';
 
     const filtros = coletarFiltros();
-    estadoAtual.filtros = filtros;
+    
+    // Filtrar apenas valores não vazios
+    const filtrosValidos = {};
+    for (const [chave, valor] of Object.entries(filtros)) {
+        if (valor && valor.trim() !== '') {
+            filtrosValidos[chave] = valor;
+        }
+    }
+    
+    estadoAtual.filtros = filtrosValidos;
 
     try {
         const params = new URLSearchParams({
             pagina: estadoAtual.pagina,
             limite: LIMITE_PAGINA,
-            ...filtros
+            ...filtrosValidos
         });
 
         const response = await fetch(`${API_BASE}/backlog?${params}`);
@@ -144,7 +161,7 @@ async function carregarDados() {
             estadoAtual.totalPaginas = resultado.paginacao.totalPaginas;
 
             if (resultado.dados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="no-data">Nenhum registro encontrado</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="no-data">Nenhum registro encontrado</td></tr>';
             } else {
                 tbody.innerHTML = '';
                 resultado.dados.forEach(item => {
@@ -157,13 +174,13 @@ async function carregarDados() {
             renderizarPaginacao();
             
             // Atualizar estatísticas com os filtros aplicados
-            carregarEstatisticas(filtros);
+            carregarEstatisticas(filtrosValidos);
         } else {
-            tbody.innerHTML = '<tr><td colspan="10" class="no-data">Erro ao carregar dados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="no-data">Erro ao carregar dados</td></tr>';
         }
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        tbody.innerHTML = '<tr><td colspan="10" class="no-data">Erro ao carregar dados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="no-data">Erro ao carregar dados</td></tr>';
     }
 }
 
