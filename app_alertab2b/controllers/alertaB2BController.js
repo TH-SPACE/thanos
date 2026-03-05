@@ -1,5 +1,6 @@
 const axios = require('axios');
 const https = require('https');
+const fetch = require('node-fetch');
 const { parse } = require('csv-parse');
 const db = require('../../db/db');
 
@@ -65,30 +66,38 @@ const MAPEAMENTO_COLUNAS = {
  */
 async function baixarCSV(url) {
     try {
-        const httpsAgent = new https.Agent({
-            rejectUnauthorized: false,  // Ignora erros de SSL
-            keepAlive: true
-        });
-
-        const response = await axios.get(url, {
-            httpsAgent,
-            responseType: 'text',
-            timeout: 120000,  // 2 minutos
-            maxRedirects: 5,  // Permite redirects
+        // Usar node-fetch com headers de navegador real
+        const response = await fetch(url, {
+            method: 'GET',
+            timeout: 120000,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/csv,application/octet-stream,*/*',
-                'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8'
-            }
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+                'Accept': 'text/csv,application/vnd.ms-excel,application/octet-stream,*/*',
+                'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8,en-US;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            },
+            agent: new https.Agent({
+                rejectUnauthorized: false,
+                keepAlive: true,
+                secureProtocol: 'TLSv1_2_method'
+            })
         });
 
-        return response.data;
+        if (!response.ok) {
+            throw new Error(`Status ${response.status}: ${response.statusText}`);
+        }
+
+        const csvContent = await response.text();
+        return csvContent;
     } catch (error) {
         console.error('   Detalhes do erro:', {
             message: error.message,
             code: error.code,
-            status: error.response?.status,
-            statusText: error.response?.statusText
+            name: error.name
         });
         throw new Error(`Erro ao baixar CSV: ${error.message}`);
     }
