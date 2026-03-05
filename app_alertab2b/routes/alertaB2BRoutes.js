@@ -10,7 +10,7 @@ const {
     buscarFiltrosDisponiveis,
     buscarStatusPorCluster,
     buscarReparosCriticost,
-    baixarCSV
+    gerarCSV
 } = require('../controllers/alertaB2BController');
 
 /**
@@ -371,7 +371,7 @@ router.get('/exportar', async (req, res) => {
 
         if (resultado.success) {
             console.log('📊 Dados exportados:', resultado.dados.length, 'registros');
-            const csv = baixarCSV(resultado.dados, 'backlog_b2b');
+            const csv = gerarCSV(resultado.dados, 'backlog_b2b');
 
             if (csv.success) {
                 res.setHeader('Content-Type', 'text/csv; charset=utf-8');

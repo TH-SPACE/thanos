@@ -1155,9 +1155,9 @@ async function buscarStatusPorCluster(filtros = {}) {
 }
 
 /**
- * Baixar CSV/Excel
+ * Gerar CSV para exportação
  */
-function baixarCSV(dados, nomeArquivo = 'backlog_b2b') {
+function gerarCSV(dados, nomeArquivo = 'backlog_b2b') {
     try {
         if (!dados || dados.length === 0) {
             return { success: false, error: 'Nenhum dado para exportar' };
@@ -1330,6 +1330,6 @@ module.exports = {
     buscarFiltrosDisponiveis,
     buscarStatusPorCluster,
     buscarReparosCriticost,
-    baixarCSV,
+    gerarCSV,
     parseCSV
 };
