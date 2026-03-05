@@ -175,23 +175,19 @@ async function carregarEstatisticas(filtros = {}) {
                 filtrosValidos[chave] = valor;
             }
         }
-        
+
         const params = new URLSearchParams(filtrosValidos);
         const response = await fetch(`${API_BASE}/estatisticas?${params}`);
         const resultado = await response.json();
 
-        console.log('Resultado estatísticas:', resultado);
-
         if (resultado.success) {
             const dados = resultado.dados.geral;
-            
+
             document.getElementById('statTotal').textContent = formatarNumero(dados.total_registros || 0);
             document.getElementById('statAtivos').textContent = formatarNumero(dados.ativos || 0);
             document.getElementById('statParados').textContent = formatarNumero(dados.parados || 0);
             document.getElementById('statClientes').textContent = formatarNumero(dados.total_clientes || 0);
             document.getElementById('statRegionais').textContent = formatarNumero(dados.total_regionais || 0);
-        } else {
-            console.error('Erro na resposta da API:', resultado);
         }
     } catch (error) {
         console.error('Erro ao carregar estatísticas:', error);
@@ -217,8 +213,6 @@ async function carregarDados() {
 
     estadoAtual.filtros = filtrosValidos;
 
-    console.log('📡 Filtros válidos:', filtrosValidos);
-
     try {
         const params = new URLSearchParams({
             pagina: estadoAtual.pagina,
@@ -226,13 +220,8 @@ async function carregarDados() {
             ...filtrosValidos
         });
 
-        const url = `${API_BASE}/backlog?${params}`;
-        console.log('🌐 URL da requisição:', url);
-
-        const response = await fetch(url);
+        const response = await fetch(`${API_BASE}/backlog?${params}`);
         const resultado = await response.json();
-
-        console.log('📦 Resultado da API:', resultado);
 
         if (resultado.success) {
             estadoAtual.totalRegistros = resultado.paginacao.total;
@@ -254,11 +243,10 @@ async function carregarDados() {
             // Atualizar estatísticas com os filtros aplicados
             carregarEstatisticas(filtrosValidos);
         } else {
-            console.error('❌ Erro na resposta:', resultado);
             tbody.innerHTML = '<tr><td colspan="11" class="no-data">Erro ao carregar dados</td></tr>';
         }
     } catch (error) {
-        console.error('💥 Erro ao carregar dados:', error);
+        console.error('Erro ao carregar dados:', error);
         tbody.innerHTML = '<tr><td colspan="11" class="no-data">Erro ao carregar dados</td></tr>';
     }
 }
@@ -293,7 +281,6 @@ function coletarFiltros() {
     const dataFim = document.getElementById('filtroDataFim').value;
     if (dataFim) filtros.dataFim = dataFim;
 
-    console.log('🔍 Filtros coletados:', filtros);
     return filtros;
 }
 

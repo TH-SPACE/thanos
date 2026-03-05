@@ -530,8 +530,6 @@ async function buscarBacklog(filtros = {}) {
             dataFim
         } = filtros;
 
-        console.log('🔍 buscarBacklog - Filtros recebidos:', filtros);
-
         const offset = (pagina - 1) * limite;
 
         let query = 'SELECT * FROM backlog_b2b WHERE 1=1';
@@ -592,9 +590,6 @@ async function buscarBacklog(filtros = {}) {
             params.push(dataFim);
         }
 
-        console.log('📝 Query SQL:', query);
-        console.log('📦 Params:', params);
-
         query += ' ORDER BY last_update DESC LIMIT ? OFFSET ?';
         params.push(limite, offset);
 
@@ -603,8 +598,6 @@ async function buscarBacklog(filtros = {}) {
         try {
             const [registros] = await connection.execute(query, params);
             const [countResult] = await connection.execute(countQuery, params.slice(0, -2));
-
-            console.log('✅ Registros encontrados:', registros.length);
 
             return {
                 success: true,
@@ -619,7 +612,7 @@ async function buscarBacklog(filtros = {}) {
         }
 
     } catch (error) {
-        console.error('❌ Erro ao buscar backlog:', error.message);
+        console.error('Erro ao buscar backlog:', error.message);
         return { success: false, error: error.message };
     }
 }
@@ -703,9 +696,6 @@ async function buscarEstatisticas(filtros = {}) {
                 FROM backlog_b2b
                 ${whereClause}
             `;
-
-            console.log('Executando query:', query);
-            console.log('Com params:', params);
 
             const [resultado] = await connection.execute(query, params.length > 0 ? params : []);
 
