@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Alerta B2B</title>
+    <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Cabeçalho -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"/>
+                        <path d="M18 17V9"/>
+                        <path d="M13 17V5"/>
+                        <path d="M8 17v-3"/>
+                    </svg>
+                    <h1>📊 Dashboard Alerta B2B</h1>
+                </div>
+                <div class="header-actions">
+                    <a href="/alerta-b2b/" class="btn btn-secondary">
+                        ← Voltar para Lista
+                    </a>
+                    <a href="/alerta-b2b/exportar" class="btn btn-success" title="Baixar Excel">
+                        📥 Baixar Excel
+                    </a>
+                    <button id="btnAtualizar" class="btn btn-primary" title="Atualizar dashboard">
+                        🔄 Atualizar
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filtros -->
+        <section class="filters-section">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="filtroRegional">Regional</label>
+                    <select id="filtroRegional">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroCluster">Cluster</label>
+                    <select id="filtroCluster">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroStatus">Status</label>
+                    <select id="filtroStatus">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button id="btnFiltrar" class="btn btn-primary">🔍 Filtrar</button>
+                    <button id="btnLimpar" class="btn btn-secondary">🧹 Limpar</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alerta de Reparos Críticos -->
+        <section class="alert-section" id="alertSection">
+            <h2 class="section-title">🚨 Alerta de Reparos Críticos</h2>
+            <div class="alert-cards">
+                <div class="alert-card alert-urgente">
+                    <div class="alert-icon">🔴</div>
+                    <div class="alert-content">
+                        <div class="alert-value" id="alertUrgente">0</div>
+                        <div class="alert-label">Urgente (> 18h)</div>
+                        <div class="alert-desc">Solicitar mudança para Parada IMEDIATAMENTE</div>
+                    </div>
+                </div>
+                <div class="alert-card alert-atencao">
+                    <div class="alert-icon">🟠</div>
+                    <div class="alert-content">
+                        <div class="alert-value" id="alertAtencao">0</div>
+                        <div class="alert-label">Atenção (15-18h)</div>
+                        <div class="alert-desc">Solicitar mudança para Parada</div>
+                    </div>
+                </div>
+                <div class="alert-card alert-alerta">
+                    <div class="alert-icon">🟡</div>
+                    <div class="alert-content">
+                        <div class="alert-value" id="alertAlerta">0</div>
+                        <div class="alert-label">Alerta (12-15h)</div>
+                        <div class="alert-desc">Monitorar de perto</div>
+                    </div>
+                </div>
+                <div class="alert-card alert-monitorar">
+                    <div class="alert-icon">🔵</div>
+                    <div class="alert-content">
+                        <div class="alert-value" id="alertMonitorar">0</div>
+                        <div class="alert-label">Monitorar (< 12h)</div>
+                        <div class="alert-desc">Acompanhar evolução</div>
+                    </div>
+                </div>
+            </div>
+            <div class="alert-actions">
+                <button id="btnVerCriticost" class="btn btn-danger">🚨 Ver Reparos Urgentes</button>
+                <button id="btnVerAtencao" class="btn btn-warning">⚠️ Ver Em Atenção</button>
+            </div>
+        </section>
+
+        <!-- Cards de Estatísticas -->
+        <section class="stats-cards">
+            <div class="stat-card stat-total">
+                <div class="stat-icon">📋</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total de Registros</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-ativos">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statAtivos">0</div>
+                    <div class="stat-label">Ativos</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-parados">
+                <div class="stat-icon">⏸️</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statParados">0</div>
+                    <div class="stat-label">Parados</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-clientes">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statClientes">0</div>
+                    <div class="stat-label">Clientes</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-regionais">
+                <div class="stat-icon">📍</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statRegionais">0</div>
+                    <div class="stat-label">Regionais</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard de Tempo de Backlog -->
+        <section class="dashboard-section">
+            <h2 class="section-title">⏱️ Tempo de Backlog por Cluster</h2>
+            <div id="dashboardBacklog" class="dashboard-grid">
+                <!-- Preenchido via JavaScript -->
+            </div>
+        </section>
+
+        <!-- Tabela de Status por Cluster -->
+        <section class="dashboard-section">
+            <h2 class="section-title">📊 Status por Cluster</h2>
+            <div class="table-container">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Cluster</th>
+                            <th>Total</th>
+                            <th>Ativos</th>
+                            <th>Parados</th>
+                            <th>% Ativos</th>
+                            <th>% Parados</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaStatusBody">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Última Atualização -->
+        <footer class="dashboard-footer">
+            <p>
+                <strong>Última atualização:</strong> 
+                <span id="ultimaAtualizacao">--:--:--</span>
+                <span class="sync-indicator">🟢 Sincronização automática: A cada 5 minutos</span>
+            </p>
+        </footer>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

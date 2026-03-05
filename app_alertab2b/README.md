@@ -63,11 +63,13 @@ http://localhost:3001/alerta-b2b/
 
 | Endpoint | Método | Descrição |
 |----------|--------|-----------|
-| `/alerta-b2b/` | GET | Página principal |
+| `/alerta-b2b/` | GET | Página principal (lista) |
+| `/alerta-b2b/dashboard` | GET | **Página do dashboard** |
 | `/alerta-b2b/sincronizar` | POST | Sincronizar dados |
 | `/alerta-b2b/backlog` | GET | Buscar registros (com filtros) |
 | `/alerta-b2b/estatisticas` | GET | Estatísticas (com filtros) |
-| `/alerta-b2b/dashboard` | GET | Dashboard por cluster |
+| `/alerta-b2b/status-por-cluster` | GET | Status por cluster |
+| `/alerta-b2b/dashboard` | GET | Dashboard tempo de backlog |
 | `/alerta-b2b/logs` | GET | Logs de sincronização |
 | `/alerta-b2b/filtros` | GET | Filtros disponíveis |
 

@@ -974,6 +974,217 @@ async function buscarFiltrosDisponiveis() {
     }
 }
 
+/**
+ * Buscar status por cluster
+ */
+async function buscarStatusPorCluster(filtros = {}) {
+    try {
+        const {
+            regional,
+            status,
+            cluster,
+            dataInicio,
+            dataFim
+        } = filtros;
+
+        let whereClause = 'WHERE 1=1';
+        const params = [];
+
+        if (regional) {
+            whereClause += ' AND regional = ?';
+            params.push(regional);
+        }
+
+        if (status) {
+            whereClause += ' AND status = ?';
+            params.push(status);
+        }
+
+        if (cluster) {
+            whereClause += ' AND cluster = ?';
+            params.push(cluster);
+        }
+
+        if (dataInicio) {
+            whereClause += ' AND data_criacao >= ?';
+            params.push(dataInicio);
+        }
+
+        if (dataFim) {
+            whereClause += ' AND data_criacao <= ?';
+            params.push(dataFim);
+        }
+
+        const connection = await db.mysqlPool.getConnection();
+
+        try {
+            const query = `
+                SELECT 
+                    cluster,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'Ativo' THEN 1 ELSE 0 END) as ativos,
+                    SUM(CASE WHEN status = 'Parado' THEN 1 ELSE 0 END) as parados
+                FROM backlog_b2b
+                ${whereClause}
+                GROUP BY cluster
+                ORDER BY total DESC
+            `;
+
+            const [resultado] = await connection.execute(query, params);
+
+            return {
+                success: true,
+                dados: resultado
+            };
+        } finally {
+            connection.release();
+        }
+
+    } catch (error) {
+        console.error('Erro ao buscar status por cluster:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Baixar CSV/Excel
+ */
+function baixarCSV(dados, nomeArquivo = 'backlog_b2b') {
+    try {
+        if (!dados || dados.length === 0) {
+            return { success: false, error: 'Nenhum dado para exportar' };
+        }
+
+        // Cabeçalhos
+        const cabecalhos = [
+            'BD',
+            'Cliente',
+            'Regional',
+            'Cluster',
+            'Cidade',
+            'UF',
+            'Status',
+            'Grupo',
+            'Procedência',
+            'SLA',
+            'Prazo',
+            'Reclamação',
+            'Data Criação',
+            'Última Atualização'
+        ];
+
+        // Linhas
+        const linhas = dados.map(item => [
+            item.bd || '',
+            item.nome_cliente || '',
+            item.regional || '',
+            item.cluster || '',
+            item.municipio || '',
+            item.uf || '',
+            item.status || '',
+            item.grupo || '',
+            item.procedencia || '',
+            item.sla || '',
+            item.prazo || '',
+            (item.reclamacao || '').replace(/[\r\n]+/g, ' '),
+            formatarData(item.data_criacao),
+            formatarData(item.last_update)
+        ]);
+
+        // Criar conteúdo CSV
+        const conteudo = [
+            cabecalhos.join(';'),
+            ...linhas.map(linha => linha.map(campo => `"${campo}"`).join(';'))
+        ].join('\n');
+
+        return {
+            success: true,
+            conteudo,
+            nomeArquivo: `${nomeArquivo}_${new Date().toISOString().slice(0, 10)}.csv`
+        };
+    } catch (error) {
+        console.error('Erro ao gerar CSV:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Buscar reparos críticos (Ativos próximos ou após 18h)
+ */
+async function buscarReparosCriticost() {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+
+        try {
+            // Buscar reparos Ativos ordenados por hora de criação
+            const query = `
+                SELECT 
+                    bd,
+                    nome_cliente,
+                    regional,
+                    cluster,
+                    municipio,
+                    uf,
+                    status,
+                    grupo,
+                    procedencia,
+                    sla,
+                    prazo,
+                    data_criacao,
+                    last_update,
+                    TIMESTAMPDIFF(HOUR, data_criacao, NOW()) as horas_ativo
+                FROM backlog_b2b
+                WHERE status = 'Ativo'
+                ORDER BY data_criacao ASC
+            `;
+
+            const [reparos] = await connection.execute(query);
+
+            // Classificar por criticidade
+            const criticos = {
+                urgente: [],      // > 18 horas
+                atencao: [],      // 15-18 horas
+                alerta: [],       // 12-15 horas
+                monitorar: []     // < 12 horas
+            };
+
+            reparos.forEach(reparo => {
+                const horas = reparo.horas_ativo || 0;
+                
+                if (horas >= 18) {
+                    criticos.urgente.push(reparo);
+                } else if (horas >= 15) {
+                    criticos.atencao.push(reparo);
+                } else if (horas >= 12) {
+                    criticos.alerta.push(reparo);
+                } else {
+                    criticos.monitorar.push(reparo);
+                }
+            });
+
+            return {
+                success: true,
+                dados: {
+                    resumo: {
+                        total: reparos.length,
+                        urgente: criticos.urgente.length,
+                        atencao: criticos.atencao.length,
+                        alerta: criticos.alerta.length,
+                        monitorar: criticos.monitorar.length
+                    },
+                    criticos
+                }
+            };
+        } finally {
+            connection.release();
+        }
+
+    } catch (error) {
+        console.error('Erro ao buscar reparos críticos:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 module.exports = {
     executarSincronizacao,
     buscarBacklog,
@@ -981,6 +1192,8 @@ module.exports = {
     buscarDashboardCluster,
     buscarLogsSincronizacao,
     buscarFiltrosDisponiveis,
+    buscarStatusPorCluster,
+    buscarReparosCriticost,
     baixarCSV,
     parseCSV
 };

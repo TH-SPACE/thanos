@@ -6,7 +6,10 @@ const {
     buscarEstatisticas,
     buscarDashboardCluster,
     buscarLogsSincronizacao,
-    buscarFiltrosDisponiveis
+    buscarFiltrosDisponiveis,
+    buscarStatusPorCluster,
+    buscarReparosCriticost,
+    baixarCSV
 } = require('../controllers/alertaB2BController');
 
 /**
@@ -240,6 +243,123 @@ router.get('/filtros', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro interno ao buscar filtros',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /status-por-cluster
+ * Busca status (ativos/parados) por cluster
+ */
+router.get('/status-por-cluster', async (req, res) => {
+    try {
+        const filtros = {
+            regional: req.query.regional,
+            status: req.query.status,
+            cluster: req.query.cluster,
+            dataInicio: req.query.dataInicio,
+            dataFim: req.query.dataFim
+        };
+
+        const resultado = await buscarStatusPorCluster(filtros);
+
+        if (resultado.success) {
+            res.json({
+                success: true,
+                dados: resultado.dados
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao buscar status por cluster',
+                error: resultado.error
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao buscar status por cluster:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno ao buscar status por cluster',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /reparos-criticos
+ * Busca reparos Ativos críticos (próximos ou após 18h)
+ */
+router.get('/reparos-criticos', async (req, res) => {
+    try {
+        const resultado = await buscarReparosCriticost();
+
+        if (resultado.success) {
+            res.json({
+                success: true,
+                dados: resultado.dados
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao buscar reparos críticos',
+                error: resultado.error
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao buscar reparos críticos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno ao buscar reparos críticos',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /exportar
+ * Exporta dados em formato CSV/Excel
+ */
+router.get('/exportar', async (req, res) => {
+    try {
+        const filtros = {
+            pagina: 1,
+            limite: 10000, // Buscar todos os registros
+            regional: req.query.regional,
+            status: req.query.status,
+            cluster: req.query.cluster,
+            dataInicio: req.query.dataInicio,
+            dataFim: req.query.dataFim
+        };
+
+        const resultado = await buscarBacklog(filtros);
+
+        if (resultado.success) {
+            const csv = baixarCSV(resultado.dados, 'backlog_b2b');
+
+            if (csv.success) {
+                res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+                res.setHeader('Content-Disposition', `attachment; filename="${csv.nomeArquivo}"`);
+                res.send(csv.conteudo);
+            } else {
+                res.status(500).json({
+                    success: false,
+                    message: 'Erro ao gerar CSV',
+                    error: csv.error
+                });
+            }
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao buscar dados para exportação',
+                error: resultado.error
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao exportar dados:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno ao exportar dados',
             error: error.message
         });
     }
