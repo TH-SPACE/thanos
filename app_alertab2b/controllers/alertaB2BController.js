@@ -460,6 +460,9 @@ async function executarSincronizacao(fonte = 'url') {
 
         // 1. Baixar ou ler CSV
         console.log('\n📥 [1/3] Obtendo arquivo CSV...');
+        console.log('   🔍 fonte =', fonte);
+        console.log('   🔍 fonte === "arquivo"?', fonte === 'arquivo');
+        
         if (fonte === 'arquivo') {
             const fs = require('fs');
             const path = require('path');
@@ -467,13 +470,16 @@ async function executarSincronizacao(fonte = 'url') {
             csvContent = fs.readFileSync(caminhoArquivo, 'utf-8');
             console.log('   ✅ Arquivo local lido com sucesso!');
         } else {
+            console.log('   🔄 Chamando baixarCSV...');
             csvContent = await baixarCSV(CONFIG.CSV_URL);
+            console.log('   🔄 Retornou do baixarCSV, tipo:', typeof csvContent);
             console.log('   ✅ CSV baixado com sucesso!');
         }
 
         // Debug: verificar tipo do conteúdo
         console.log('   🔍 Tipo do csvContent:', typeof csvContent);
         console.log('   🔍 Tamanho:', csvContent ? String(csvContent).length : 'nulo');
+        console.log('   🔍 Valor:', csvContent);
 
         // 2. Parse do CSV
         console.log('\n📋 [2/3] Processando CSV...');
