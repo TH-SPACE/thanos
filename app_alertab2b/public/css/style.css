@@ -310,6 +310,129 @@ body {
 }
 
 /* ===========================================
+   Filtro Multiselect (Procedência)
+   =========================================== */
+.filter-multiselect {
+    position: relative;
+}
+
+.multiselect-container {
+    position: relative;
+}
+
+.multiselect-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    min-height: 42px;
+}
+
+.multiselect-header:hover {
+    border-color: var(--primary-color);
+}
+
+.multiselect-header.active {
+    border-color: var(--primary-color);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.multiselect-placeholder {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.multiselect-selected-text {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.multiselect-arrow {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    transition: transform 0.3s ease;
+}
+
+.multiselect-arrow.rotate {
+    transform: rotate(180deg);
+}
+
+.multiselect-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 250px;
+    overflow-y: auto;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    display: none;
+}
+
+.multiselect-dropdown.show {
+    display: block;
+}
+
+.multiselect-option {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    gap: 10px;
+}
+
+.multiselect-option:hover {
+    background: #f3f4f6;
+}
+
+.multiselect-option.selected {
+    background: #dbeafe;
+}
+
+.multiselect-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.multiselect-option label {
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    pointer-events: none;
+}
+
+.multiselect-actions {
+    display: flex;
+    gap: 10px;
+    padding: 10px 15px;
+    border-top: 1px solid var(--border-color);
+    background: #f9fafb;
+}
+
+.multiselect-actions .btn {
+    flex: 1;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+/* ===========================================
    Tabela
    =========================================== */
 .table-section {
@@ -813,6 +936,16 @@ tbody tr:hover {
 .header-actions {
     display: flex;
     gap: 10px;
+    align-items: center;
+}
+
+.header-actions .btn {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.header-actions a.btn {
+    text-decoration: none;
 }
 
 /* Filtros do Dashboard */
@@ -1094,6 +1227,32 @@ tbody tr:hover {
     padding: 20px;
     color: var(--text-muted);
     font-size: 0.9rem;
+}
+
+/* Tabela de Tempo de Backlog */
+.tempo-backlog-table {
+    font-size: 0.85rem;
+}
+
+.tempo-backlog-table th {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    padding: 12px 8px;
+}
+
+.tempo-backlog-table td {
+    vertical-align: middle;
+    padding: 10px 8px;
+}
+
+.dashboard-total {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+.dashboard-total td {
+    border-top: 2px solid var(--border-color);
+    padding: 12px 8px;
 }
 
 .sync-indicator {

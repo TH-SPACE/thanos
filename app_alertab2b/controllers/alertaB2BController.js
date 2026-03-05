@@ -117,27 +117,35 @@ async function parseCSV(csvContent) {
  */
 function formatarData(data) {
     if (!data || data === '') return null;
-    
-    // Se já estiver no formato YYYY-MM-DD HH:MM:SS
-    if (/^\d{4}-\d{2}-\d{2}/.test(data)) {
-        return data.substring(0, 19);
+
+    // Converter Date para string se necessário
+    let dataStr = data;
+    if (data instanceof Date) {
+        dataStr = data.toISOString().slice(0, 19).replace('T', ' ');
+    } else if (typeof data !== 'string') {
+        dataStr = String(data);
     }
-    
+
+    // Se já estiver no formato YYYY-MM-DD HH:MM:SS
+    if (/^\d{4}-\d{2}-\d{2}/.test(dataStr)) {
+        return dataStr.substring(0, 19);
+    }
+
     // Se estiver no formato DD/MM/YYYY HH:MM:SS
-    const match = data.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2}:\d{2})$/);
+    const match = dataStr.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2}:\d{2})$/);
     if (match) {
         const [, dia, mes, ano, hora] = match;
         return `${ano}-${mes}-${dia} ${hora}`;
     }
-    
+
     // Se estiver apenas DD/MM/YYYY
-    const matchDate = data.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const matchDate = dataStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (matchDate) {
         const [, dia, mes, ano] = matchDate;
         return `${ano}-${mes}-${dia} 00:00:00`;
     }
-    
-    return data;
+
+    return dataStr;
 }
 
 /**
@@ -526,6 +534,7 @@ async function buscarBacklog(filtros = {}) {
             grupo,
             cliente,
             cluster,
+            procedencia,
             dataInicio,
             dataFim
         } = filtros;
@@ -582,6 +591,21 @@ async function buscarBacklog(filtros = {}) {
             console.log('✅ Adicionado filtro cluster:', cluster);
         } else {
             console.log('⚠️ Cluster não informado');
+        }
+
+        // Procedência pode vir múltipla (separada por vírgula)
+        if (procedencia) {
+            const procedenciasArray = procedencia.split(',');
+            if (procedenciasArray.length === 1) {
+                query += ' AND procedencia = ?';
+                countQuery += ' AND procedencia = ?';
+                params.push(procedencia);
+            } else {
+                const placeholders = procedenciasArray.map(() => '?').join(', ');
+                query += ` AND procedencia IN (${placeholders})`;
+                countQuery += ` AND procedencia IN (${placeholders})`;
+                params.push(...procedenciasArray);
+            }
         }
 
         if (dataInicio) {
@@ -641,6 +665,7 @@ async function buscarEstatisticas(filtros = {}) {
             status,
             grupo,
             cluster,
+            procedencia,
             dataInicio,
             dataFim
         } = filtros;
@@ -682,6 +707,19 @@ async function buscarEstatisticas(filtros = {}) {
                 params.push(cluster);
             }
 
+            // Procedência pode vir múltipla (separada por vírgula)
+            if (procedencia) {
+                const procedenciasArray = procedencia.split(',');
+                if (procedenciasArray.length === 1) {
+                    whereClause += ' AND procedencia = ?';
+                    params.push(procedencia);
+                } else {
+                    const placeholders = procedenciasArray.map(() => '?').join(', ');
+                    whereClause += ` AND procedencia IN (${placeholders})`;
+                    params.push(...procedenciasArray);
+                }
+            }
+
             if (dataInicio) {
                 whereClause += ' AND data_criacao >= ?';
                 params.push(dataInicio);
@@ -691,9 +729,6 @@ async function buscarEstatisticas(filtros = {}) {
                 whereClause += ' AND data_criacao <= ?';
                 params.push(dataFim);
             }
-
-            console.log('Query estatísticas:', whereClause);
-            console.log('Params:', params);
 
             const query = `
                 SELECT
@@ -920,38 +955,47 @@ async function buscarFiltrosDisponiveis() {
         try {
             // Buscar regionais únicas
             const queryRegionais = `
-                SELECT DISTINCT regional 
-                FROM backlog_b2b 
-                WHERE regional IS NOT NULL AND regional != '' 
+                SELECT DISTINCT regional
+                FROM backlog_b2b
+                WHERE regional IS NOT NULL AND regional != ''
                 ORDER BY regional
             `;
 
             // Buscar clusters únicos
             const queryClusters = `
-                SELECT DISTINCT cluster 
-                FROM backlog_b2b 
-                WHERE cluster IS NOT NULL AND cluster != '' 
+                SELECT DISTINCT cluster
+                FROM backlog_b2b
+                WHERE cluster IS NOT NULL AND cluster != ''
                 ORDER BY cluster
+            `;
+
+            // Buscar procedências únicas
+            const queryProcedencias = `
+                SELECT DISTINCT procedencia
+                FROM backlog_b2b
+                WHERE procedencia IS NOT NULL AND procedencia != ''
+                ORDER BY procedencia
             `;
 
             // Buscar status únicos
             const queryStatus = `
-                SELECT DISTINCT status 
-                FROM backlog_b2b 
-                WHERE status IS NOT NULL AND status != '' 
+                SELECT DISTINCT status
+                FROM backlog_b2b
+                WHERE status IS NOT NULL AND status != ''
                 ORDER BY status
             `;
 
             // Buscar grupos únicos
             const queryGrupos = `
-                SELECT DISTINCT grupo 
-                FROM backlog_b2b 
-                WHERE grupo IS NOT NULL AND grupo != '' 
+                SELECT DISTINCT grupo
+                FROM backlog_b2b
+                WHERE grupo IS NOT NULL AND grupo != ''
                 ORDER BY grupo
             `;
 
             const [regionais] = await connection.execute(queryRegionais);
             const [clusters] = await connection.execute(queryClusters);
+            const [procedencias] = await connection.execute(queryProcedencias);
             const [status] = await connection.execute(queryStatus);
             const [grupos] = await connection.execute(queryGrupos);
 
@@ -960,6 +1004,7 @@ async function buscarFiltrosDisponiveis() {
                 dados: {
                     regionais: regionais.map(r => r.regional),
                     clusters: clusters.map(c => c.cluster),
+                    procedencias: procedencias.map(p => p.procedencia),
                     status: status.map(s => s.status),
                     grupos: grupos.map(g => g.grupo)
                 }
@@ -983,9 +1028,13 @@ async function buscarStatusPorCluster(filtros = {}) {
             regional,
             status,
             cluster,
+            procedencia,
             dataInicio,
             dataFim
         } = filtros;
+
+        console.log('🔍 buscarStatusPorCluster - Filtros recebidos:', filtros);
+        console.log('📍 procedencia:', procedencia);
 
         let whereClause = 'WHERE 1=1';
         const params = [];
@@ -1005,6 +1054,20 @@ async function buscarStatusPorCluster(filtros = {}) {
             params.push(cluster);
         }
 
+        // Procedência pode vir múltipla (separada por vírgula)
+        if (procedencia) {
+            const procedenciasArray = procedencia.split(',');
+            console.log('📍 procedenciaArray:', procedenciasArray);
+            if (procedenciasArray.length === 1) {
+                whereClause += ' AND procedencia = ?';
+                params.push(procedencia);
+            } else {
+                const placeholders = procedenciasArray.map(() => '?').join(', ');
+                whereClause += ` AND procedencia IN (${placeholders})`;
+                params.push(...procedenciasArray);
+            }
+        }
+
         if (dataInicio) {
             whereClause += ' AND data_criacao >= ?';
             params.push(dataInicio);
@@ -1015,11 +1078,14 @@ async function buscarStatusPorCluster(filtros = {}) {
             params.push(dataFim);
         }
 
+        console.log('📝 whereClause:', whereClause);
+        console.log('📦 params:', params);
+
         const connection = await db.mysqlPool.getConnection();
 
         try {
             const query = `
-                SELECT 
+                SELECT
                     cluster,
                     COUNT(*) as total,
                     SUM(CASE WHEN status = 'Ativo' THEN 1 ELSE 0 END) as ativos,

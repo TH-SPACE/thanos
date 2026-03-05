@@ -37,7 +37,15 @@ router.get('/', (req, res) => {
  * Deve estar após as rotas da API para não conflitar
  */
 router.get('/dashboard-html', (req, res) => {
+    console.log('📄 Servindo dashboard.html');
     res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+});
+
+/**
+ * Rota para servir o dashboard (legado - redireciona)
+ */
+router.get('/dashboard', (req, res) => {
+    res.redirect('/alerta-b2b/dashboard-html');
 });
 
 /**
@@ -333,12 +341,15 @@ router.get('/reparos-criticos', async (req, res) => {
  */
 router.get('/exportar', async (req, res) => {
     try {
+        console.log('📥 Exportando dados... Filtros:', req.query);
+        
         const filtros = {
             pagina: 1,
             limite: 10000, // Buscar todos os registros
             regional: req.query.regional,
             status: req.query.status,
             cluster: req.query.cluster,
+            procedencia: req.query.procedencia,
             dataInicio: req.query.dataInicio,
             dataFim: req.query.dataFim
         };
@@ -346,6 +357,7 @@ router.get('/exportar', async (req, res) => {
         const resultado = await buscarBacklog(filtros);
 
         if (resultado.success) {
+            console.log('📊 Dados exportados:', resultado.dados.length, 'registros');
             const csv = baixarCSV(resultado.dados, 'backlog_b2b');
 
             if (csv.success) {
@@ -353,6 +365,7 @@ router.get('/exportar', async (req, res) => {
                 res.setHeader('Content-Disposition', `attachment; filename="${csv.nomeArquivo}"`);
                 res.send(csv.conteudo);
             } else {
+                console.error('❌ Erro ao gerar CSV:', csv.error);
                 res.status(500).json({
                     success: false,
                     message: 'Erro ao gerar CSV',
@@ -360,6 +373,7 @@ router.get('/exportar', async (req, res) => {
                 });
             }
         } else {
+            console.error('❌ Erro ao buscar dados para exportação:', resultado.error);
             res.status(500).json({
                 success: false,
                 message: 'Erro ao buscar dados para exportação',

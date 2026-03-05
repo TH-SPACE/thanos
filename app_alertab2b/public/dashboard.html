@@ -22,15 +22,15 @@
                     <h1>📊 Dashboard Alerta B2B</h1>
                 </div>
                 <div class="header-actions">
-                    <a href="/alerta-b2b/dashboard-html" class="btn btn-secondary">
+                    <a href="/alerta-b2b/" class="btn btn-secondary">
                         ← Voltar para Lista
                     </a>
+                    <button id="btnSincronizar" class="btn btn-warning" title="Sincronizar dados agora">
+                        🔄 Sincronizar
+                    </button>
                     <a href="/alerta-b2b/exportar" class="btn btn-success" title="Baixar Excel">
                         📥 Baixar Excel
                     </a>
-                    <button id="btnAtualizar" class="btn btn-primary" title="Atualizar dashboard">
-                        🔄 Atualizar
-                    </button>
                 </div>
             </div>
         </header>
@@ -52,11 +52,17 @@
                     </select>
                 </div>
 
-                <div class="filter-group">
-                    <label for="filtroStatus">Status</label>
-                    <select id="filtroStatus">
-                        <option value="">Todos</option>
-                    </select>
+                <div class="filter-group filter-multiselect">
+                    <label for="filtroProcedencia">Procedência</label>
+                    <div class="multiselect-container">
+                        <div class="multiselect-header" id="filtroProcedenciaHeader">
+                            <span class="multiselect-placeholder">Selecionar procedências...</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-dropdown" id="filtroProcedenciaDropdown">
+                            <!-- Opções preenchidas via JavaScript -->
+                        </div>
+                    </div>
                 </div>
 
                 <div class="filter-actions">
@@ -131,16 +137,51 @@
             </div>
         </section>
 
+        <!-- Dashboard por Cluster - Tempo de Backlog -->
+        <section class="dashboard-section">
+            <h2 class="section-title">⏱️ Tempo de Backlog por Cluster</h2>
+            <div class="table-container">
+                <table class="dashboard-table tempo-backlog-table">
+                    <thead>
+                        <tr>
+                            <th>Cluster</th>
+                            <th>Total</th>
+                            <th>Ativos</th>
+                            <th>Parados</th>
+                            <th>&lt; 1h</th>
+                            <th>1-3h</th>
+                            <th>3-6h</th>
+                            <th>6-8h</th>
+                            <th>8-24h</th>
+                            <th>1-3d</th>
+                            <th>3-5d</th>
+                            <th>5-7d</th>
+                            <th>7-15d</th>
+                            <th>15-30d</th>
+                            <th>&gt; 30d</th>
+                            <th>Média</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tempoBacklogBody">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                    <tfoot id="tempoBacklogFoot">
+                        <!-- Total preenchido via JavaScript -->
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
         <!-- Última Atualização -->
         <footer class="dashboard-footer">
             <p>
-                <strong>Última atualização:</strong> 
+                <strong>Última atualização:</strong>
                 <span id="ultimaAtualizacao">--:--:--</span>
                 <span class="sync-indicator">🟢 Sincronização automática: A cada 5 minutos</span>
             </p>
         </footer>
     </div>
 
-    <script src="js/dashboard.js"></script>
+    <script src="./js/dashboard.js"></script>
 </body>
 </html>
