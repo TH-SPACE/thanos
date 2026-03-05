@@ -89,6 +89,40 @@ http://localhost:3001/alerta-b2b/
 
 ## 📊 Dashboard
 
+**Acesse:** `http://localhost:3001/alerta-b2b/dashboard`
+
+### Funcionalidades do Dashboard
+
+1. **🚨 Alerta de Reparos Críticos**
+   - **Urgente (> 18h)**: Solicitar mudança para Parada IMEDIATAMENTE
+   - **Atenção (15-18h)**: Solicitar mudança para Parada
+   - **Alerta (12-15h)**: Monitorar de perto
+   - **Monitorar (< 12h)**: Acompanhar evolução
+
+2. **Cards de Estatísticas**
+   - Total de Registros
+   - Ativos / Parados
+   - Clientes / Regionais
+
+3. **⏱️ Tempo de Backlog por Cluster**
+   - Barras coloridas por faixa de tempo
+   - Horas: < 1h, 1-3h, 3-6h, 6-8h, 8-24h
+   - Dias: 1-3d, 3-5d, 5-7d, 7-15d, 15-30d, > 30d
+
+4. **📊 Tabela de Status por Cluster** (PRINCIPAL)
+   - Total, Ativos, Parados por cluster
+   - Percentual com barra de progresso
+   - Ideal para cobrar clusters com muitos ativos
+
+5. **📥 Download Excel**
+   - Botão no cabeçalho para baixar base completa
+   - Formato CSV compatível com Excel
+
+### Filtros do Dashboard
+- Regional, Cluster, Status
+- Filtram todas as seções simultaneamente
+- Botão "Limpar" para remover filtros
+
 Mostra tempo de backlog por cluster:
 
 **Horas:** < 1h, 1-3h, 3-6h, 6-8h, 8-24h  

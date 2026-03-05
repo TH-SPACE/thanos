@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const {
     executarSincronizacao,
     buscarBacklog,
@@ -11,6 +12,18 @@ const {
     buscarReparosCriticost,
     baixarCSV
 } = require('../controllers/alertaB2BController');
+
+/**
+ * Rota para servir a página do Dashboard
+ * Deve vir antes das rotas da API para não conflitar
+ */
+router.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+});
+
+/**
+ * Rotas da API do Alerta B2B
+ */
 
 /**
  * Rotas do Alerta B2B
