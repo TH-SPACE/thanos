@@ -11,7 +11,7 @@ const db = require('../../db/db');
 // Configurações
 const CONFIG = {
     CSV_URL: process.env.ALERTA_B2B_CSV_URL || 'https://brtdtlts0002fu.redecorp.br/bdsla/index/excel',
-    IGNORE_SSL: process.env.ALERTA_B2B_IGNORE_SSL === 'false'
+    IGNORE_SSL: process.env.ALERTA_B2B_IGNORE_SSL === 'true'
 };
 
 // Mapeamento de colunas do CSV para o banco de dados
