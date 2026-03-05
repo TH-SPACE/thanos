@@ -10,6 +10,27 @@ h1, h2, h3, h4, h5, h6 {
     font-size: calc(1.375rem - 0.2rem);
 }
 
+/* Estilo para cards de resumo */
+#cardsResumo .card {
+    border: none;
+    box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.075);
+}
+
+#cardsResumo .card-body h5 {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+#cardsResumo .card-body small {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#cardsResumo .card-body i {
+    font-size: 1.5rem;
+}
+
 .navbar-brand {
     font-size: 1.2rem;
 }

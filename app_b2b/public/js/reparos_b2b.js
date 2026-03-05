@@ -360,11 +360,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .done(function(data) {
                 document.getElementById('loadingAnalise').style.display = 'none';
 
+                // Atualiza os cards de resumo
+                updateResumoCards(data);
+
                 // Atualiza a tabela com dados reais
                 updateAnalysisTable(data);
             })
             .fail(function(error) {
                 document.getElementById('loadingAnalise').style.display = 'none';
+                
+                // Reseta os cards de resumo em caso de erro
+                updateResumoCards([]);
+                
                 let errorMessage = 'Erro ao carregar dados de análise.';
                 if (error.responseJSON && error.responseJSON.error) {
                     errorMessage = error.responseJSON.error;
@@ -380,6 +387,67 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error(errorMessage);
                 }
             });
+    }
+
+    // Função para atualizar os cards de resumo
+    function updateResumoCards(data) {
+        if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById('resumoEntrantes').textContent = '0';
+            document.getElementById('resumoEncerrados').textContent = '0';
+            document.getElementById('resumoAtivos').textContent = '0';
+            document.getElementById('resumoEficiencia').textContent = '0%';
+            return;
+        }
+
+        // Determinar o mês e ano selecionados no filtro
+        let selectedDate = new Date();
+        if (filtroMes.value) {
+            const [year, month] = filtroMes.value.split('-');
+            selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+        }
+
+        const selectedYear = selectedDate.getFullYear();
+        const selectedMonth = selectedDate.getMonth();
+
+        // Calcular totais
+        let totalEntrantes = 0;
+        let totalEncerrados = 0;
+        let totalAtivos = 0;
+
+        data.forEach(row => {
+            // Contar entrantes (baseado na data_abertura)
+            if (row.data_abertura) {
+                const dataAbertura = new Date(row.data_abertura);
+                if (dataAbertura.getFullYear() === selectedYear && dataAbertura.getMonth() === selectedMonth) {
+                    totalEntrantes++;
+                }
+            }
+
+            // Contar encerrados (baseado na data_encerramento)
+            if (row.data_encerramento) {
+                const dataEncerramento = new Date(row.data_encerramento);
+                if (dataEncerramento.getFullYear() === selectedYear && dataEncerramento.getMonth() === selectedMonth) {
+                    totalEncerrados++;
+                }
+            }
+
+            // Contar ativos (registros sem data_encerramento ou com status 'Aberto')
+            if (!row.data_encerramento || row.status === 'Aberto') {
+                totalAtivos++;
+            }
+        });
+
+        // Calcular eficiência
+        let eficienciaTotal = 0;
+        if (totalEntrantes > 0) {
+            eficienciaTotal = ((totalEncerrados / totalEntrantes) * 100).toFixed(1);
+        }
+
+        // Atualizar os cards
+        document.getElementById('resumoEntrantes').textContent = totalEntrantes.toLocaleString('pt-BR');
+        document.getElementById('resumoEncerrados').textContent = totalEncerrados.toLocaleString('pt-BR');
+        document.getElementById('resumoAtivos').textContent = totalAtivos.toLocaleString('pt-BR');
+        document.getElementById('resumoEficiencia').textContent = eficienciaTotal + '%';
     }
 
 
