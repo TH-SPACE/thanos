@@ -597,7 +597,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         eficiencia = ((encerrados / entrantes) * 100).toFixed(1);
                     }
 
-                    eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
+                    // Destaque verde escuro para eficiência >= 100%
+                    if (parseFloat(eficiencia) >= 100) {
+                        eficienciaRow.innerHTML += `<td><span style="color: #28a745; font-weight: 700;">${eficiencia}%</span></td>`;
+                    } else {
+                        eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
+                    }
                 }
 
                 // Calcular eficiência total
@@ -606,7 +611,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     eficienciaTotal = ((totalEncerrados / totalEntrantes) * 100).toFixed(1);
                 }
 
-                eficienciaRow.innerHTML += `<td><strong>${eficienciaTotal}%</strong></td>`; // Coluna total
+                // Destaque verde escuro para eficiência total >= 100%
+                if (parseFloat(eficienciaTotal) >= 100) {
+                    eficienciaRow.innerHTML += `<td><strong><span style="color: #28a745;">${eficienciaTotal}%</span></strong></td>`;
+                } else {
+                    eficienciaRow.innerHTML += `<td><strong>${eficienciaTotal}%</strong></td>`;
+                }
 
                 tbody.appendChild(entrantesRow);
                 tbody.appendChild(encerradosRow);
@@ -734,7 +744,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         eficiencia = ((encerrados / entrantes) * 100).toFixed(1);
                     }
 
-                    eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
+                    // Destaque verde escuro para eficiência >= 100%
+                    if (parseFloat(eficiencia) >= 100) {
+                        eficienciaRow.innerHTML += `<td><span style="color: #28a745; font-weight: 700;">${eficiencia}%</span></td>`;
+                    } else {
+                        eficienciaRow.innerHTML += `<td>${eficiencia}%</td>`;
+                    }
                 }
 
                 // Calcular eficiência total
@@ -743,7 +758,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     eficienciaTotal = ((totalEncerrados / totalEntrantes) * 100).toFixed(1);
                 }
 
-                eficienciaRow.innerHTML += `<td><strong>${eficienciaTotal}%</strong></td>`; // Coluna total
+                // Destaque verde escuro para eficiência total >= 100%
+                if (parseFloat(eficienciaTotal) >= 100) {
+                    eficienciaRow.innerHTML += `<td><strong><span style="color: #28a745;">${eficienciaTotal}%</span></strong></td>`;
+                } else {
+                    eficienciaRow.innerHTML += `<td><strong>${eficienciaTotal}%</strong></td>`;
+                }
 
                 tbody.appendChild(entrantesRow);
                 tbody.appendChild(encerradosRow);
@@ -1205,6 +1225,24 @@ document.addEventListener('DOMContentLoaded', function() {
             obterUltimaAtualizacao();
         }, 2000); // Pequeno delay para garantir que a atualização foi concluída
     });
+
+    // Botão de mostrar/ocultar filtros
+    const btnToggleFiltros = document.getElementById('btnToggleFiltros');
+    const cardFiltros = document.getElementById('cardFiltros');
+    if (btnToggleFiltros && cardFiltros) {
+        btnToggleFiltros.addEventListener('click', function() {
+            const icon = btnToggleFiltros.querySelector('i');
+            if (cardFiltros.style.display === 'none') {
+                cardFiltros.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-filter');
+            } else {
+                cardFiltros.style.display = 'none';
+                icon.classList.remove('fa-filter');
+                icon.classList.add('fa-chevron-down');
+            }
+        });
+    }
 
     // Inicializar o botão de download
     if (typeof inicializarBotaoDownload === 'function') {
