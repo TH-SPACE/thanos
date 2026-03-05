@@ -196,6 +196,43 @@ async function salvarLogSincronizacao(params) {
 }
 
 /**
+ * Corrigir cluster com base na cidade e UF
+ * Similar ao app_b2b
+ */
+function corrigirCluster(cidade, uf) {
+    if (!cidade) return 'OUTRO';
+    
+    const cidadeUpper = cidade.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const ufUpper = uf ? uf.toUpperCase().trim() : '';
+    
+    // Cidades de Brasília (DF e entorno)
+    const cidadesBrasilia = ['FORMOSA', 'CIDADE OCIDENTAL', 'VALPARAISO', 'VALPARAISO DE GOIAS', 'PLANALTINA', 'LUZIANIA', 'LUZIÂNIA', 'TAGUATINGA', 'GUARA', 'RIACHO FUNDO', 'SAMAMBAIA', 'STA MARIA'];
+    if (cidadesBrasilia.includes(cidadeUpper) || ufUpper === 'DF') {
+        return 'BRASILIA';
+    }
+    
+    // Cidades de Anápolis
+    const cidadesAnapolis = ['ANAPOLIS', 'ANÁPOLIS', 'JARAGUA', 'JARAGUÁ'];
+    if (cidadesAnapolis.includes(cidadeUpper)) {
+        return 'ANAPOLIS';
+    }
+    
+    // Norte por UF
+    if (ufUpper === 'PA') return 'BELEM';
+    if (['AP', 'AM', 'RR'].includes(ufUpper)) return 'MANAUS';
+    if (['AC', 'RO'].includes(ufUpper)) return 'PORTO VELHO';
+    if (ufUpper === 'TO') return 'PALMAS';
+    if (ufUpper === 'MA') return 'SAO LUIS';
+    
+    // Centro-Oeste
+    if (ufUpper === 'MT') return 'CUIABA';
+    if (ufUpper === 'MS') return 'CAMPO GRANDE';
+    if (ufUpper === 'GO') return 'GOIANIA';
+    
+    return 'OUTRO';
+}
+
+/**
  * Processar e salvar dados do CSV no banco
  * Faz TRUNCATE antes de inserir para garantir dados sempre atualizados
  * FILTRO: Salva apenas UF's do Centro-Oeste e Norte
@@ -232,6 +269,7 @@ async function processarCSV(registros) {
             try {
                 const bd = item.bd;
                 const uf = item.uf ? item.uf.toUpperCase().trim() : '';
+                const cidade = item.municipio || item.cidade || '';
 
                 // Filtrar apenas UF's do Centro-Oeste e Norte
                 if (!UFS_PERMITIDAS.includes(uf)) {
@@ -262,6 +300,11 @@ async function processarCSV(registros) {
                         }
                         if (['tipo', 'urgencia_codigo', 'indice', 'reincidencia'].includes(dbCampo)) {
                             valor = parseInt(valor) || 0;
+                        }
+
+                        // Corrigir cluster automaticamente
+                        if (dbCampo === 'cluster') {
+                            valor = corrigirCluster(cidade, uf);
                         }
 
                         dadosMapeados[dbCampo] = valor;
@@ -436,6 +479,7 @@ async function buscarBacklog(filtros = {}) {
             status,
             grupo,
             cliente,
+            cluster,
             dataInicio,
             dataFim
         } = filtros;
@@ -480,6 +524,12 @@ async function buscarBacklog(filtros = {}) {
             query += ' AND nome_cliente LIKE ?';
             countQuery += ' AND nome_cliente LIKE ?';
             params.push(`%${cliente}%`);
+        }
+
+        if (cluster) {
+            query += ' AND cluster = ?';
+            countQuery += ' AND cluster = ?';
+            params.push(cluster);
         }
 
         if (dataInicio) {
@@ -533,6 +583,7 @@ async function buscarEstatisticas(filtros = {}) {
             regional,
             status,
             grupo,
+            cluster,
             dataInicio,
             dataFim
         } = filtros;
@@ -569,6 +620,11 @@ async function buscarEstatisticas(filtros = {}) {
                 params.push(`%${grupo}%`);
             }
 
+            if (cluster) {
+                whereClause += ' AND cluster = ?';
+                params.push(cluster);
+            }
+
             if (dataInicio) {
                 whereClause += ' AND data_criacao >= ?';
                 params.push(dataInicio);
@@ -594,6 +650,17 @@ async function buscarEstatisticas(filtros = {}) {
 
             const [resultado] = await connection.execute(query, params);
 
+            // Tratar valores nulos
+            const dadosTratados = {
+                total_registros: resultado[0].total_registros || 0,
+                total_regionais: resultado[0].total_regionais || 0,
+                total_clientes: resultado[0].total_clientes || 0,
+                ativos: resultado[0].ativos || 0,
+                parados: resultado[0].parados || 0,
+                prazo_medio: resultado[0].prazo_medio || 0,
+                sla_medio: resultado[0].sla_medio || 0
+            };
+
             const queryRegionais = `
                 SELECT regional, COUNT(*) as quantidade
                 FROM backlog_b2b
@@ -617,7 +684,7 @@ async function buscarEstatisticas(filtros = {}) {
             return {
                 success: true,
                 dados: {
-                    geral: resultado[0],
+                    geral: dadosTratados,
                     regionais,
                     status
                 }
@@ -632,10 +699,162 @@ async function buscarEstatisticas(filtros = {}) {
     }
 }
 
+/**
+ * Buscar dashboard por cluster com tempo de backlog
+ * Mostra tempo em horas e dias no backlog
+ */
+async function buscarDashboardCluster() {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+
+        try {
+            // Dashboard por cluster com contagem de tempo
+            const queryDashboard = `
+                SELECT 
+                    cluster,
+                    COUNT(*) as total_registros,
+                    SUM(CASE WHEN status = 'Ativo' THEN 1 ELSE 0 END) as ativos,
+                    SUM(CASE WHEN status = 'Parado' THEN 1 ELSE 0 END) as parados,
+                    
+                    -- Tempo em HORAS no backlog (para registros recentes)
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 1 THEN 1 
+                        ELSE 0 
+                    END) as menos_1_hora,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) > 1 
+                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 3 THEN 1 
+                        ELSE 0 
+                    END) as entre_1_3_horas,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) > 3 
+                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 6 THEN 1 
+                        ELSE 0 
+                    END) as entre_3_6_horas,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) > 6 
+                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 8 THEN 1 
+                        ELSE 0 
+                    END) as entre_6_8_horas,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) > 8 
+                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 24 THEN 1 
+                        ELSE 0 
+                    END) as entre_8_24_horas,
+                    
+                    -- Tempo em DIAS no backlog (para registros mais antigos)
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 1 
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 3 THEN 1 
+                        ELSE 0 
+                    END) as entre_1_3_dias,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 3 
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 5 THEN 1 
+                        ELSE 0 
+                    END) as entre_3_5_dias,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 5 
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 7 THEN 1 
+                        ELSE 0 
+                    END) as entre_5_7_dias,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 7 
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 15 THEN 1 
+                        ELSE 0 
+                    END) as entre_7_15_dias,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 15 
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 30 THEN 1 
+                        ELSE 0 
+                    END) as entre_15_30_dias,
+                    
+                    SUM(CASE 
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 30 THEN 1 
+                        ELSE 0 
+                    END) as mais_30_dias,
+                    
+                    -- Tempo médio em horas
+                    AVG(TIMESTAMPDIFF(HOUR, data_criacao, NOW())) as tempo_medio_horas
+                    
+                FROM backlog_b2b
+                GROUP BY cluster
+                ORDER BY total_registros DESC
+            `;
+
+            const [dashboard] = await connection.execute(queryDashboard);
+
+            // Total geral
+            const queryTotal = `
+                SELECT 
+                    COUNT(*) as total_geral,
+                    AVG(TIMESTAMPDIFF(HOUR, data_criacao, NOW())) as media_geral_horas
+                FROM backlog_b2b
+            `;
+
+            const [total] = await connection.execute(queryTotal);
+
+            return {
+                success: true,
+                dados: {
+                    clusters: dashboard,
+                    total: total[0]
+                }
+            };
+        } finally {
+            connection.release();
+        }
+
+    } catch (error) {
+        console.error('Erro ao buscar dashboard cluster:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Buscar logs de sincronização
+ */
+async function buscarLogsSincronizacao(limite = 20) {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+
+        try {
+            const query = `
+                SELECT * FROM logs_sync_alertab2b
+                ORDER BY data_sync DESC
+                LIMIT ?
+            `;
+
+            const [logs] = await connection.execute(query, [limite]);
+
+            return {
+                success: true,
+                dados: logs
+            };
+        } finally {
+            connection.release();
+        }
+
+    } catch (error) {
+        console.error('Erro ao buscar logs:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 module.exports = {
     executarSincronizacao,
     buscarBacklog,
     buscarEstatisticas,
+    buscarDashboardCluster,
+    buscarLogsSincronizacao,
     baixarCSV,
     parseCSV
 };

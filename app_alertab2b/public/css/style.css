@@ -160,6 +160,24 @@ body {
     background-color: var(--success-hover);
 }
 
+.btn-info {
+    background-color: #0ea5e9;
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #0284c7;
+}
+
+.btn-warning {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover {
+    background-color: #d97706;
+}
+
 .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -237,6 +255,14 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filters-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .filters-header h2 {
@@ -445,6 +471,14 @@ tbody tr:hover {
     animation: slideIn 0.3s ease;
 }
 
+.modal-large {
+    max-width: 1000px;
+}
+
+.modal-xlarge {
+    max-width: 1400px;
+}
+
 @keyframes slideIn {
     from {
         transform: translateY(-50px);
@@ -562,6 +596,145 @@ tbody tr:hover {
     border-radius: 6px;
     margin-bottom: 20px;
     border-left: 4px solid var(--success-color);
+}
+
+/* ===========================================
+   Tabelas de Dashboard e Logs
+   =========================================== */
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.dashboard-table th {
+    background: var(--bg-color);
+    font-size: 0.8rem;
+    white-space: normal;
+}
+
+.dashboard-table th:first-child,
+.dashboard-table td:first-child {
+    text-align: left;
+    font-weight: 600;
+}
+
+.dashboard-table tbody tr:hover {
+    background: var(--bg-color);
+}
+
+.dashboard-total {
+    background: #fef3c7;
+    font-weight: 700;
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.logs-table th,
+.logs-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logs-table th {
+    background: var(--bg-color);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.logs-table td {
+    font-size: 0.9rem;
+}
+
+.logs-success {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.logs-error {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+.logs-partial {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.time-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 30px;
+}
+
+.time-0-1h {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.time-1-3h {
+    background: #a7f3d0;
+    color: #065f46;
+}
+
+.time-3-6h {
+    background: #6ee7b7;
+    color: #065f46;
+}
+
+.time-6-8h {
+    background: #34d399;
+    color: #065f46;
+}
+
+.time-8-24h {
+    background: #10b981;
+    color: white;
+}
+
+.time-1-3d {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.time-3-5d {
+    background: #fde68a;
+    color: #92400e;
+}
+
+.time-5-7d {
+    background: #fcd34d;
+    color: #92400e;
+}
+
+.time-7-15d {
+    background: #fbbf24;
+    color: #92400e;
+}
+
+.time-15-30d {
+    background: #f59e0b;
+    color: white;
+}
+
+.time-30d-plus {
+    background: #ef4444;
+    color: white;
 }
 
 /* ===========================================

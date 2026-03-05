@@ -3,7 +3,9 @@ const router = express.Router();
 const {
     executarSincronizacao,
     buscarBacklog,
-    buscarEstatisticas
+    buscarEstatisticas,
+    buscarDashboardCluster,
+    buscarLogsSincronizacao
 } = require('../controllers/alertaB2BController');
 
 /**
@@ -141,6 +143,67 @@ router.get('/estatisticas', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro interno ao buscar estatísticas',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /dashboard
+ * Busca dashboard por cluster com tempo de backlog
+ */
+router.get('/dashboard', async (req, res) => {
+    try {
+        const resultado = await buscarDashboardCluster();
+
+        if (resultado.success) {
+            res.json({
+                success: true,
+                dados: resultado.dados
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao buscar dashboard',
+                error: resultado.error
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao buscar dashboard:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno ao buscar dashboard',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /logs
+ * Busca logs de sincronização
+ */
+router.get('/logs', async (req, res) => {
+    try {
+        const limite = parseInt(req.query.limite) || 20;
+        const resultado = await buscarLogsSincronizacao(limite);
+
+        if (resultado.success) {
+            res.json({
+                success: true,
+                dados: resultado.dados
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao buscar logs',
+                error: resultado.error
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao buscar logs:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno ao buscar logs',
             error: error.message
         });
     }

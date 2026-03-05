@@ -78,9 +78,17 @@
         <section class="filters-section">
             <div class="filters-header">
                 <h2>🔍 Filtros</h2>
-                <button id="btnLimparFiltros" class="btn btn-secondary">🧹 Limpar Filtros</button>
+                <div class="filters-header-actions">
+                    <button id="btnLogs" class="btn btn-info" title="Ver logs de sincronização">
+                        📜 Logs
+                    </button>
+                    <button id="btnDashboard" class="btn btn-warning" title="Ver dashboard por cluster">
+                        📊 Dashboard
+                    </button>
+                    <button id="btnLimparFiltros" class="btn btn-secondary">🧹 Limpar Filtros</button>
+                </div>
             </div>
-            
+
             <div class="filters-grid">
                 <div class="filter-group">
                     <label for="filtroBD">BD</label>
@@ -102,6 +110,24 @@
                         <option value="CENTRO-OESTE">CENTRO-OESTE</option>
                         <option value="NORTE">NORTE</option>
                         <option value="SAO PAULO">SÃO PAULO</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroCluster">Cluster</label>
+                    <select id="filtroCluster">
+                        <option value="">Todos</option>
+                        <option value="BRASILIA">BRASÍLIA</option>
+                        <option value="GOIANIA">GOIÂNIA</option>
+                        <option value="CUIABA">CUIABÁ</option>
+                        <option value="CAMPO GRANDE">CAMPO GRANDE</option>
+                        <option value="BELEM">BELÉM</option>
+                        <option value="MANAUS">MANAUS</option>
+                        <option value="PORTO VELHO">PORTO VELHO</option>
+                        <option value="PALMAS">PALMAS</option>
+                        <option value="SAO LUIS">SÃO LUÍS</option>
+                        <option value="ANAPOLIS">ANÁPOLIS</option>
+                        <option value="OUTRO">OUTRO</option>
                     </select>
                 </div>
 
@@ -180,6 +206,32 @@
                 </div>
                 <div class="modal-body" id="modalBody">
                     <!-- Detalhes serão inseridos via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Logs -->
+        <div id="modalLogs" class="modal">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h3>📜 Logs de Sincronização</h3>
+                    <button class="btn-close" onclick="fecharModalLogs()">&times;</button>
+                </div>
+                <div class="modal-body" id="modalLogsBody">
+                    <!-- Logs serão inseridos via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Dashboard -->
+        <div id="modalDashboard" class="modal">
+            <div class="modal-content modal-xlarge">
+                <div class="modal-header">
+                    <h3>📊 Dashboard por Cluster - Tempo de Backlog</h3>
+                    <button class="btn-close" onclick="fecharModalDashboard()">&times;</button>
+                </div>
+                <div class="modal-body" id="modalDashboardBody">
+                    <!-- Dashboard será inserido via JavaScript -->
                 </div>
             </div>
         </div>

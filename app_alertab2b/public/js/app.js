@@ -19,6 +19,7 @@ let estadoAtual = {
 // Inicialização
 // ===========================================
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Iniciando Alerta B2B...');
     carregarEstatisticas();
     carregarDados();
     configurarEventListeners();
@@ -40,6 +41,12 @@ function configurarEventListeners() {
 
     // Botão de limpar filtros
     document.getElementById('btnLimparFiltros').addEventListener('click', limparFiltros);
+
+    // Botão de logs
+    document.getElementById('btnLogs').addEventListener('click', abrirModalLogs);
+
+    // Botão de dashboard
+    document.getElementById('btnDashboard').addEventListener('click', abrirModalDashboard);
 
     // Enter nos inputs de texto
     document.querySelectorAll('.filter-group input').forEach(input => {
@@ -97,11 +104,15 @@ async function carregarEstatisticas(filtros = {}) {
         if (resultado.success) {
             const dados = resultado.dados.geral;
             
+            console.log('Estatísticas recebidas:', dados);
+            
             document.getElementById('statTotal').textContent = formatarNumero(dados.total_registros || 0);
             document.getElementById('statAtivos').textContent = formatarNumero(dados.ativos || 0);
             document.getElementById('statParados').textContent = formatarNumero(dados.parados || 0);
             document.getElementById('statClientes').textContent = formatarNumero(dados.total_clientes || 0);
             document.getElementById('statRegionais').textContent = formatarNumero(dados.total_regionais || 0);
+        } else {
+            console.error('Erro na resposta da API:', resultado);
         }
     } catch (error) {
         console.error('Erro ao carregar estatísticas:', error);
@@ -171,6 +182,9 @@ function coletarFiltros() {
     const regional = document.getElementById('filtroRegional').value.trim();
     if (regional) filtros.regional = regional;
 
+    const cluster = document.getElementById('filtroCluster').value.trim();
+    if (cluster) filtros.cluster = cluster;
+
     const status = document.getElementById('filtroStatus').value.trim();
     if (status) filtros.status = status;
 
@@ -193,6 +207,7 @@ function limparFiltros() {
     document.getElementById('filtroBD').value = '';
     document.getElementById('filtroCliente').value = '';
     document.getElementById('filtroRegional').value = '';
+    document.getElementById('filtroCluster').value = '';
     document.getElementById('filtroStatus').value = '';
     document.getElementById('filtroGrupo').value = '';
     document.getElementById('filtroDataInicio').value = '';
