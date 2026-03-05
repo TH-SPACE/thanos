@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerta B2B - Backlog BDSLA</title>
+    <link rel="stylesheet" href="/alerta-b2b/css/style.css">
+    <link rel="icon" type="image/svg+xml" href="/alerta-b2b/icons/favicon.svg">
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <header class="header">
+            <div class="logo">
+                <h1>📊 Alerta B2B</h1>
+                <span class="subtitle">Backlog BDSLA</span>
+            </div>
+            <div class="header-actions">
+                <button id="btnSincronizar" class="btn btn-primary" title="Sincronizar dados agora">
+                    🔄 Sincronizar
+                </button>
+                <div class="last-update">
+                    <span>Última atualização: </span>
+                    <span id="lastUpdate">--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Cards de Estatísticas -->
+        <section class="stats-cards">
+            <div class="stat-card stat-total">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                    <span class="stat-label">Total de Registros</span>
+                    <span class="stat-value" id="statTotal">0</span>
+                </div>
+            </div>
+            <div class="stat-card stat-ativos">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <span class="stat-label">Ativos</span>
+                    <span class="stat-value" id="statAtivos">0</span>
+                </div>
+            </div>
+            <div class="stat-card stat-parados">
+                <div class="stat-icon">⏸️</div>
+                <div class="stat-content">
+                    <span class="stat-label">Parados</span>
+                    <span class="stat-value" id="statParados">0</span>
+                </div>
+            </div>
+            <div class="stat-card stat-clientes">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-content">
+                    <span class="stat-label">Clientes</span>
+                    <span class="stat-value" id="statClientes">0</span>
+                </div>
+            </div>
+            <div class="stat-card stat-regionais">
+                <div class="stat-icon">📍</div>
+                <div class="stat-content">
+                    <span class="stat-label">Regionais</span>
+                    <span class="stat-value" id="statRegionais">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filtros -->
+        <section class="filters-section">
+            <div class="filters-header">
+                <h2>🔍 Filtros</h2>
+                <button id="btnLimparFiltros" class="btn btn-secondary">🧹 Limpar Filtros</button>
+            </div>
+            
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="filtroBD">BD</label>
+                    <input type="text" id="filtroBD" placeholder="Buscar por BD...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroCNPJ">CNPJ</label>
+                    <input type="text" id="filtroCNPJ" placeholder="Buscar por CNPJ...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroCliente">Cliente</label>
+                    <input type="text" id="filtroCliente" placeholder="Nome do cliente...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroRegional">Regional</label>
+                    <select id="filtroRegional">
+                        <option value="">Todas</option>
+                        <option value="SUDESTE">SUDESTE</option>
+                        <option value="NORDESTE">NORDESTE</option>
+                        <option value="SUL">SUL</option>
+                        <option value="CENTRO-OESTE">CENTRO-OESTE</option>
+                        <option value="NORTE">NORTE</option>
+                        <option value="SAO PAULO">SÃO PAULO</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroStatus">Status</label>
+                    <select id="filtroStatus">
+                        <option value="">Todos</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Parado">Parado</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroGrupo">Grupo</label>
+                    <input type="text" id="filtroGrupo" placeholder="Buscar por grupo...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroDataInicio">Data Início</label>
+                    <input type="date" id="filtroDataInicio">
+                </div>
+
+                <div class="filter-group">
+                    <label for="filtroDataFim">Data Fim</label>
+                    <input type="date" id="filtroDataFim">
+                </div>
+            </div>
+
+            <div class="filters-actions">
+                <button id="btnFiltrar" class="btn btn-success">🔍 Filtrar</button>
+            </div>
+        </section>
+
+        <!-- Tabela de Dados -->
+        <section class="table-section">
+            <div class="table-header">
+                <h2>📋 Registros</h2>
+                <div class="table-info">
+                    <span id="tableInfo">0 registros encontrados</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="tabelaBacklog">
+                    <thead>
+                        <tr>
+                            <th>BD</th>
+                            <th>Cliente</th>
+                            <th>CNPJ</th>
+                            <th>Regional</th>
+                            <th>Status</th>
+                            <th>Grupo</th>
+                            <th>Procedência</th>
+                            <th>SLA</th>
+                            <th>Prazo</th>
+                            <th>Última Atualização</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaBody">
+                        <!-- Dados serão inseridos via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            <div class="pagination" id="pagination">
+                <!-- Paginação será inserida via JavaScript -->
+            </div>
+        </section>
+
+        <!-- Modal de Detalhes -->
+        <div id="modalDetalhes" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📄 Detalhes do Registro</h3>
+                    <button class="btn-close" onclick="fecharModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Detalhes serão inseridos via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/alerta-b2b/js/app.js"></script>
+</body>
+</html>

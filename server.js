@@ -42,6 +42,8 @@ app.use("/mapab2b", express.static(path.join(__dirname, "app_mapa", "public")));
 app.use("/consulta_ad", express.static(path.join(__dirname, "consulta_ad")));
 // Serve a pasta app_b2b para arquivos estáticos do B2B
 app.use("/b2b", express.static(path.join(__dirname, "app_b2b", "public")));
+// Serve a pasta app_alertab2b para arquivos estáticos do Alerta B2B
+app.use("/alerta-b2b", express.static(path.join(__dirname, "app_alertab2b", "public")));
 
 // 📦 Middlewares globais
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -73,6 +75,7 @@ app.use("/planejamento-he", require("./app_he/routes/planejamentoHERoutes"));
 app.use("/tmr", require("./app_tmr/routes/tmrRoutes"));
 app.use("/mapab2b", require("./app_mapa/routes/mapaRoutes"));
 app.use("/b2b", require("./app_b2b/routes/b2bRoutes"));
+app.use("/alerta-b2b", require("./app_alertab2b/routes/alertaB2BRoutes"));
 
 // 📋 Rota da todo list
 app.use("/todo_th", require("./todo_th/todo_th"));
@@ -82,6 +85,9 @@ require("./app_tmr/initTmrSync");
 
 // Inicializar o serviço de sincronização automática do BDS (B2B)
 require("./app_b2b/initB2BSync");
+
+// Inicializar o serviço de sincronização automática do Alerta B2B
+require("./app_alertab2b/initAlertaB2BSync");
 
 // 🚀 Inicialização do servidor
 app.listen(PORT, "0.0.0.0", () => {
@@ -96,6 +102,7 @@ app.listen(PORT, "0.0.0.0", () => {
 ║  🔄 Atualizações a cada 12 horas                             ║
 ║  📊 Serviço BDS: Sincronização automática 3x ao dia          ║
 ║     - Horários: 05:00, 12:00 e 17:00                         ║
+║  🔄 Alerta B2B: Sincronização automática do Backlog BDSLA    ║
 ║                                                              ║
 ║  Sistema pronto para uso!                                    ║
 ╚══════════════════════════════════════════════════════════════╝
