@@ -75,9 +75,13 @@ router.get('/backlog', async (req, res) => {
             regional: req.query.regional,
             status: req.query.status,
             grupo: req.query.grupo,
+            cliente: req.query.cliente,
+            cluster: req.query.cluster,
             dataInicio: req.query.dataInicio,
             dataFim: req.query.dataFim
         };
+
+        console.log('📡 Filtros da rota:', filtros);
 
         const resultado = await buscarBacklog(filtros);
 
@@ -121,6 +125,7 @@ router.get('/estatisticas', async (req, res) => {
             regional: req.query.regional,
             status: req.query.status,
             grupo: req.query.grupo,
+            cluster: req.query.cluster,
             dataInicio: req.query.dataInicio,
             dataFim: req.query.dataFim
         };
