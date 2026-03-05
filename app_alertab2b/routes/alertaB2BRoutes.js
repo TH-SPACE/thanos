@@ -141,6 +141,8 @@ router.get('/backlog', async (req, res) => {
  */
 router.get('/estatisticas', async (req, res) => {
     try {
+        console.log('📡 /estatisticas - query:', req.query);
+        
         const filtros = {
             bd: req.query.bd,
             cliente: req.query.cliente,
@@ -148,9 +150,12 @@ router.get('/estatisticas', async (req, res) => {
             status: req.query.status,
             grupo: req.query.grupo,
             cluster: req.query.cluster,
+            procedencia: req.query.procedencia,
             dataInicio: req.query.dataInicio,
             dataFim: req.query.dataFim
         };
+
+        console.log('📦 Filtros enviados ao controller:', filtros);
 
         const resultado = await buscarEstatisticas(filtros);
 
@@ -273,13 +278,18 @@ router.get('/filtros', async (req, res) => {
  */
 router.get('/status-por-cluster', async (req, res) => {
     try {
+        console.log('📡 /status-por-cluster - query:', req.query);
+        
         const filtros = {
             regional: req.query.regional,
             status: req.query.status,
             cluster: req.query.cluster,
+            procedencia: req.query.procedencia,
             dataInicio: req.query.dataInicio,
             dataFim: req.query.dataFim
         };
+
+        console.log('📦 Filtros enviados ao controller:', filtros);
 
         const resultado = await buscarStatusPorCluster(filtros);
 

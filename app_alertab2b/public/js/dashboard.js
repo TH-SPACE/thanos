@@ -68,7 +68,7 @@ async function sincronizarDados() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ fonte: 'url' })
+            body: JSON.stringify({ fonte: 'arquivo' })
         });
 
         const resultado = await response.json();
@@ -90,7 +90,7 @@ async function sincronizarDados() {
         alert('❌ Erro ao sincronizar:\n' + error.message);
     } finally {
         btnSincronizar.disabled = false;
-        btnSincronizar.innerHTML = textoOriginal;
+        btnSincronizar.innerHTML = '🔄 Sincronizar';
     }
 }
 

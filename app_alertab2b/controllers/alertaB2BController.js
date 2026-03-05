@@ -11,7 +11,7 @@ const db = require('../../db/db');
 // Configurações
 const CONFIG = {
     CSV_URL: process.env.ALERTA_B2B_CSV_URL || 'https://brtdtlts0002fu.redecorp.br/bdsla/index/excel',
-    IGNORE_SSL: process.env.ALERTA_B2B_IGNORE_SSL === 'true'
+    IGNORE_SSL: process.env.ALERTA_B2B_IGNORE_SSL === 'false'
 };
 
 // Mapeamento de colunas do CSV para o banco de dados
@@ -670,6 +670,9 @@ async function buscarEstatisticas(filtros = {}) {
             dataFim
         } = filtros;
 
+        console.log('🔍 buscarEstatisticas - Filtros recebidos:', filtros);
+        console.log('📍 procedencia:', procedencia);
+
         const connection = await db.mysqlPool.getConnection();
 
         try {
@@ -710,6 +713,7 @@ async function buscarEstatisticas(filtros = {}) {
             // Procedência pode vir múltipla (separada por vírgula)
             if (procedencia) {
                 const procedenciasArray = procedencia.split(',');
+                console.log('📍 procedenciaArray:', procedenciasArray);
                 if (procedenciasArray.length === 1) {
                     whereClause += ' AND procedencia = ?';
                     params.push(procedencia);
@@ -729,6 +733,9 @@ async function buscarEstatisticas(filtros = {}) {
                 whereClause += ' AND data_criacao <= ?';
                 params.push(dataFim);
             }
+
+            console.log('📝 whereClause:', whereClause);
+            console.log('📦 params:', params);
 
             const query = `
                 SELECT
