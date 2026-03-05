@@ -699,11 +699,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Mantendo a função para evitar erros no código existente
     }
 
-    // Carrega dados iniciais ao mostrar a aba de análise
-    document.querySelector('#analise-tab').addEventListener('shown.bs.tab', function() {
-        loadAnalysisData();
-    });
-
     // Carrega os dados automaticamente quando a página é carregada
     // AGORA: Somente após os filtros (KPIs) serem carregados
     // A função loadFilterOptions() agora chama loadAnalysisData() ao final
@@ -1059,14 +1054,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             document.getElementById('filtroProcedenciaSelecionados').textContent = selectedValues.join(', ');
         }
-    }
-
-    // Carregar opções de filtros quando a aba de análise for mostrada
-    const analiseTab = document.querySelector('#analise-tab');
-    if (analiseTab) {
-        analiseTab.addEventListener('shown.bs.tab', function() {
-            loadFilterOptions();
-        });
     }
 
     // Carregar opções de filtros quando a página é carregada
