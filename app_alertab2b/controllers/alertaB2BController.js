@@ -859,12 +859,77 @@ async function buscarLogsSincronizacao(limite = 20) {
     }
 }
 
+/**
+ * Buscar filtros disponíveis (para preencher dropdowns)
+ */
+async function buscarFiltrosDisponiveis() {
+    try {
+        const connection = await db.mysqlPool.getConnection();
+
+        try {
+            // Buscar regionais únicas
+            const queryRegionais = `
+                SELECT DISTINCT regional 
+                FROM backlog_b2b 
+                WHERE regional IS NOT NULL AND regional != '' 
+                ORDER BY regional
+            `;
+
+            // Buscar clusters únicos
+            const queryClusters = `
+                SELECT DISTINCT cluster 
+                FROM backlog_b2b 
+                WHERE cluster IS NOT NULL AND cluster != '' 
+                ORDER BY cluster
+            `;
+
+            // Buscar status únicos
+            const queryStatus = `
+                SELECT DISTINCT status 
+                FROM backlog_b2b 
+                WHERE status IS NOT NULL AND status != '' 
+                ORDER BY status
+            `;
+
+            // Buscar grupos únicos
+            const queryGrupos = `
+                SELECT DISTINCT grupo 
+                FROM backlog_b2b 
+                WHERE grupo IS NOT NULL AND grupo != '' 
+                ORDER BY grupo
+            `;
+
+            const [regionais] = await connection.execute(queryRegionais);
+            const [clusters] = await connection.execute(queryClusters);
+            const [status] = await connection.execute(queryStatus);
+            const [grupos] = await connection.execute(queryGrupos);
+
+            return {
+                success: true,
+                dados: {
+                    regionais: regionais.map(r => r.regional),
+                    clusters: clusters.map(c => c.cluster),
+                    status: status.map(s => s.status),
+                    grupos: grupos.map(g => g.grupo)
+                }
+            };
+        } finally {
+            connection.release();
+        }
+
+    } catch (error) {
+        console.error('Erro ao buscar filtros disponíveis:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 module.exports = {
     executarSincronizacao,
     buscarBacklog,
     buscarEstatisticas,
     buscarDashboardCluster,
     buscarLogsSincronizacao,
+    buscarFiltrosDisponiveis,
     baixarCSV,
     parseCSV
 };

@@ -5,7 +5,8 @@ const {
     buscarBacklog,
     buscarEstatisticas,
     buscarDashboardCluster,
-    buscarLogsSincronizacao
+    buscarLogsSincronizacao,
+    buscarFiltrosDisponiveis
 } = require('../controllers/alertaB2BController');
 
 /**
@@ -204,6 +205,36 @@ router.get('/logs', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro interno ao buscar logs',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /filtros
+ * Busca filtros disponíveis para dropdowns
+ */
+router.get('/filtros', async (req, res) => {
+    try {
+        const resultado = await buscarFiltrosDisponiveis();
+
+        if (resultado.success) {
+            res.json({
+                success: true,
+                dados: resultado.dados
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao buscar filtros',
+                error: resultado.error
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao buscar filtros:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno ao buscar filtros',
             error: error.message
         });
     }

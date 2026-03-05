@@ -20,6 +20,7 @@ let estadoAtual = {
 // ===========================================
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Iniciando Alerta B2B...');
+    carregarFiltrosDropdowns();
     carregarEstatisticas();
     carregarDados();
     configurarEventListeners();
@@ -57,6 +58,76 @@ function configurarEventListeners() {
             }
         });
     });
+}
+
+// ===========================================
+// Carregar Filtros Dropdowns
+// ===========================================
+async function carregarFiltrosDropdowns() {
+    try {
+        const response = await fetch(`${API_BASE}/filtros`);
+        const resultado = await response.json();
+
+        if (resultado.success) {
+            const { regionais, clusters, status, grupos } = resultado.dados;
+
+            // Preencher Regional
+            const selectRegional = document.getElementById('filtroRegional');
+            selectRegional.innerHTML = '<option value="">Todas</option>';
+            regionais.forEach(regional => {
+                const option = document.createElement('option');
+                option.value = regional;
+                option.textContent = regional;
+                selectRegional.appendChild(option);
+            });
+
+            // Preencher Cluster
+            const selectCluster = document.getElementById('filtroCluster');
+            selectCluster.innerHTML = '<option value="">Todos</option>';
+            clusters.forEach(cluster => {
+                const option = document.createElement('option');
+                option.value = cluster;
+                option.textContent = cluster;
+                selectCluster.appendChild(option);
+            });
+
+            // Preencher Status
+            const selectStatus = document.getElementById('filtroStatus');
+            selectStatus.innerHTML = '<option value="">Todos</option>';
+            status.forEach(statusItem => {
+                const option = document.createElement('option');
+                option.value = statusItem;
+                option.textContent = statusItem;
+                selectStatus.appendChild(option);
+            });
+
+            // Sugestão de grupos (autocomplete)
+            if (grupos && grupos.length > 0) {
+                const inputGrupo = document.getElementById('filtroGrupo');
+                inputGrupo.setAttribute('list', 'grupos-list');
+                
+                const datalist = document.createElement('datalist');
+                datalist.id = 'grupos-list';
+                grupos.forEach(grupo => {
+                    const option = document.createElement('option');
+                    option.value = grupo;
+                    datalist.appendChild(option);
+                });
+                inputGrupo.parentNode.appendChild(datalist);
+            }
+
+            console.log('✅ Filtros carregados:', { 
+                regionais: regionais.length, 
+                clusters: clusters.length, 
+                status: status.length,
+                grupos: grupos ? grupos.length : 0 
+            });
+        } else {
+            console.error('Erro ao carregar filtros:', resultado);
+        }
+    } catch (error) {
+        console.error('Erro ao buscar filtros:', error);
+    }
 }
 
 // ===========================================
