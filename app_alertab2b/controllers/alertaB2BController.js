@@ -635,6 +635,9 @@ async function buscarEstatisticas(filtros = {}) {
                 params.push(dataFim);
             }
 
+            console.log('Query estatísticas:', whereClause);
+            console.log('Params:', params);
+
             const query = `
                 SELECT
                     COUNT(*) as total_registros,
@@ -695,6 +698,7 @@ async function buscarEstatisticas(filtros = {}) {
 
     } catch (error) {
         console.error('Erro ao buscar estatísticas:', error.message);
+        console.error('Stack:', error.stack);
         return { success: false, error: error.message };
     }
 }
