@@ -69,21 +69,14 @@ async function baixarCSV(url) {
             rejectUnauthorized: !CONFIG.IGNORE_SSL
         });
 
-        console.log('   📡 Baixando CSV de:', url);
-        
         const response = await axios.get(url, {
             httpsAgent,
             responseType: 'text',
             timeout: 60000
         });
 
-        console.log('   📡 Status:', response.status);
-        console.log('   📡 Tipo response.data:', typeof response.data);
-        console.log('   📡 response.headers:', response.headers);
-        
         return response.data;
     } catch (error) {
-        console.error('   ❌ Erro ao baixar CSV:', error.message);
         throw new Error(`Erro ao baixar CSV: ${error.message}`);
     }
 }
@@ -451,8 +444,7 @@ async function executarSincronizacao(fonte = 'url') {
     console.log('🔄 INICIANDO SINCRONIZAÇÃO ALERTA B2B');
     console.log('='.repeat(70));
     console.log(`📅 Data/Hora: ${new Date().toLocaleString('pt-BR')}`);
-    console.log(`📡 Fonte recebida: "${fonte}"`);
-    console.log(`📡 Fonte será usada: ${fonte === 'arquivo' ? 'Arquivo local' : CONFIG.CSV_URL}`);
+    console.log(`📡 Fonte: ${fonte === 'arquivo' ? 'Arquivo local' : CONFIG.CSV_URL}`);
     console.log('='.repeat(70));
 
     try {
@@ -460,9 +452,6 @@ async function executarSincronizacao(fonte = 'url') {
 
         // 1. Baixar ou ler CSV
         console.log('\n📥 [1/3] Obtendo arquivo CSV...');
-        console.log('   🔍 fonte =', fonte);
-        console.log('   🔍 fonte === "arquivo"?', fonte === 'arquivo');
-        
         if (fonte === 'arquivo') {
             const fs = require('fs');
             const path = require('path');
@@ -470,16 +459,20 @@ async function executarSincronizacao(fonte = 'url') {
             csvContent = fs.readFileSync(caminhoArquivo, 'utf-8');
             console.log('   ✅ Arquivo local lido com sucesso!');
         } else {
-            console.log('   🔄 Chamando baixarCSV...');
-            csvContent = await baixarCSV(CONFIG.CSV_URL);
-            console.log('   🔄 Retornou do baixarCSV, tipo:', typeof csvContent);
-            console.log('   ✅ CSV baixado com sucesso!');
+            console.log('   🔄 Baixando da URL...');
+            try {
+                csvContent = await baixarCSV(CONFIG.CSV_URL);
+                console.log('   ✅ CSV baixado com sucesso!');
+            } catch (error) {
+                console.error('   ⚠️  Erro ao baixar da URL:', error.message);
+                console.log('   🔄 Usando arquivo local como fallback...');
+                const fs = require('fs');
+                const path = require('path');
+                const caminhoArquivo = path.join(__dirname, '..', 'BacklogBDSLA.csv');
+                csvContent = fs.readFileSync(caminhoArquivo, 'utf-8');
+                console.log('   ✅ Arquivo local lido com sucesso! (fallback)');
+            }
         }
-
-        // Debug: verificar tipo do conteúdo
-        console.log('   🔍 Tipo do csvContent:', typeof csvContent);
-        console.log('   🔍 Tamanho:', csvContent ? String(csvContent).length : 'nulo');
-        console.log('   🔍 Valor:', csvContent);
 
         // 2. Parse do CSV
         console.log('\n📋 [2/3] Processando CSV...');

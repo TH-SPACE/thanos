@@ -56,10 +56,7 @@ router.post('/sincronizar', async (req, res) => {
     try {
         const { fonte } = req.body;
 
-        console.log(`\n📡 Solicitação de sincronização recebida...`);
-        console.log(`   🔍 req.body:`, JSON.stringify(req.body));
-        console.log(`   🔍 fonte extraído:`, fonte);
-        console.log(`   🔍 fonte || 'url':`, fonte || 'url');
+        console.log(`\n📡 Solicitação de sincronização recebida (fonte: ${fonte || 'url'})...`);
 
         const resultado = await executarSincronizacao(fonte || 'url');
         
