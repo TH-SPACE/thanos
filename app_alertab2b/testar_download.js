@@ -121,16 +121,36 @@ async function testarDownload() {
 }
 
 async function parseCSV(csvContent) {
-    const registros = parse(csvContent, {
-        delimiter: ';',
-        columns: true,
-        skip_empty_lines: true,
-        trim: true,
-        relax_column_count: true,
-        relax_quotes: true
+    return new Promise((resolve, reject) => {
+        const records = [];
+        
+        const parser = parse({
+            delimiter: ';',
+            columns: true,
+            skip_empty_lines: true,
+            trim: true,
+            relax_column_count: true,
+            relax_quotes: true
+        });
+        
+        parser.on('readable', function() {
+            let record;
+            while ((record = parser.read()) !== null) {
+                records.push(record);
+            }
+        });
+        
+        parser.on('error', function(err) {
+            reject(err);
+        });
+        
+        parser.on('end', function() {
+            resolve(records);
+        });
+        
+        parser.write(csvContent);
+        parser.end();
     });
-    
-    return registros;
 }
 
 // Executar

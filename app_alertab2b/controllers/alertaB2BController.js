@@ -86,6 +86,11 @@ async function baixarCSV(url) {
  */
 async function parseCSV(csvContent) {
     try {
+        // Garantir que o conteúdo é uma string
+        const content = typeof csvContent === 'string' ? csvContent : String(csvContent);
+        
+        console.log('   📄 Conteúdo CSV (primeiros 200 chars):', content.substring(0, 200));
+        
         const registros = await new Promise((resolve, reject) => {
             const records = [];
             
@@ -113,7 +118,7 @@ async function parseCSV(csvContent) {
                 resolve(records);
             });
             
-            parser.write(csvContent);
+            parser.write(content);
             parser.end();
         });
         
@@ -457,6 +462,10 @@ async function executarSincronizacao(fonte = 'url') {
             csvContent = await baixarCSV(CONFIG.CSV_URL);
             console.log('   ✅ CSV baixado com sucesso!');
         }
+
+        // Debug: verificar tipo do conteúdo
+        console.log('   🔍 Tipo do csvContent:', typeof csvContent);
+        console.log('   🔍 Tamanho:', csvContent ? String(csvContent).length : 'nulo');
 
         // 2. Parse do CSV
         console.log('\n📋 [2/3] Processando CSV...');
