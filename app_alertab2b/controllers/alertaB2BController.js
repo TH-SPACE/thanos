@@ -1,6 +1,6 @@
 const axios = require('axios');
 const https = require('https');
-const { parse } = require('csv-parse/sync');
+const { parse } = require('csv-parse');
 const db = require('../../db/db');
 
 /**
@@ -86,13 +86,35 @@ async function baixarCSV(url) {
  */
 async function parseCSV(csvContent) {
     try {
-        const registros = parse(csvContent, {
-            delimiter: ';',
-            columns: true,
-            skip_empty_lines: true,
-            trim: true,
-            relax_column_count: true,  // Tolerar colunas extras
-            relax_quotes: true        // Tolerar aspas malformadas
+        const registros = await new Promise((resolve, reject) => {
+            const records = [];
+            
+            const parser = parse({
+                delimiter: ';',
+                columns: true,
+                skip_empty_lines: true,
+                trim: true,
+                relax_column_count: true,
+                relax_quotes: true
+            });
+            
+            parser.on('readable', function() {
+                let record;
+                while ((record = parser.read()) !== null) {
+                    records.push(record);
+                }
+            });
+            
+            parser.on('error', function(err) {
+                reject(err);
+            });
+            
+            parser.on('end', function() {
+                resolve(records);
+            });
+            
+            parser.write(csvContent);
+            parser.end();
         });
         
         return registros;
