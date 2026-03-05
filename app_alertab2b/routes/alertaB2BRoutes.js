@@ -10,7 +10,8 @@ const {
     buscarFiltrosDisponiveis,
     buscarStatusPorCluster,
     buscarReparosCriticost,
-    gerarCSV
+    gerarCSV,
+    atualizarArquivoLocal
 } = require('../controllers/alertaB2BController');
 
 /**
@@ -395,6 +396,43 @@ router.get('/exportar', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro interno ao exportar dados',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /atualizar-arquivo
+ * Baixa o CSV da URL e salva no arquivo local
+ */
+router.post('/atualizar-arquivo', async (req, res) => {
+    try {
+        console.log('\n📥 Solicitação para atualizar arquivo local...');
+
+        const resultado = await atualizarArquivoLocal();
+
+        if (resultado.success) {
+            res.json({
+                success: true,
+                message: resultado.mensagem,
+                dados: {
+                    tamanho: resultado.tamanho,
+                    tamanhoKB: resultado.tamanhoKB,
+                    tamanhoMB: resultado.tamanhoMB
+                }
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao atualizar arquivo local',
+                error: resultado.error
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar arquivo local:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno ao atualizar arquivo',
             error: error.message
         });
     }

@@ -61,7 +61,7 @@ const MAPEAMENTO_COLUNAS = {
 };
 
 /**
- * Faz o download do CSV da URL
+ * Faz o download do CSV da URL e salva no arquivo local
  */
 async function baixarCSV(url) {
     try {
@@ -78,6 +78,53 @@ async function baixarCSV(url) {
         return response.data;
     } catch (error) {
         throw new Error(`Erro ao baixar CSV: ${error.message}`);
+    }
+}
+
+/**
+ * Baixar CSV da URL e salvar no arquivo local
+ */
+async function atualizarArquivoLocal() {
+    const fs = require('fs');
+    const path = require('path');
+    
+    console.log('\n' + '='.repeat(70));
+    console.log('📥 ATUALIZANDO ARQUIVO LOCAL DO BACKLOG BDSLA');
+    console.log('='.repeat(70));
+    
+    try {
+        // Baixar CSV da URL
+        console.log('\n🌐 Baixando CSV da URL...');
+        const csvContent = await baixarCSV(CONFIG.CSV_URL);
+        
+        // Salvar no arquivo local
+        const caminhoArquivo = path.join(__dirname, '..', 'BacklogBDSLA.csv');
+        fs.writeFileSync(caminhoArquivo, csvContent, 'utf-8');
+        
+        const tamanhoKB = (Buffer.byteLength(csvContent, 'utf8') / 1024).toFixed(2);
+        const tamanhoMB = (Buffer.byteLength(csvContent, 'utf8') / 1024 / 1024).toFixed(2);
+        
+        console.log('✅ CSV baixado e salvo com sucesso!');
+        console.log(`📊 Tamanho: ${tamanhoKB} KB (${tamanhoMB} MB)`);
+        console.log(`📁 Arquivo: ${caminhoArquivo}`);
+        console.log('='.repeat(70) + '\n');
+        
+        return {
+            success: true,
+            mensagem: 'Arquivo local atualizado com sucesso!',
+            tamanho: csvContent.length,
+            tamanhoKB,
+            tamanhoMB
+        };
+        
+    } catch (error) {
+        console.error('❌ Erro ao atualizar arquivo local:', error.message);
+        console.log('='.repeat(70) + '\n');
+        
+        return {
+            success: false,
+            error: error.message
+        };
     }
 }
 
@@ -1324,5 +1371,6 @@ module.exports = {
     buscarStatusPorCluster,
     buscarReparosCriticost,
     gerarCSV,
-    parseCSV
+    parseCSV,
+    atualizarArquivoLocal
 };
