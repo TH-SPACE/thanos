@@ -213,6 +213,8 @@ async function carregarDados() {
 
     estadoAtual.filtros = filtrosValidos;
 
+    console.log('🔍 Filtros para busca:', filtrosValidos);
+
     try {
         const params = new URLSearchParams({
             pagina: estadoAtual.pagina,
@@ -220,8 +222,12 @@ async function carregarDados() {
             ...filtrosValidos
         });
 
+        console.log('📡 URL:', `${API_BASE}/backlog?${params}`);
+
         const response = await fetch(`${API_BASE}/backlog?${params}`);
         const resultado = await response.json();
+
+        console.log('📦 Resultado:', resultado);
 
         if (resultado.success) {
             estadoAtual.totalRegistros = resultado.paginacao.total;

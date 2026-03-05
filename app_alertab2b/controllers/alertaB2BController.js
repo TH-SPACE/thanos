@@ -530,6 +530,9 @@ async function buscarBacklog(filtros = {}) {
             dataFim
         } = filtros;
 
+        console.log('🔍 Filtros recebidos:', filtros);
+        console.log('📍 Cluster:', cluster);
+
         const offset = (pagina - 1) * limite;
 
         let query = 'SELECT * FROM backlog_b2b WHERE 1=1';
@@ -576,6 +579,9 @@ async function buscarBacklog(filtros = {}) {
             query += ' AND cluster = ?';
             countQuery += ' AND cluster = ?';
             params.push(cluster);
+            console.log('✅ Adicionado filtro cluster:', cluster);
+        } else {
+            console.log('⚠️ Cluster não informado');
         }
 
         if (dataInicio) {
@@ -593,11 +599,16 @@ async function buscarBacklog(filtros = {}) {
         query += ' ORDER BY last_update DESC LIMIT ? OFFSET ?';
         params.push(limite, offset);
 
+        console.log('📝 Query:', query);
+        console.log('📦 Params:', params);
+
         const connection = await db.mysqlPool.getConnection();
 
         try {
             const [registros] = await connection.execute(query, params);
             const [countResult] = await connection.execute(countQuery, params.slice(0, -2));
+
+            console.log('✅ Registros encontrados:', registros.length);
 
             return {
                 success: true,
