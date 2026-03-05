@@ -142,7 +142,7 @@ async function sincronizarDados() {
         const response = await fetch(`${API_BASE}/sincronizar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fonte: 'arquivo' })
+            body: JSON.stringify({ fonte: 'url' })
         });
 
         const resultado = await response.json();
