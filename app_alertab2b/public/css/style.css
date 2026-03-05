@@ -1147,6 +1147,30 @@ tbody tr:hover {
     border-bottom-color: #fecaca;
 }
 
+.alert-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #fecaca;
+}
+
+.alert-info-icon {
+    font-size: 1.5rem;
+}
+
+.alert-info-text {
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.alert-info-text strong {
+    color: #dc2626;
+}
+
 .alert-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

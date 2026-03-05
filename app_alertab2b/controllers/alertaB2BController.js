@@ -1109,14 +1109,14 @@ function baixarCSV(dados, nomeArquivo = 'backlog_b2b') {
 }
 
 /**
- * Buscar reparos críticos (Ativos próximos ou após 18h)
+ * Buscar reparos críticos (Ativos no dia atual próximo/após 18h)
  */
 async function buscarReparosCriticost() {
     try {
         const connection = await db.mysqlPool.getConnection();
 
         try {
-            // Buscar reparos Ativos ordenados por hora de criação
+            // Buscar reparos Ativos criados hoje ou nos últimos 2 dias
             const query = `
                 SELECT 
                     bd,
@@ -1132,33 +1132,59 @@ async function buscarReparosCriticost() {
                     prazo,
                     data_criacao,
                     last_update,
-                    TIMESTAMPDIFF(HOUR, data_criacao, NOW()) as horas_ativo
+                    HOUR(data_criacao) as hora_criacao,
+                    TIMESTAMPDIFF(HOUR, NOW(), data_criacao) as horas_restantes
                 FROM backlog_b2b
                 WHERE status = 'Ativo'
+                AND DATE(data_criacao) >= DATE_SUB(CURDATE(), INTERVAL 1 DAY)
                 ORDER BY data_criacao ASC
             `;
 
             const [reparos] = await connection.execute(query);
 
-            // Classificar por criticidade
+            const agora = new Date();
+            const horaAtual = agora.getHours();
+            const minutosAtuais = agora.getMinutes();
+            const tempoAtual = horaAtual + (minutosAtuais / 60);
+
+            // Classificar por criticidade baseado no horário de criação vs 18h
             const criticos = {
-                urgente: [],      // > 18 horas
-                atencao: [],      // 15-18 horas
-                alerta: [],       // 12-15 horas
-                monitorar: []     // < 12 horas
+                urgente: [],      // Criados antes das 18h e ainda ativos após 18h
+                atencao: [],      // Criados entre 17h-18h
+                alerta: [],       // Criados entre 16h-17h
+                monitorar: []     // Criados após 18h ou muito recentes
             };
 
             reparos.forEach(reparo => {
-                const horas = reparo.horas_ativo || 0;
+                const horaCriacao = reparo.hora_criacao || 0;
                 
-                if (horas >= 18) {
-                    criticos.urgente.push(reparo);
-                } else if (horas >= 15) {
-                    criticos.atencao.push(reparo);
-                } else if (horas >= 12) {
-                    criticos.alerta.push(reparo);
+                // Se já passou das 18h e o reparo foi criado hoje e ainda está Ativo
+                if (tempoAtual >= 18) {
+                    if (horaCriacao < 18) {
+                        // Criado antes das 18h e ainda ativo → Urgente
+                        criticos.urgente.push(reparo);
+                    } else if (horaCriacao < 19) {
+                        // Criado entre 18h-19h
+                        criticos.atencao.push(reparo);
+                    } else if (horaCriacao < 20) {
+                        // Criado entre 19h-20h
+                        criticos.alerta.push(reparo);
+                    } else {
+                        // Criado após 20h
+                        criticos.monitorar.push(reparo);
+                    }
                 } else {
-                    criticos.monitorar.push(reparo);
+                    // Antes das 18h
+                    if (horaCriacao < 16) {
+                        // Criado antes das 16h → Atenção (vai fazer 18h logo)
+                        criticos.atencao.push(reparo);
+                    } else if (horaCriacao < 17) {
+                        // Criado entre 16h-17h → Alerta
+                        criticos.alerta.push(reparo);
+                    } else {
+                        // Criado após 17h → Monitorar
+                        criticos.monitorar.push(reparo);
+                    }
                 }
             });
 
@@ -1170,9 +1196,11 @@ async function buscarReparosCriticost() {
                         urgente: criticos.urgente.length,
                         atencao: criticos.atencao.length,
                         alerta: criticos.alerta.length,
-                        monitorar: criticos.monitorar.length
+                        monitorar: criticos.monitorar.length,
+                        hora_atual: tempoAtual.toFixed(1)
                     },
-                    criticos
+                    criticos,
+                    hora_atual: horaAtual.toString().padStart(2, '0') + ':' + minutosAtuais.toString().padStart(2, '0')
                 }
             };
         } finally {

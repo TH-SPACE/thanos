@@ -22,7 +22,7 @@
                     <h1>📊 Dashboard Alerta B2B</h1>
                 </div>
                 <div class="header-actions">
-                    <a href="/alerta-b2b/" class="btn btn-secondary">
+                    <a href="/alerta-b2b/dashboard-html" class="btn btn-secondary">
                         ← Voltar para Lista
                     </a>
                     <a href="/alerta-b2b/exportar" class="btn btn-success" title="Baixar Excel">
@@ -66,49 +66,6 @@
             </div>
         </section>
 
-        <!-- Alerta de Reparos Críticos -->
-        <section class="alert-section" id="alertSection">
-            <h2 class="section-title">🚨 Alerta de Reparos Críticos</h2>
-            <div class="alert-cards">
-                <div class="alert-card alert-urgente">
-                    <div class="alert-icon">🔴</div>
-                    <div class="alert-content">
-                        <div class="alert-value" id="alertUrgente">0</div>
-                        <div class="alert-label">Urgente (> 18h)</div>
-                        <div class="alert-desc">Solicitar mudança para Parada IMEDIATAMENTE</div>
-                    </div>
-                </div>
-                <div class="alert-card alert-atencao">
-                    <div class="alert-icon">🟠</div>
-                    <div class="alert-content">
-                        <div class="alert-value" id="alertAtencao">0</div>
-                        <div class="alert-label">Atenção (15-18h)</div>
-                        <div class="alert-desc">Solicitar mudança para Parada</div>
-                    </div>
-                </div>
-                <div class="alert-card alert-alerta">
-                    <div class="alert-icon">🟡</div>
-                    <div class="alert-content">
-                        <div class="alert-value" id="alertAlerta">0</div>
-                        <div class="alert-label">Alerta (12-15h)</div>
-                        <div class="alert-desc">Monitorar de perto</div>
-                    </div>
-                </div>
-                <div class="alert-card alert-monitorar">
-                    <div class="alert-icon">🔵</div>
-                    <div class="alert-content">
-                        <div class="alert-value" id="alertMonitorar">0</div>
-                        <div class="alert-label">Monitorar (< 12h)</div>
-                        <div class="alert-desc">Acompanhar evolução</div>
-                    </div>
-                </div>
-            </div>
-            <div class="alert-actions">
-                <button id="btnVerCriticost" class="btn btn-danger">🚨 Ver Reparos Urgentes</button>
-                <button id="btnVerAtencao" class="btn btn-warning">⚠️ Ver Em Atenção</button>
-            </div>
-        </section>
-
         <!-- Cards de Estatísticas -->
         <section class="stats-cards">
             <div class="stat-card stat-total">
@@ -149,14 +106,6 @@
                     <div class="stat-value" id="statRegionais">0</div>
                     <div class="stat-label">Regionais</div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Dashboard de Tempo de Backlog -->
-        <section class="dashboard-section">
-            <h2 class="section-title">⏱️ Tempo de Backlog por Cluster</h2>
-            <div id="dashboardBacklog" class="dashboard-grid">
-                <!-- Preenchido via JavaScript -->
             </div>
         </section>
 

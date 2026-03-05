@@ -603,12 +603,12 @@ function fecharModalLogs() {
 async function abrirModalDashboard() {
     const modal = document.getElementById('modalDashboard');
     const modalBody = document.getElementById('modalDashboardBody');
-    
+
     modalBody.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     modal.classList.add('show');
-    
+
     try {
-        const response = await fetch(`${API_BASE}/dashboard`);
+        const response = await fetch(`${API_BASE}/api/dashboard`);
         const resultado = await response.json();
         
         if (resultado.success) {

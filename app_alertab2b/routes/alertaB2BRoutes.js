@@ -14,19 +14,7 @@ const {
 } = require('../controllers/alertaB2BController');
 
 /**
- * Rota para servir a página do Dashboard
- * Deve vir antes das rotas da API para não conflitar
- */
-router.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/dashboard.html'));
-});
-
-/**
  * Rotas da API do Alerta B2B
- */
-
-/**
- * Rotas do Alerta B2B
  * Base: /alerta-b2b
  */
 
@@ -37,9 +25,19 @@ router.get('/', (req, res) => {
         endpoints: {
             sincronizar: 'POST /alerta-b2b/sincronizar',
             backlog: 'GET /alerta-b2b/backlog',
-            estatisticas: 'GET /alerta-b2b/estatisticas'
+            estatisticas: 'GET /alerta-b2b/estatisticas',
+            dashboard: 'GET /alerta-b2b/api/dashboard (JSON)',
+            'dashboard.html': 'GET /alerta-b2b/dashboard (HTML)'
         }
     });
+});
+
+/**
+ * Rota para servir a página do Dashboard (HTML)
+ * Deve estar após as rotas da API para não conflitar
+ */
+router.get('/dashboard-html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
 /**
@@ -171,10 +169,10 @@ router.get('/estatisticas', async (req, res) => {
 });
 
 /**
- * GET /dashboard
+ * GET /api/dashboard
  * Busca dashboard por cluster com tempo de backlog
  */
-router.get('/dashboard', async (req, res) => {
+router.get('/api/dashboard', async (req, res) => {
     try {
         const resultado = await buscarDashboardCluster();
 
