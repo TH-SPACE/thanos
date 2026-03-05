@@ -688,14 +688,14 @@ async function buscarEstatisticas(filtros = {}) {
                 ORDER BY quantidade DESC
             `;
 
-            const [status] = await connection.execute(queryStatus, params.length > 0 ? params : []);
+            const [statusResult] = await connection.execute(queryStatus, params.length > 0 ? params : []);
 
             return {
                 success: true,
                 dados: {
                     geral: dadosTratados,
                     regionais,
-                    status
+                    status: statusResult
                 }
             };
         } finally {
