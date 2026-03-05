@@ -1,6 +1,6 @@
 const axios = require('axios');
 const https = require('https');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 const { parse } = require('csv-parse');
 const db = require('../../db/db');
 
