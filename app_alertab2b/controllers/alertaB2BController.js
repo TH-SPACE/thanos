@@ -69,14 +69,21 @@ async function baixarCSV(url) {
             rejectUnauthorized: !CONFIG.IGNORE_SSL
         });
 
+        console.log('   📡 Baixando CSV de:', url);
+        
         const response = await axios.get(url, {
             httpsAgent,
             responseType: 'text',
-            timeout: 60000 // 60 segundos
+            timeout: 60000
         });
 
+        console.log('   📡 Status:', response.status);
+        console.log('   📡 Tipo response.data:', typeof response.data);
+        console.log('   📡 response.headers:', response.headers);
+        
         return response.data;
     } catch (error) {
+        console.error('   ❌ Erro ao baixar CSV:', error.message);
         throw new Error(`Erro ao baixar CSV: ${error.message}`);
     }
 }
