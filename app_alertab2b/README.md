@@ -4,10 +4,12 @@ Módulo do ThanOS responsável por sincronizar e gerenciar os dados do Backlog B
 
 ## 🎯 Funcionalidades
 
-- **Sincronização automática**: Baixa dados do CSV periodicamente
+- **Sincronização automática**: Baixa dados do CSV periodicamente (5 em 5 minutos)
+- **Filtro de UF**: Salva apenas registros do **Centro-Oeste e Norte**
 - **API REST**: Endpoints para buscar dados e estatísticas
 - **Logs de sincronização**: Histórico completo das sincronizações
 - **Filtros e busca**: Consulta dados com diversos filtros
+- **Interface web**: Dashboard completo com tabelas e gráficos
 
 ## 📁 Estrutura de Pastas
 

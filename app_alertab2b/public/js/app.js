@@ -88,9 +88,10 @@ async function sincronizarDados() {
 // ===========================================
 // Carregar Estatísticas
 // ===========================================
-async function carregarEstatisticas() {
+async function carregarEstatisticas(filtros = {}) {
     try {
-        const response = await fetch(`${API_BASE}/estatisticas`);
+        const params = new URLSearchParams(filtros);
+        const response = await fetch(`${API_BASE}/estatisticas?${params}`);
         const resultado = await response.json();
 
         if (resultado.success) {
@@ -143,6 +144,9 @@ async function carregarDados() {
 
             atualizarInfoTabela();
             renderizarPaginacao();
+            
+            // Atualizar estatísticas com os filtros aplicados
+            carregarEstatisticas(filtros);
         } else {
             tbody.innerHTML = '<tr><td colspan="10" class="no-data">Erro ao carregar dados</td></tr>';
         }
@@ -160,9 +164,6 @@ function coletarFiltros() {
 
     const bd = document.getElementById('filtroBD').value.trim();
     if (bd) filtros.bd = bd;
-
-    const cnpj = document.getElementById('filtroCNPJ').value.trim();
-    if (cnpj) filtros.cnpj = cnpj;
 
     const cliente = document.getElementById('filtroCliente').value.trim();
     if (cliente) filtros.cliente = cliente;
@@ -190,7 +191,6 @@ function coletarFiltros() {
 // ===========================================
 function limparFiltros() {
     document.getElementById('filtroBD').value = '';
-    document.getElementById('filtroCNPJ').value = '';
     document.getElementById('filtroCliente').value = '';
     document.getElementById('filtroRegional').value = '';
     document.getElementById('filtroStatus').value = '';
@@ -215,7 +215,6 @@ function criarLinhaTabela(item) {
     tr.innerHTML = `
         <td><strong>${item.bd || '-'}</strong></td>
         <td>${item.nome_cliente || '-'}</td>
-        <td>${formatarCNPJ(item.cnpj)}</td>
         <td>${item.regional || '-'}</td>
         <td>${statusBadge}</td>
         <td>${item.grupo || '-'}</td>
@@ -239,7 +238,6 @@ function mostrarDetalhes(item) {
         <div class="details-grid">
             ${criarDetalheItem('BD', item.bd)}
             ${criarDetalheItem('Cliente', item.nome_cliente)}
-            ${criarDetalheItem('CNPJ', formatarCNPJ(item.cnpj))}
             ${criarDetalheItem('Grupo', item.grupo)}
             ${criarDetalheItem('Regional', item.regional)}
             ${criarDetalheItem('Município', item.municipio)}
@@ -389,15 +387,6 @@ function atualizarUltimaAtualizacao() {
 // ===========================================
 function formatarNumero(num) {
     return num.toLocaleString('pt-BR');
-}
-
-function formatarCNPJ(cnpj) {
-    if (!cnpj) return '-';
-    cnpj = cnpj.replace(/\D/g, '');
-    if (cnpj.length === 14) {
-        return `${cnpj.substring(0, 2)}.${cnpj.substring(2, 5)}.${cnpj.substring(5, 8)}/${cnpj.substring(8, 12)}-${cnpj.substring(12)}`;
-    }
-    return cnpj;
 }
 
 function formatarSLA(sla) {

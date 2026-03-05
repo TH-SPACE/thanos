@@ -13,7 +13,7 @@
         <header class="header">
             <div class="logo">
                 <h1>📊 Alerta B2B</h1>
-                <span class="subtitle">Backlog BDSLA</span>
+                <span class="subtitle">Backlog BDSLA - Centro-Oeste e Norte</span>
             </div>
             <div class="header-actions">
                 <button id="btnSincronizar" class="btn btn-primary" title="Sincronizar dados agora">
@@ -25,6 +25,15 @@
                 </div>
             </div>
         </header>
+
+        <!-- Aviso de Filtro -->
+        <div class="filter-notice">
+            <span class="filter-notice-icon">📍</span>
+            <span class="filter-notice-text">
+                <strong>Filtro ativo:</strong> Apenas registros de <strong>Centro-Oeste</strong> e <strong>Norte</strong>
+                <small>(GO, MT, MS, DF, AC, AP, AM, PA, RO, RR, TO)</small>
+            </span>
+        </div>
 
         <!-- Cards de Estatísticas -->
         <section class="stats-cards">
@@ -76,11 +85,6 @@
                 <div class="filter-group">
                     <label for="filtroBD">BD</label>
                     <input type="text" id="filtroBD" placeholder="Buscar por BD...">
-                </div>
-
-                <div class="filter-group">
-                    <label for="filtroCNPJ">CNPJ</label>
-                    <input type="text" id="filtroCNPJ" placeholder="Buscar por CNPJ...">
                 </div>
 
                 <div class="filter-group">
@@ -146,7 +150,6 @@
                         <tr>
                             <th>BD</th>
                             <th>Cliente</th>
-                            <th>CNPJ</th>
                             <th>Regional</th>
                             <th>Status</th>
                             <th>Grupo</th>

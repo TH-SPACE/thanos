@@ -108,11 +108,21 @@ router.get('/backlog', async (req, res) => {
 
 /**
  * GET /estatisticas
- * Busca estatísticas do backlog
+ * Busca estatísticas do backlog (suporta filtros)
  */
 router.get('/estatisticas', async (req, res) => {
     try {
-        const resultado = await buscarEstatisticas();
+        const filtros = {
+            bd: req.query.bd,
+            cliente: req.query.cliente,
+            regional: req.query.regional,
+            status: req.query.status,
+            grupo: req.query.grupo,
+            dataInicio: req.query.dataInicio,
+            dataFim: req.query.dataFim
+        };
+
+        const resultado = await buscarEstatisticas(filtros);
 
         if (resultado.success) {
             res.json({

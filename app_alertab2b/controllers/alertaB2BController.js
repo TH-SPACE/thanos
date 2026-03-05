@@ -147,8 +147,10 @@ async function salvarLogSincronizacao(params) {
     try {
         const {
             fonte_url,
+            filtro_uf,
             total_registros,
             registros_inseridos,
+            registros_filtrados,
             registros_atualizados,
             registros_erro,
             status_sync,
@@ -162,17 +164,19 @@ async function salvarLogSincronizacao(params) {
         try {
             const query = `
                 INSERT INTO logs_sync_alertab2b (
-                    data_sync, fonte_url,
-                    total_registros, registros_inseridos, registros_atualizados, registros_erro,
+                    data_sync, fonte_url, filtro_uf,
+                    total_registros, registros_inseridos, registros_filtrados, registros_atualizados, registros_erro,
                     status_sync, duracao_segundos, mensagem, erro_detalhe
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
 
             const values = [
                 new Date(),
                 fonte_url || CONFIG.CSV_URL,
+                filtro_uf || 'CO-NORTE',
                 total_registros || 0,
                 registros_inseridos || 0,
+                registros_filtrados || 0,
                 registros_atualizados || 0,
                 registros_erro || 0,
                 status_sync || 'sucesso',
@@ -194,6 +198,7 @@ async function salvarLogSincronizacao(params) {
 /**
  * Processar e salvar dados do CSV no banco
  * Faz TRUNCATE antes de inserir para garantir dados sempre atualizados
+ * FILTRO: Salva apenas UF's do Centro-Oeste e Norte
  */
 async function processarCSV(registros) {
     const connection = await db.mysqlPool.getConnection();
@@ -201,6 +206,15 @@ async function processarCSV(registros) {
     try {
         let inseridos = 0;
         let erros = 0;
+        let filtrados = 0;
+
+        // UF's do Centro-Oeste e Norte
+        const UFS_PERMITIDAS = [
+            // Centro-Oeste
+            'GO', 'MATO GROSSO', 'MT', 'MATO GROSSO DO SUL', 'MS', 'DISTRITO FEDERAL', 'DF',
+            // Norte
+            'AC', 'AMAPA', 'AP', 'AMAZONAS', 'AM', 'PARA', 'PA', 'RONDONIA', 'RO', 'RORAIMA', 'RR', 'TOCANTINS', 'TO'
+        ];
 
         console.log(`   📊 Total de registros para processar: ${registros.length}`);
 
@@ -210,13 +224,21 @@ async function processarCSV(registros) {
         console.log('   ✅ Tabela limpa com sucesso!');
 
         // Preparar INSERT em lote para melhor performance
-        console.log('   📝 Inserindo novos registros...');
+        console.log('   📝 Inserindo novos registros (Filtro: Centro-Oeste e Norte)...');
 
         for (let i = 0; i < registros.length; i++) {
             const item = registros[i];
 
             try {
                 const bd = item.bd;
+                const uf = item.uf ? item.uf.toUpperCase().trim() : '';
+
+                // Filtrar apenas UF's do Centro-Oeste e Norte
+                if (!UFS_PERMITIDAS.includes(uf)) {
+                    filtrados++;
+                    continue;
+                }
+
                 if (!bd) {
                     console.warn(`   ⚠️  Registro ${i + 1}: Sem BD, ignorado`);
                     erros++;
@@ -274,6 +296,7 @@ async function processarCSV(registros) {
         console.log('='.repeat(70));
         console.log(`📊 RESULTADOS:`);
         console.log(`   ✅ Inseridos: ${inseridos}`);
+        console.log(`   🚫 Filtrados (não CO/Norte): ${filtrados}`);
         console.log(`   ❌ Erros: ${erros}`);
         console.log(`   📦 Total processado: ${registros.length}`);
         if (registros.length > 0) {
@@ -284,6 +307,7 @@ async function processarCSV(registros) {
         return {
             success: true,
             inseridos,
+            filtrados,
             erros,
             total: registros.length
         };
@@ -356,12 +380,13 @@ async function executarSincronizacao(fonte = 'url') {
         const dataFim = new Date();
         const duracao = ((dataFim - dataInicio) / 1000).toFixed(2);
         const status_sync = resultado.erros === 0 ? 'sucesso' : (resultado.inseridos > 0 ? 'parcial' : 'erro');
-        const mensagem = `Sincronização concluída! ${resultado.inseridos} registros processados, ${resultado.erros} erros.`;
+        const mensagem = `Sincronização concluída! ${resultado.inseridos} registros inseridos (CO/Norte), ${resultado.filtrados || 0} filtrados, ${resultado.erros} erros.`;
 
         await salvarLogSincronizacao({
             fonte_url: fonte === 'arquivo' ? 'arquivo_local' : CONFIG.CSV_URL,
             total_registros: resultado.total,
             registros_inseridos: resultado.inseridos,
+            registros_filtrados: resultado.filtrados || 0,
             registros_atualizados: resultado.atualizados,
             registros_erro: resultado.erros,
             status_sync,
@@ -498,14 +523,64 @@ async function buscarBacklog(filtros = {}) {
 
 /**
  * Buscar estatísticas do backlog
+ * Suporta filtros para atualizar os cards dinamicamente
  */
-async function buscarEstatisticas() {
+async function buscarEstatisticas(filtros = {}) {
     try {
+        const {
+            bd,
+            cliente,
+            regional,
+            status,
+            grupo,
+            dataInicio,
+            dataFim
+        } = filtros;
+
         const connection = await db.mysqlPool.getConnection();
-        
+
         try {
+            // Construir query com filtros
+            let whereClause = 'WHERE 1=1';
+            const params = [];
+
+            if (bd) {
+                whereClause += ' AND bd LIKE ?';
+                params.push(`%${bd}%`);
+            }
+
+            if (cliente) {
+                whereClause += ' AND nome_cliente LIKE ?';
+                params.push(`%${cliente}%`);
+            }
+
+            if (regional) {
+                whereClause += ' AND regional = ?';
+                params.push(regional);
+            }
+
+            if (status) {
+                whereClause += ' AND status = ?';
+                params.push(status);
+            }
+
+            if (grupo) {
+                whereClause += ' AND grupo LIKE ?';
+                params.push(`%${grupo}%`);
+            }
+
+            if (dataInicio) {
+                whereClause += ' AND data_criacao >= ?';
+                params.push(dataInicio);
+            }
+
+            if (dataFim) {
+                whereClause += ' AND data_criacao <= ?';
+                params.push(dataFim);
+            }
+
             const query = `
-                SELECT 
+                SELECT
                     COUNT(*) as total_registros,
                     COUNT(DISTINCT regional) as total_regionais,
                     COUNT(DISTINCT cnpj) as total_clientes,
@@ -514,27 +589,30 @@ async function buscarEstatisticas() {
                     AVG(prazo) as prazo_medio,
                     AVG(sla) as sla_medio
                 FROM backlog_b2b
+                ${whereClause}
             `;
 
-            const [resultado] = await connection.execute(query);
-            
+            const [resultado] = await connection.execute(query, params);
+
             const queryRegionais = `
                 SELECT regional, COUNT(*) as quantidade
                 FROM backlog_b2b
+                ${whereClause}
                 GROUP BY regional
                 ORDER BY quantidade DESC
             `;
 
-            const [regionais] = await connection.execute(queryRegionais);
+            const [regionais] = await connection.execute(queryRegionais, params);
 
             const queryStatus = `
                 SELECT status, COUNT(*) as quantidade
                 FROM backlog_b2b
+                ${whereClause}
                 GROUP BY status
                 ORDER BY quantidade DESC
             `;
 
-            const [status] = await connection.execute(queryStatus);
+            const [status] = await connection.execute(queryStatus, params);
 
             return {
                 success: true,
