@@ -11,7 +11,8 @@ const {
     buscarStatusPorCluster,
     buscarReparosCriticost,
     gerarCSV,
-    atualizarArquivoLocal
+    atualizarArquivoLocal,
+    buscarReparosPorFaixa
 } = require('../controllers/alertaB2BController');
 
 /**
@@ -433,6 +434,47 @@ router.post('/atualizar-arquivo', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro interno ao atualizar arquivo',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /reparos-por-faixa
+ * Busca reparos de um cluster e faixa de tempo específicos
+ */
+router.get('/reparos-por-faixa', async (req, res) => {
+    try {
+        console.log('📥 /reparos-por-faixa - query:', req.query);
+
+        const filtros = {
+            cluster: req.query.cluster,
+            faixa: req.query.faixa,
+            regional: req.query.regional,
+            status: req.query.status
+        };
+
+        console.log('📦 Filtros:', filtros);
+
+        const resultado = await buscarReparosPorFaixa(filtros);
+
+        if (resultado.success) {
+            res.json({
+                success: true,
+                dados: resultado.dados
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao buscar reparos',
+                error: resultado.error
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao buscar reparos por faixa:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno ao buscar reparos',
             error: error.message
         });
     }

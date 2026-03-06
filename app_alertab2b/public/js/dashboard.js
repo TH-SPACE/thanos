@@ -9,10 +9,16 @@ const API_BASE = '/alerta-b2b';
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Iniciando Dashboard Alerta B2B...');
 
+    // Carregar filtros primeiro
     carregarFiltrosDropdowns();
-    carregarEstatisticas();
-    carregarStatusPorCluster();
-    carregarTempoBacklog();
+    
+    // Aguardar filtros serem preenchidos antes de carregar dados
+    setTimeout(() => {
+        carregarEstatisticas();
+        carregarStatusPorCluster();
+        carregarTempoBacklog();
+    }, 100);
+    
     configurarEventListeners();
     configurarMultiselect();
     atualizarUltimaAtualizacao();
@@ -442,20 +448,19 @@ async function carregarTempoBacklog() {
                     <tr>
                         <td><strong>${cluster.cluster}</strong></td>
                         <td>${cluster.total_registros || 0}</td>
-                        <td><span class="status-badge status-ativo">${cluster.ativos || 0}</span></td>
-                        <td><span class="status-badge status-parado">${cluster.parados || 0}</span></td>
-                        <td><span class="time-badge time-0-1h">${cluster.menos_1_hora || 0}</span></td>
-                        <td><span class="time-badge time-1-3h">${cluster.entre_1_3_horas || 0}</span></td>
-                        <td><span class="time-badge time-3-6h">${cluster.entre_3_6_horas || 0}</span></td>
-                        <td><span class="time-badge time-6-8h">${cluster.entre_6_8_horas || 0}</span></td>
-                        <td><span class="time-badge time-8-24h">${cluster.entre_8_24_horas || 0}</span></td>
-                        <td><span class="time-badge time-1-3d">${cluster.entre_1_3_dias || 0}</span></td>
-                        <td><span class="time-badge time-3-5d">${cluster.entre_3_5_dias || 0}</span></td>
-                        <td><span class="time-badge time-5-7d">${cluster.entre_5_7_dias || 0}</span></td>
-                        <td><span class="time-badge time-7-15d">${cluster.entre_7_15_dias || 0}</span></td>
-                        <td><span class="time-badge time-15-30d">${cluster.entre_15_30_dias || 0}</span></td>
-                        <td><span class="time-badge time-30d-plus">${cluster.mais_30_dias || 0}</span></td>
-                        <td>${cluster.tempo_medio_horas ? parseFloat(cluster.tempo_medio_horas).toFixed(1) + 'h' : '-'}</td>
+                        <td><span class="status-badge status-ativo" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'ativos', ${cluster.ativos || 0})">${cluster.ativos || 0}</span></td>
+                        <td><span class="status-badge status-parado" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'parados', ${cluster.parados || 0})">${cluster.parados || 0}</span></td>
+                        <td>${cluster.menos_1_hora > 0 ? `<span class="time-badge time-0-1h" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'menos_1_hora', ${cluster.menos_1_hora})">${cluster.menos_1_hora}</span>` : cluster.menos_1_hora || 0}</td>
+                        <td>${cluster.entre_1_3_horas > 0 ? `<span class="time-badge time-1-3h" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_1_3_horas', ${cluster.entre_1_3_horas})">${cluster.entre_1_3_horas}</span>` : cluster.entre_1_3_horas || 0}</td>
+                        <td>${cluster.entre_3_6_horas > 0 ? `<span class="time-badge time-3-6h" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_3_6_horas', ${cluster.entre_3_6_horas})">${cluster.entre_3_6_horas}</span>` : cluster.entre_3_6_horas || 0}</td>
+                        <td>${cluster.entre_6_8_horas > 0 ? `<span class="time-badge time-6-8h" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_6_8_horas', ${cluster.entre_6_8_horas})">${cluster.entre_6_8_horas}</span>` : cluster.entre_6_8_horas || 0}</td>
+                        <td>${cluster.entre_8_24_horas > 0 ? `<span class="time-badge time-8-24h" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_8_24_horas', ${cluster.entre_8_24_horas})">${cluster.entre_8_24_horas}</span>` : cluster.entre_8_24_horas || 0}</td>
+                        <td>${cluster.entre_1_3_dias > 0 ? `<span class="time-badge time-1-3d" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_1_3_dias', ${cluster.entre_1_3_dias})">${cluster.entre_1_3_dias}</span>` : cluster.entre_1_3_dias || 0}</td>
+                        <td>${cluster.entre_3_5_dias > 0 ? `<span class="time-badge time-3-5d" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_3_5_dias', ${cluster.entre_3_5_dias})">${cluster.entre_3_5_dias}</span>` : cluster.entre_3_5_dias || 0}</td>
+                        <td>${cluster.entre_5_7_dias > 0 ? `<span class="time-badge time-5-7d" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_5_7_dias', ${cluster.entre_5_7_dias})">${cluster.entre_5_7_dias}</span>` : cluster.entre_5_7_dias || 0}</td>
+                        <td>${cluster.entre_7_15_dias > 0 ? `<span class="time-badge time-7-15d" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_7_15_dias', ${cluster.entre_7_15_dias})">${cluster.entre_7_15_dias}</span>` : cluster.entre_7_15_dias || 0}</td>
+                        <td>${cluster.entre_15_30_dias > 0 ? `<span class="time-badge time-15-30d" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'entre_15_30_dias', ${cluster.entre_15_30_dias})">${cluster.entre_15_30_dias}</span>` : cluster.entre_15_30_dias || 0}</td>
+                        <td>${cluster.mais_30_dias > 0 ? `<span class="time-badge time-30d-plus" style="cursor: pointer;" onclick="abrirModalReparos('${cluster.cluster}', 'mais_30_dias', ${cluster.mais_30_dias})">${cluster.mais_30_dias}</span>` : cluster.mais_30_dias || 0}</td>
                     </tr>
                 `;
             });
@@ -482,18 +487,17 @@ async function carregarTempoBacklog() {
                     <td><strong>${total.total_geral || 0}</strong></td>
                     <td><strong>${totalAtivos}</strong></td>
                     <td><strong>${totalParados}</strong></td>
-                    <td><strong>${totalMenos1h}</strong></td>
-                    <td><strong>${total1_3h}</strong></td>
-                    <td><strong>${total3_6h}</strong></td>
-                    <td><strong>${total6_8h}</strong></td>
-                    <td><strong>${total8_24h}</strong></td>
-                    <td><strong>${total1_3d}</strong></td>
-                    <td><strong>${total3_5d}</strong></td>
-                    <td><strong>${total5_7d}</strong></td>
-                    <td><strong>${total7_15d}</strong></td>
-                    <td><strong>${total15_30d}</strong></td>
-                    <td><strong>${totalMais30d}</strong></td>
-                    <td>${total.media_geral_horas ? parseFloat(total.media_geral_horas).toFixed(1) + 'h' : '-'}</td>
+                    <td><strong>${totalMenos1h > 0 ? `<span class="time-badge time-0-1h">${totalMenos1h}</span>` : totalMenos1h}</strong></td>
+                    <td><strong>${total1_3h > 0 ? `<span class="time-badge time-1-3h">${total1_3h}</span>` : total1_3h}</strong></td>
+                    <td><strong>${total3_6h > 0 ? `<span class="time-badge time-3-6h">${total3_6h}</span>` : total3_6h}</strong></td>
+                    <td><strong>${total6_8h > 0 ? `<span class="time-badge time-6-8h">${total6_8h}</span>` : total6_8h}</strong></td>
+                    <td><strong>${total8_24h > 0 ? `<span class="time-badge time-8-24h">${total8_24h}</span>` : total8_24h}</strong></td>
+                    <td><strong>${total1_3d > 0 ? `<span class="time-badge time-1-3d">${total1_3d}</span>` : total1_3d}</strong></td>
+                    <td><strong>${total3_5d > 0 ? `<span class="time-badge time-3-5d">${total3_5d}</span>` : total3_5d}</strong></td>
+                    <td><strong>${total5_7d > 0 ? `<span class="time-badge time-5-7d">${total5_7d}</span>` : total5_7d}</strong></td>
+                    <td><strong>${total7_15d > 0 ? `<span class="time-badge time-7-15d">${total7_15d}</span>` : total7_15d}</strong></td>
+                    <td><strong>${total15_30d > 0 ? `<span class="time-badge time-15-30d">${total15_30d}</span>` : total15_30d}</strong></td>
+                    <td><strong>${totalMais30d > 0 ? `<span class="time-badge time-30d-plus">${totalMais30d}</span>` : totalMais30d}</strong></td>
                 </tr>
             `;
             tfoot.innerHTML = htmlFoot;
@@ -520,3 +524,179 @@ function atualizarUltimaAtualizacao() {
 
 // Atualizar relógio a cada segundo
 setInterval(atualizarUltimaAtualizacao, 1000);
+
+// ===========================================
+// Modal de Reparos
+// ===========================================
+async function abrirModalReparos(cluster, faixa, valor) {
+    if (valor === 0) return;  // Não abre se for zero
+
+    const modal = document.getElementById('modalReparos');
+    const modalBody = document.getElementById('modalReparosBody');
+    const modalTitulo = document.getElementById('modalReparosTitulo');
+
+    // Definir título baseado na faixa
+    const titulosFaixas = {
+        'menos_1_hora': '< 1h',
+        'entre_1_3_horas': '1-3h',
+        'entre_3_6_horas': '3-6h',
+        'entre_6_8_horas': '6-8h',
+        'entre_8_24_horas': '8-24h',
+        'entre_1_3_dias': '1-3 dias',
+        'entre_3_5_dias': '3-5 dias',
+        'entre_5_7_dias': '5-7 dias',
+        'entre_7_15_dias': '7-15 dias',
+        'entre_15_30_dias': '15-30 dias',
+        'mais_30_dias': '> 30 dias',
+        'ativos': 'Ativos',
+        'parados': 'Parados'
+    };
+
+    const tituloFaixa = titulosFaixas[faixa] || faixa;
+    modalTitulo.textContent = `📋 ${cluster} - ${tituloFaixa} (${valor} reparos)`;
+    modalBody.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando reparos...</p></div>';
+    modal.classList.add('show');
+
+    try {
+        // Coletar filtros atuais
+        const filtros = coletarFiltros();
+        const params = new URLSearchParams({
+            cluster: cluster,
+            faixa: faixa,
+            ...filtros
+        });
+
+        const response = await fetch(`${API_BASE}/reparos-por-faixa?${params}`);
+        const resultado = await response.json();
+
+        if (resultado.success && resultado.dados.length > 0) {
+            let html = `
+                <div style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>BD</th>
+                                <th>Cliente</th>
+                                <th>Status</th>
+                                <th>Tempo</th>
+                                <th>Reclamação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            resultado.dados.forEach(reparo => {
+                const tempo = calcularTempoBacklog(reparo.data_criacao);
+                html += `
+                    <tr>
+                        <td><strong style="cursor: pointer; color: var(--primary-color);" 
+                            onclick="copiarBD('${reparo.bd}')" 
+                            title="Clique para copiar BD">${reparo.bd} 📋</strong></td>
+                        <td>${reparo.nome_cliente || '-'}</td>
+                        <td><span class="status-badge status-${reparo.status.toLowerCase()}">${reparo.status}</span></td>
+                        <td><span class="time-badge">${tempo}</span></td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${reparo.reclamacao || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            modalBody.innerHTML = html;
+        } else {
+            modalBody.innerHTML = '<p class="no-data">Nenhum reparo encontrado nesta faixa.</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao buscar reparos:', error);
+        modalBody.innerHTML = '<p class="error-message">Erro ao carregar reparos.</p>';
+    }
+}
+
+function fecharModalReparos() {
+    const modal = document.getElementById('modalReparos');
+    modal.classList.remove('show');
+}
+
+// Fechar modal ao clicar fora
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('modalReparos');
+    if (event.target === modal) {
+        fecharModalReparos();
+    }
+});
+
+// Calcular tempo de backlog
+function calcularTempoBacklog(dataCriacao) {
+    if (!dataCriacao) return '-';
+    
+    const agora = new Date();
+    const criacao = new Date(dataCriacao);
+    const diffMs = agora - criacao;
+    const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
+    
+    if (diffHoras < 24) {
+        return `${diffHoras}h`;
+    } else {
+        const diffDias = Math.floor(diffHoras / 24);
+        return `${diffDias}d`;
+    }
+}
+
+// Copiar BD para área de transferência
+async function copiarBD(bd) {
+    try {
+        await navigator.clipboard.writeText(bd);
+        
+        // Mostrar feedback visual
+        mostrarNotificacaoToast(`✅ BD ${bd} copiado!`);
+    } catch (error) {
+        console.error('Erro ao copiar BD:', error);
+        
+        // Fallback para navegadores antigos
+        const textarea = document.createElement('textarea');
+        textarea.value = bd;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        mostrarNotificacaoToast(`✅ BD ${bd} copiado!`);
+    }
+}
+
+// Mostrar notificação toast
+function mostrarNotificacaoToast(mensagem) {
+    // Verificar se já existe um toast
+    let toast = document.getElementById('toastNotificacao');
+    
+    if (!toast) {
+        // Criar toast
+        toast = document.createElement('div');
+        toast.id = 'toastNotificacao';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = mensagem;
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+    
+    // Esconder após 3 segundos
+    setTimeout(() => {
+        toast.style.transform = 'translateY(100px)';
+        toast.style.opacity = '0';
+    }, 3000);
+}

@@ -1330,6 +1330,94 @@ function gerarCSV(dados, nomeArquivo = 'backlog_b2b') {
 }
 
 /**
+ * Buscar reparos por faixa de tempo
+ */
+async function buscarReparosPorFaixa(filtros = {}) {
+    try {
+        const { cluster, faixa, regional, status } = filtros;
+        
+        const connection = await db.mysqlPool.getConnection();
+        
+        try {
+            let whereClause = 'WHERE cluster = ?';
+            const params = [cluster];
+            
+            // Adicionar filtro de faixa de tempo
+            if (faixa === 'menos_1_hora') {
+                whereClause += ' AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 1';
+            } else if (faixa === 'entre_1_3_horas') {
+                whereClause += ' AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 1 AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 3';
+            } else if (faixa === 'entre_3_6_horas') {
+                whereClause += ' AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 3 AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 6';
+            } else if (faixa === 'entre_6_8_horas') {
+                whereClause += ' AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 6 AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 8';
+            } else if (faixa === 'entre_8_24_horas') {
+                whereClause += ' AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 8 AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 24';
+            } else if (faixa === 'entre_1_3_dias') {
+                whereClause += ' AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 24 AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 3';
+            } else if (faixa === 'entre_3_5_dias') {
+                whereClause += ' AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 3 AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 5';
+            } else if (faixa === 'entre_5_7_dias') {
+                whereClause += ' AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 5 AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 7';
+            } else if (faixa === 'entre_7_15_dias') {
+                whereClause += ' AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 7 AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 15';
+            } else if (faixa === 'entre_15_30_dias') {
+                whereClause += ' AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 15 AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 30';
+            } else if (faixa === 'mais_30_dias') {
+                whereClause += ' AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 30';
+            } else if (faixa === 'ativos') {
+                whereClause += ' AND status = \'Ativo\'';
+            } else if (faixa === 'parados') {
+                whereClause += ' AND status = \'Parado\'';
+            }
+            
+            // Adicionar filtro de regional se existir
+            if (regional) {
+                whereClause += ' AND regional = ?';
+                params.push(regional);
+            }
+            
+            // Adicionar filtro de status se existir (e não for o filtro de ativos/parados da faixa)
+            if (status && faixa !== 'ativos' && faixa !== 'parados') {
+                whereClause += ' AND status = ?';
+                params.push(status);
+            }
+            
+            const query = `
+                SELECT 
+                    bd,
+                    nome_cliente,
+                    status,
+                    data_criacao,
+                    reclamacao,
+                    cluster,
+                    regional,
+                    uf,
+                    grupo,
+                    sla,
+                    prazo
+                FROM backlog_b2b
+                ${whereClause}
+                ORDER BY data_criacao DESC
+                LIMIT 100
+            `;
+            
+            const [reparos] = await connection.execute(query, params);
+            
+            return {
+                success: true,
+                dados: reparos
+            };
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Erro ao buscar reparos por faixa:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Buscar reparos críticos (Ativos no dia atual próximo/após 18h)
  */
 async function buscarReparosCriticost() {
@@ -1445,5 +1533,6 @@ module.exports = {
     buscarReparosCriticost,
     gerarCSV,
     parseCSV,
-    atualizarArquivoLocal
+    atualizarArquivoLocal,
+    buscarReparosPorFaixa
 };

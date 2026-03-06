@@ -1432,3 +1432,16 @@ tbody tr:hover {
 .btn-danger:hover {
     background: #dc2626;
 }
+
+/* Dashboard - Badges clicáveis */
+.time-badge[onclick],
+.status-badge[onclick] {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.time-badge[onclick]:hover,
+.status-badge[onclick]:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
