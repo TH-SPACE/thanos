@@ -895,89 +895,91 @@ async function buscarEstatisticas(filtros = {}) {
 /**
  * Buscar dashboard por cluster com tempo de backlog
  * Mostra tempo em horas e dias no backlog
+ * Faixas de tempo mutuamente exclusivas
  */
 async function buscarDashboardCluster() {
     try {
         const connection = await db.mysqlPool.getConnection();
 
         try {
-            // Dashboard por cluster com contagem de tempo
+            // Dashboard por cluster com contagem de tempo por faixa
+            // Faixas: <1h, 1-3h, 3-6h, 6-8h, 8-24h, 1-3d, 3-5d, 5-7d, 7-15d, 15-30d, >30d
             const queryDashboard = `
-                SELECT 
+                SELECT
                     cluster,
                     COUNT(*) as total_registros,
                     SUM(CASE WHEN status = 'Ativo' THEN 1 ELSE 0 END) as ativos,
                     SUM(CASE WHEN status = 'Parado' THEN 1 ELSE 0 END) as parados,
-                    
-                    -- Tempo em HORAS no backlog (para registros recentes)
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 1 THEN 1 
-                        ELSE 0 
+
+                    -- Faixas de TEMPO EM HORAS (até 24h)
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 1 THEN 1
+                        ELSE 0
                     END) as menos_1_hora,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) > 1 
-                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 3 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 1
+                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 3 THEN 1
+                        ELSE 0
                     END) as entre_1_3_horas,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) > 3 
-                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 6 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 3
+                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 6 THEN 1
+                        ELSE 0
                     END) as entre_3_6_horas,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) > 6 
-                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 8 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 6
+                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 8 THEN 1
+                        ELSE 0
                     END) as entre_6_8_horas,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) > 8 
-                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) <= 24 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 8
+                         AND TIMESTAMPDIFF(HOUR, data_criacao, NOW()) < 24 THEN 1
+                        ELSE 0
                     END) as entre_8_24_horas,
-                    
-                    -- Tempo em DIAS no backlog (para registros mais antigos)
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 1 
-                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 3 THEN 1 
-                        ELSE 0 
+
+                    -- Faixas de TEMPO EM DIAS (24h ou mais)
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(HOUR, data_criacao, NOW()) >= 24
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 3 THEN 1
+                        ELSE 0
                     END) as entre_1_3_dias,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 3 
-                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 5 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 3
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 5 THEN 1
+                        ELSE 0
                     END) as entre_3_5_dias,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 5 
-                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 7 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 5
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 7 THEN 1
+                        ELSE 0
                     END) as entre_5_7_dias,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 7 
-                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 15 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 7
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 15 THEN 1
+                        ELSE 0
                     END) as entre_7_15_dias,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 15 
-                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 30 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 15
+                         AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 30 THEN 1
+                        ELSE 0
                     END) as entre_15_30_dias,
-                    
-                    SUM(CASE 
-                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 30 THEN 1 
-                        ELSE 0 
+
+                    SUM(CASE
+                        WHEN TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 30 THEN 1
+                        ELSE 0
                     END) as mais_30_dias,
-                    
+
                     -- Tempo médio em horas
                     AVG(TIMESTAMPDIFF(HOUR, data_criacao, NOW())) as tempo_medio_horas
-                    
+
                 FROM backlog_b2b
                 GROUP BY cluster
                 ORDER BY total_registros DESC
@@ -987,7 +989,7 @@ async function buscarDashboardCluster() {
 
             // Total geral
             const queryTotal = `
-                SELECT 
+                SELECT
                     COUNT(*) as total_geral,
                     AVG(TIMESTAMPDIFF(HOUR, data_criacao, NOW())) as media_geral_horas
                 FROM backlog_b2b
