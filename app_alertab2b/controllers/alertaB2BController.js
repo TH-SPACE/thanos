@@ -896,12 +896,42 @@ async function buscarEstatisticas(filtros = {}) {
  * Buscar dashboard por cluster com tempo de backlog
  * Mostra tempo em horas e dias no backlog
  * Faixas de tempo mutuamente exclusivas
+ * Suporta filtros: regional, cluster, procedencia
  */
-async function buscarDashboardCluster() {
+async function buscarDashboardCluster(filtros = {}) {
     try {
         const connection = await db.mysqlPool.getConnection();
 
         try {
+            // Construir WHERE clause com filtros
+            let whereClause = 'WHERE 1=1';
+            const params = [];
+            
+            // Filtro de Regional
+            if (filtros.regional) {
+                whereClause += ' AND regional = ?';
+                params.push(filtros.regional);
+            }
+            
+            // Filtro de Cluster
+            if (filtros.cluster) {
+                whereClause += ' AND cluster = ?';
+                params.push(filtros.cluster);
+            }
+            
+            // Filtro de Procedência (pode ser múltiplo, separado por vírgula)
+            if (filtros.procedencia) {
+                const procedencias = filtros.procedencia.split(',');
+                if (procedencias.length === 1) {
+                    whereClause += ' AND procedencia = ?';
+                    params.push(procedencias[0]);
+                } else {
+                    const placeholders = procedencias.map(() => '?').join(', ');
+                    whereClause += ` AND procedencia IN (${placeholders})`;
+                    params.push(...procedencias);
+                }
+            }
+            
             // Dashboard por cluster com contagem de tempo por faixa
             // Faixas: <1h, 1-3h, 3-6h, 6-8h, 8-24h, 1-3d, 3-5d, 5-7d, 7-15d, 15-30d, >30d
             const queryDashboard = `
@@ -981,11 +1011,12 @@ async function buscarDashboardCluster() {
                     AVG(TIMESTAMPDIFF(HOUR, data_criacao, NOW())) as tempo_medio_horas
 
                 FROM backlog_b2b
+                ${whereClause}
                 GROUP BY cluster
                 ORDER BY total_registros DESC
             `;
 
-            const [dashboard] = await connection.execute(queryDashboard);
+            const [dashboard] = await connection.execute(queryDashboard, params);
 
             // Total geral
             const queryTotal = `
@@ -993,9 +1024,10 @@ async function buscarDashboardCluster() {
                     COUNT(*) as total_geral,
                     AVG(TIMESTAMPDIFF(HOUR, data_criacao, NOW())) as media_geral_horas
                 FROM backlog_b2b
+                ${whereClause}
             `;
 
-            const [total] = await connection.execute(queryTotal);
+            const [total] = await connection.execute(queryTotal, params);
 
             return {
                 success: true,
@@ -1365,6 +1397,8 @@ async function buscarReparosPorFaixa(filtros = {}) {
                 whereClause += ' AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 15 AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) < 30';
             } else if (faixa === 'mais_30_dias') {
                 whereClause += ' AND TIMESTAMPDIFF(DAY, data_criacao, NOW()) >= 30';
+            } else if (faixa === 'total') {
+                // Não adiciona filtro, mostra todos do cluster
             } else if (faixa === 'ativos') {
                 whereClause += ' AND status = \'Ativo\'';
             } else if (faixa === 'parados') {

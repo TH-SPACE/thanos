@@ -176,9 +176,11 @@ function getProcedenciasSelecionadas() {
 // ===========================================
 function atualizarTextoProcedencia() {
     const selecionadas = getProcedenciasSelecionadas();
-    const placeholder = document.getElementById('filtroProcedenciaHeader')?.querySelector('.multiselect-placeholder');
-    
+    const header = document.getElementById('filtroProcedenciaHeader');
+    const placeholder = header?.querySelector('.multiselect-placeholder');
+
     if (!placeholder) {
+        console.warn('⚠️ Placeholder não encontrado');
         return;
     }
 
@@ -207,8 +209,13 @@ function limparFiltros() {
         cb.checked = false;
         cb.closest('.multiselect-option')?.classList.remove('selected');
     });
-    atualizarTextoProcedencia();
+    
+    // Aguardar próximo tick do event loop para garantir que o DOM foi atualizado
+    setTimeout(() => {
+        atualizarTextoProcedencia();
+    }, 10);
 
+    // Recarregar dados sem filtros
     carregarEstatisticas();
     carregarStatusPorCluster();
     carregarTempoBacklog();
@@ -387,9 +394,9 @@ async function carregarStatusPorCluster() {
 
                 tr.innerHTML = `
                     <td><strong>${item.cluster}</strong></td>
-                    <td>${formatarNumero(item.total)}</td>
-                    <td><span class="status-badge status-ativo">${formatarNumero(item.ativos)}</span></td>
-                    <td><span class="status-badge status-parado">${formatarNumero(item.parados)}</span></td>
+                    <td style="cursor: pointer; color: var(--primary-color);" onclick="abrirModalReparos('${item.cluster}', 'total', ${item.total})" title="Clique para ver reparos"><strong>${formatarNumero(item.total)}</strong></td>
+                    <td><span class="status-badge status-ativo" style="cursor: pointer;" onclick="abrirModalReparos('${item.cluster}', 'ativos', ${item.ativos})" title="Clique para ver reparos ativos">${formatarNumero(item.ativos)}</span></td>
+                    <td><span class="status-badge status-parado" style="cursor: pointer;" onclick="abrirModalReparos('${item.cluster}', 'parados', ${item.parados})" title="Clique para ver reparos parados">${formatarNumero(item.parados)}</span></td>
                     <td>
                         <div class="progress-bar">
                             <div class="progress-fill progress-ativo" style="width: ${percentualAtivos}%"></div>
@@ -549,7 +556,8 @@ async function abrirModalReparos(cluster, faixa, valor) {
         'entre_15_30_dias': '15-30 dias',
         'mais_30_dias': '> 30 dias',
         'ativos': 'Ativos',
-        'parados': 'Parados'
+        'parados': 'Parados',
+        'total': 'Todos'
     };
 
     const tituloFaixa = titulosFaixas[faixa] || faixa;

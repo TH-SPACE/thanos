@@ -189,7 +189,17 @@ router.get('/estatisticas', async (req, res) => {
  */
 router.get('/api/dashboard', async (req, res) => {
     try {
-        const resultado = await buscarDashboardCluster();
+        console.log('📡 /api/dashboard - query:', req.query);
+
+        const filtros = {
+            regional: req.query.regional,
+            cluster: req.query.cluster,
+            procedencia: req.query.procedencia
+        };
+
+        console.log('📦 Filtros dashboard:', filtros);
+
+        const resultado = await buscarDashboardCluster(filtros);
 
         if (resultado.success) {
             res.json({
