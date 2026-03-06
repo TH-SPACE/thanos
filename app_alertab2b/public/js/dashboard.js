@@ -61,7 +61,7 @@ async function sincronizarDados() {
 
     try {
         btnSincronizar.disabled = true;
-        btnSincronizar.innerHTML = '⏳ Sincronizando...';
+        btnSincronizar.innerHTML = '⏳ Baixando e sincronizando...';
 
         const response = await fetch(`${API_BASE}/sincronizar`, {
             method: 'POST',
@@ -76,6 +76,7 @@ async function sincronizarDados() {
         if (resultado.success) {
             alert('✅ Sincronização realizada com sucesso!\n\n' +
                   `Registros inseridos: ${resultado.dados.inseridos}\n` +
+                  `Filtrados (CO/Norte): ${resultado.dados.filtrados}\n` +
                   `Total processado: ${resultado.dados.total}`);
 
             // Recarregar dados

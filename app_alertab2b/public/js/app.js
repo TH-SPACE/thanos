@@ -31,9 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Configurar Event Listeners
 // ===========================================
 function configurarEventListeners() {
-    // Botão de atualizar arquivo
-    document.getElementById('btnAtualizarArquivo').addEventListener('click', atualizarArquivoLocal);
-
     // Botão de sincronizar
     document.getElementById('btnSincronizar').addEventListener('click', sincronizarDados);
 
@@ -138,20 +135,24 @@ async function carregarFiltrosDropdowns() {
 // ===========================================
 async function sincronizarDados() {
     const btn = document.getElementById('btnSincronizar');
+    const textoOriginal = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '⏳ Sincronizando...';
+    btn.innerHTML = '⏳ Baixando e sincronizando...';
 
     try {
         const response = await fetch(`${API_BASE}/sincronizar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fonte: 'url' })
+            body: JSON.stringify({ fonte: 'arquivo' })
         });
 
         const resultado = await response.json();
 
         if (resultado.success) {
-            mostrarMensagem(`✅ Sincronização concluída! ${resultado.dados.total} registros processados.`, 'success');
+            mostrarMensagem(
+                `✅ Sincronização concluída! ${resultado.dados.inseridos} registros inseridos (CO/Norte), ${resultado.dados.filtrados} filtrados.`,
+                'success'
+            );
             carregarEstatisticas();
             carregarDados();
             atualizarUltimaAtualizacao();
@@ -160,38 +161,6 @@ async function sincronizarDados() {
         }
     } catch (error) {
         mostrarMensagem(`❌ Erro ao sincronizar: ${error.message}`, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '🔄 Sincronizar';
-    }
-}
-
-// ===========================================
-// Atualizar Arquivo Local
-// ===========================================
-async function atualizarArquivoLocal() {
-    const btn = document.getElementById('btnAtualizarArquivo');
-    const textoOriginal = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Baixando...';
-
-    try {
-        const response = await fetch(`${API_BASE}/atualizar-arquivo`, {
-            method: 'POST'
-        });
-
-        const resultado = await response.json();
-
-        if (resultado.success) {
-            mostrarMensagem(
-                `✅ Arquivo atualizado! ${resultado.dados.tamanhoKB} KB baixados.`,
-                'success'
-            );
-        } else {
-            mostrarMensagem(`❌ Erro: ${resultado.error}`, 'error');
-        }
-    } catch (error) {
-        mostrarMensagem(`❌ Erro ao atualizar arquivo: ${error.message}`, 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = textoOriginal;

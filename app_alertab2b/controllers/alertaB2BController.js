@@ -291,73 +291,65 @@ async function salvarLogSincronizacao(params) {
 
 /**
  * Corrigir regional com base na UF
- * Norte e Nordeste → NORTE
- * Centro-Oeste → CENTRO-OESTE
- * Sudeste → SUDESTE
- * Sul → SUL
+ * FILTRO: Apenas NORTE (incluindo Nordeste) e CENTRO-OESTE
  */
 function corrigirRegional(uf) {
     if (!uf) return 'OUTRO';
-    
+
     const ufUpper = uf.toUpperCase().trim();
-    
-    // Norte
-    const norte = ['AP', 'AM', 'PA', 'RR', 'MA'];
+
+    // NORTE (inclui Nordeste conforme requisito)
+    const norte = ['AP', 'AM', 'PA', 'RR', 'MA', 'PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA'];
     if (norte.includes(ufUpper)) return 'NORTE';
-    
-    // Nordeste
-    const nordeste = ['PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA'];
-    if (nordeste.includes(ufUpper)) return 'NORDESTE';
-    
-    // Centro-Oeste
+
+    // CENTRO-OESTE
     const centroOeste = ['GO', 'MT', 'MS', 'DF', 'TO', 'RO', 'AC'];
     if (centroOeste.includes(ufUpper)) return 'CENTRO-OESTE';
-    
-    // Sudeste
+
+    // Sudeste e Sul não são permitidos no filtro, mas mantemos para consistência
     const sudeste = ['SP', 'RJ', 'MG', 'ES'];
     if (sudeste.includes(ufUpper)) return 'SUDESTE';
-    
-    // Sul
+
     const sul = ['PR', 'SC', 'RS'];
     if (sul.includes(ufUpper)) return 'SUL';
-    
+
     return 'OUTRO';
 }
 
 /**
  * Corrigir cluster com base na cidade e UF
- * Similar ao app_b2b
+ * FILTRO: Apenas clusters do Norte e Centro-Oeste
  */
 function corrigirCluster(cidade, uf) {
     if (!cidade) return 'OUTRO';
-    
+
     const cidadeUpper = cidade.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const ufUpper = uf ? uf.toUpperCase().trim() : '';
-    
+
     // Cidades de Brasília (DF e entorno)
     const cidadesBrasilia = ['FORMOSA', 'CIDADE OCIDENTAL', 'VALPARAISO', 'VALPARAISO DE GOIAS', 'PLANALTINA', 'LUZIANIA', 'LUZIÂNIA', 'TAGUATINGA', 'GUARA', 'RIACHO FUNDO', 'SAMAMBAIA', 'STA MARIA'];
     if (cidadesBrasilia.includes(cidadeUpper) || ufUpper === 'DF') {
         return 'BRASILIA';
     }
-    
+
     // Cidades de Anápolis
     const cidadesAnapolis = ['ANAPOLIS', 'ANÁPOLIS', 'JARAGUA', 'JARAGUÁ'];
     if (cidadesAnapolis.includes(cidadeUpper)) {
         return 'ANAPOLIS';
     }
-    
-    // Norte por UF
+
+    // NORTE
     if (ufUpper === 'PA') return 'BELEM';
     if (['AP', 'AM', 'RR'].includes(ufUpper)) return 'MANAUS';
     if (['AC', 'RO'].includes(ufUpper)) return 'PORTO VELHO';
     if (ufUpper === 'TO') return 'PALMAS';
     if (ufUpper === 'MA') return 'SAO LUIS';
-    
-    // Centro-Oeste
+
+    // CENTRO-OESTE
     if (ufUpper === 'MT') return 'CUIABA';
     if (ufUpper === 'MS') return 'CAMPO GRANDE';
     if (ufUpper === 'GO') return 'GOIANIA';
-    
+
     return 'OUTRO';
 }
 
@@ -374,12 +366,12 @@ async function processarCSV(registros) {
         let erros = 0;
         let filtrados = 0;
 
-        // UF's do Centro-Oeste e Norte
+        // UF's do Centro-Oeste e Norte (com variações de nomes)
         const UFS_PERMITIDAS = [
             // Centro-Oeste
-            'GO', 'MT', 'MS', 'DF',
+            'GO', 'MATO GROSSO', 'MT', 'MATO GROSSO DO SUL', 'MS', 'DISTRITO FEDERAL', 'DF',
             // Norte
-            'AC', 'AP', 'AM', 'PA', 'RO', 'RR', 'TO', 'MA'
+            'AC', 'AMAPA', 'AP', 'AMAZONAS', 'AM', 'PARA', 'PA', 'RONDONIA', 'RO', 'RORAIMA', 'RR', 'TOCANTINS', 'TO', 'MARANHAO', 'MA'
         ];
 
         console.log(`   📊 Total de registros para processar: ${registros.length}`);
@@ -505,15 +497,15 @@ async function processarCSV(registros) {
 
 /**
  * Executar sincronização completa
+ * Sempre baixa o arquivo da URL primeiro, depois sincroniza
  */
-async function executarSincronizacao(fonte = 'url') {
+async function executarSincronizacao(fonte = 'arquivo') {
     const dataInicio = new Date();
 
     console.log('\n' + '='.repeat(70));
     console.log('🔄 INICIANDO SINCRONIZAÇÃO ALERTA B2B');
     console.log('='.repeat(70));
     console.log(`📅 Data/Hora: ${new Date().toLocaleString('pt-BR')}`);
-    console.log(`📡 Fonte: ${fonte === 'arquivo' ? 'Arquivo local' : CONFIG.CSV_URL}`);
     console.log('='.repeat(70));
 
     try {
@@ -521,26 +513,27 @@ async function executarSincronizacao(fonte = 'url') {
 
         // 1. Baixar ou ler CSV
         console.log('\n📥 [1/3] Obtendo arquivo CSV...');
-        if (fonte === 'arquivo') {
+        
+        // Sempre tenta baixar da URL primeiro
+        console.log('   🔄 Baixando da URL...');
+        try {
+            csvContent = await baixarCSV(CONFIG.CSV_URL);
+            console.log('   ✅ CSV baixado com sucesso!');
+            
+            // Salva no arquivo local
+            const fs = require('fs');
+            const path = require('path');
+            const caminhoArquivo = path.join(__dirname, '..', 'BacklogBDSLA.csv');
+            fs.writeFileSync(caminhoArquivo, csvContent, 'utf-8');
+            console.log('   💾 Arquivo local atualizado!');
+        } catch (error) {
+            console.error('   ⚠️  Erro ao baixar da URL:', error.message);
+            console.log('   🔄 Usando arquivo local como fallback...');
             const fs = require('fs');
             const path = require('path');
             const caminhoArquivo = path.join(__dirname, '..', 'BacklogBDSLA.csv');
             csvContent = fs.readFileSync(caminhoArquivo, 'utf-8');
-            console.log('   ✅ Arquivo local lido com sucesso!');
-        } else {
-            console.log('   🔄 Baixando da URL...');
-            try {
-                csvContent = await baixarCSV(CONFIG.CSV_URL);
-                console.log('   ✅ CSV baixado com sucesso!');
-            } catch (error) {
-                console.error('   ⚠️  Erro ao baixar da URL:', error.message);
-                console.log('   🔄 Usando arquivo local como fallback...');
-                const fs = require('fs');
-                const path = require('path');
-                const caminhoArquivo = path.join(__dirname, '..', 'BacklogBDSLA.csv');
-                csvContent = fs.readFileSync(caminhoArquivo, 'utf-8');
-                console.log('   ✅ Arquivo local lido com sucesso! (fallback)');
-            }
+            console.log('   ✅ Arquivo local lido com sucesso! (fallback)');
         }
 
         // 2. Parse do CSV
@@ -1217,7 +1210,7 @@ async function buscarStatusPorCluster(filtros = {}) {
 }
 
 /**
- * Gerar CSV para exportação
+ * Gerar CSV para exportação (TODAS as colunas da tabela)
  */
 function gerarCSV(dados, nomeArquivo = 'backlog_b2b') {
     try {
@@ -1225,40 +1218,96 @@ function gerarCSV(dados, nomeArquivo = 'backlog_b2b') {
             return { success: false, error: 'Nenhum dado para exportar' };
         }
 
-        // Cabeçalhos
+        // TODAS as colunas da tabela backlog_b2b
         const cabecalhos = [
             'BD',
-            'Cliente',
-            'Regional',
-            'Cluster',
-            'Cidade',
-            'UF',
-            'Status',
             'Grupo',
             'Procedência',
-            'SLA',
-            'Prazo',
-            'Reclamação',
+            'Tipo Serviço',
             'Data Criação',
-            'Última Atualização'
+            'Nome Usuário',
+            'CNPJ',
+            'Nome Cliente',
+            'Segmento Cliente',
+            'Reclamação',
+            'LP',
+            'ID Vantive',
+            'Serviço Nome',
+            'Regional',
+            'Município',
+            'UF',
+            'Raiz',
+            'Status',
+            'SLA',
+            'Tipo',
+            'Prazo',
+            'Urgência Código',
+            'Urgência',
+            'Origem',
+            'Tipo Abertura',
+            'Status Circuito',
+            'Fonte Status',
+            'Índice',
+            'Last Update',
+            'Flag Covid19',
+            'Operadora',
+            'Segmento SF',
+            'ID Projeto',
+            'Flag Prioridade',
+            'Reincidência',
+            'Contato Cliente',
+            'Atuação GI',
+            'Área Escalonada',
+            'Nível Escalonamento',
+            'Vivo GI',
+            'Cluster',
+            'Segmento V3'
         ];
 
-        // Linhas
+        // Linhas com TODAS as colunas
         const linhas = dados.map(item => [
             item.bd || '',
-            item.nome_cliente || '',
-            item.regional || '',
-            item.cluster || '',
-            item.municipio || '',
-            item.uf || '',
-            item.status || '',
             item.grupo || '',
             item.procedencia || '',
-            item.sla || '',
-            item.prazo || '',
+            item.tipo_servico || '',
+            formatarData(item.data_criacao) || '',
+            item.nome_usuario || '',
+            item.cnpj || '',
+            item.nome_cliente || '',
+            item.segmento_cliente || '',
             (item.reclamacao || '').replace(/[\r\n]+/g, ' '),
-            formatarData(item.data_criacao),
-            formatarData(item.last_update)
+            item.lp || '',
+            item.id_vantive || '',
+            item.servico_nome || '',
+            item.regional || '',
+            item.municipio || '',
+            item.uf || '',
+            item.raiz || '',
+            item.status || '',
+            item.sla || '',
+            item.tipo || '',
+            item.prazo || '',
+            item.urgencia_codigo || '',
+            item.urgencia || '',
+            item.origem || '',
+            item.tipo_abertura || '',
+            item.status_circuito || '',
+            item.fonte_status || '',
+            item.indice || '',
+            formatarData(item.last_update) || '',
+            item.flag_covid19 || '',
+            item.operadora || '',
+            item.segmento_sf || '',
+            item.id_projeto || '',
+            item.flag_prioridade || '',
+            item.reincidencia || '',
+            item.contato_cliente || '',
+            item.atuacao_gi || '',
+            item.area_escalonada || '',
+            item.nivel_escalonamento || '',
+            item.vivo_gi || '',
+            item.cluster || '',
+            item.segmento_v3 || ''
         ]);
 
         // Criar conteúdo CSV

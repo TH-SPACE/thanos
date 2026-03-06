@@ -1,24 +1,26 @@
 const cron = require('node-cron');
-const { executarSincronizacao } = require('../controllers/alertaB2BController');
+const { executarSincronizacao, atualizarArquivoLocal } = require('../controllers/alertaB2BController');
 
 /**
  * Job de Sincronização Automática do Alerta B2B
- * Executa automaticamente a cada 5 minutos
+ * Executa automaticamente a cada 5 minutos:
+ * 1. Baixa o arquivo da URL
+ * 2. Sincroniza com o arquivo local
  */
 
 // Configurações
 const CONFIG = {
     // Habilitar sincronização automática (true/false)
     SYNC_AUTOMATICO: process.env.ALERTA_B2B_SYNC_AUTOMATICO === 'true',
-    
+
     // Intervalo da sincronização: '5min' ou 'horario' (usa HORARIO_SYNC)
     INTERVALO_SYNC: process.env.ALERTA_B2B_INTERVALO_SYNC || '5min',
-    
+
     // Horário da sincronização automática (formato HH:MM) - usado se INTERVALO_SYNC for 'horario'
     HORARIO_SYNC: process.env.ALERTA_B2B_HORARIO_SYNC || '06:00',
-    
+
     // Fonte dos dados ('url' ou 'arquivo')
-    FONTE_DADOS: process.env.ALERTA_B2B_FONTE || 'url'
+    FONTE_DADOS: process.env.ALERTA_B2B_FONTE || 'arquivo'  // Usa arquivo local após download
 };
 
 /**
@@ -51,22 +53,36 @@ function intervaloParaCron(intervalo) {
 
 /**
  * Executar sincronização agendada
+ * 1. Baixa o arquivo da URL
+ * 2. Sincroniza com o arquivo local
  */
 async function executarSincronizacaoAgendada() {
     console.log('\n' + '='.repeat(70));
     console.log('⏰ [AUTO] SINCRONIZAÇÃO ALERTA B2B - AGENDADA');
     console.log('='.repeat(70));
     console.log(`📅 Data/Hora: ${new Date().toLocaleString('pt-BR')}`);
-    
+
     try {
-        const resultado = await executarSincronizacao(CONFIG.FONTE_DADOS);
+        // Passo 1: Baixar arquivo da URL
+        console.log('\n📥 [AUTO] Baixando arquivo da URL...');
+        const download = await atualizarArquivoLocal();
         
+        if (!download.success) {
+            console.log('⚠️  [AUTO] Falha ao baixar arquivo, usando último arquivo local...');
+        } else {
+            console.log('✅ [AUTO] Arquivo baixado com sucesso!');
+        }
+
+        // Passo 2: Sincronizar com arquivo local
+        console.log('\n💾 [AUTO] Sincronizando com arquivo local...');
+        const resultado = await executarSincronizacao('arquivo');
+
         if (resultado.success) {
             console.log('✅ [AUTO] Sincronização automática concluída com sucesso!');
         } else {
             console.error('❌ [AUTO] Erro na sincronização automática:', resultado.error);
         }
-        
+
         return resultado;
     } catch (error) {
         console.error('❌ [AUTO] Erro crítico na sincronização automática:', error.message);
