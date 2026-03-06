@@ -461,20 +461,20 @@ async function carregarTempoBacklog() {
             });
             tbody.innerHTML = htmlBody;
 
-            // Preencher tfoot (total)
-            const totalAtivos = clusters.reduce((sum, c) => sum + (c.ativos || 0), 0);
-            const totalParados = clusters.reduce((sum, c) => sum + (c.parados || 0), 0);
-            const totalMenos1h = clusters.reduce((sum, c) => sum + (c.menos_1_hora || 0), 0);
-            const total1_3h = clusters.reduce((sum, c) => sum + (c.entre_1_3_horas || 0), 0);
-            const total3_6h = clusters.reduce((sum, c) => sum + (c.entre_3_6_horas || 0), 0);
-            const total6_8h = clusters.reduce((sum, c) => sum + (c.entre_6_8_horas || 0), 0);
-            const total8_24h = clusters.reduce((sum, c) => sum + (c.entre_8_24_horas || 0), 0);
-            const total1_3d = clusters.reduce((sum, c) => sum + (c.entre_1_3_dias || 0), 0);
-            const total3_5d = clusters.reduce((sum, c) => sum + (c.entre_3_5_dias || 0), 0);
-            const total5_7d = clusters.reduce((sum, c) => sum + (c.entre_5_7_dias || 0), 0);
-            const total7_15d = clusters.reduce((sum, c) => sum + (c.entre_7_15_dias || 0), 0);
-            const total15_30d = clusters.reduce((sum, c) => sum + (c.entre_15_30_dias || 0), 0);
-            const totalMais30d = clusters.reduce((sum, c) => sum + (c.mais_30_dias || 0), 0);
+            // Preencher tfoot (total) - convertendo para inteiro para evitar concatenação
+            const totalAtivos = clusters.reduce((sum, c) => sum + parseInt(c.ativos || 0, 10), 0);
+            const totalParados = clusters.reduce((sum, c) => sum + parseInt(c.parados || 0, 10), 0);
+            const totalMenos1h = clusters.reduce((sum, c) => sum + parseInt(c.menos_1_hora || 0, 10), 0);
+            const total1_3h = clusters.reduce((sum, c) => sum + parseInt(c.entre_1_3_horas || 0, 10), 0);
+            const total3_6h = clusters.reduce((sum, c) => sum + parseInt(c.entre_3_6_horas || 0, 10), 0);
+            const total6_8h = clusters.reduce((sum, c) => sum + parseInt(c.entre_6_8_horas || 0, 10), 0);
+            const total8_24h = clusters.reduce((sum, c) => sum + parseInt(c.entre_8_24_horas || 0, 10), 0);
+            const total1_3d = clusters.reduce((sum, c) => sum + parseInt(c.entre_1_3_dias || 0, 10), 0);
+            const total3_5d = clusters.reduce((sum, c) => sum + parseInt(c.entre_3_5_dias || 0, 10), 0);
+            const total5_7d = clusters.reduce((sum, c) => sum + parseInt(c.entre_5_7_dias || 0, 10), 0);
+            const total7_15d = clusters.reduce((sum, c) => sum + parseInt(c.entre_7_15_dias || 0, 10), 0);
+            const total15_30d = clusters.reduce((sum, c) => sum + parseInt(c.entre_15_30_dias || 0, 10), 0);
+            const totalMais30d = clusters.reduce((sum, c) => sum + parseInt(c.mais_30_dias || 0, 10), 0);
 
             let htmlFoot = `
                 <tr class="dashboard-total">
